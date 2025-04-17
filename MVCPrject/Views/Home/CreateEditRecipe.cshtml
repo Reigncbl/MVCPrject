@@ -1,0 +1,25 @@
+﻿@{
+    ViewData["Title"] = "Create / Edit";
+}
+@model MVCPrject.Models.Recipe;
+
+<div class="text-center">
+    <h1 class="display-4">CReTE</h1>
+    <a asp-action="Recipe" class="btn btn-primary"> Overveiw</a>
+
+
+    <form asp-action="CreateEditRecipeForm" asp-controller="Home">
+        <label>Id</label>
+        <input class="form-control" type="number" placeholder="0" asp-for="Id" />
+
+        <label class="mt-4">Recipe Name</label>
+        <input class="form-control" type="text" placeholder="Name" asp-for="RecipeName" />
+ 
+        <label class="mt-4">Recipe Description</label>
+        <input class="form-control" type="text" placeholder="Description" asp-for="RecipeDescription" />
+
+        <label class ="mt-4">Recipe Ingredients</label>
+        <input class="form-control" type="text" placeholder="Ingredient" asp-for="RecipeIngredients" />
+		<button class="btn btn-primary mt-4" type="submit">Submit</button>
+    </form>
+</div>

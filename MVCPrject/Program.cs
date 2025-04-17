@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using MVCPrject.Data;
+
 namespace MVCPrject
 {
     public class Program
@@ -8,6 +11,12 @@ namespace MVCPrject
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+
+            builder.Services.AddDbContext<RecipeContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("RecipeDbConnection")));
+
+
+
 
             var app = builder.Build();
 
@@ -25,10 +34,13 @@ namespace MVCPrject
             app.UseAuthorization();
 
             app.MapStaticAssets();
+
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}")
                 .WithStaticAssets();
+
+
 
             app.Run();
         }
