@@ -14,7 +14,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.SemanticKernel" Version="1.46.0" />
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.49.0" />
+    <PackageReference Include="SemanticKernelPooling.Connectors.Google" Version="1.5.2" />
   </ItemGroup>
 
 </Project>

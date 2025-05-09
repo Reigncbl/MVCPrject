@@ -1,0 +1,17 @@
+﻿@model MVCPrject.Models.Chat
+@{
+    ViewData["Title"] = "Chat with AI";
+}
+<form asp-action="Chat" method="post">
+    <label for="UserInput">Your Message:</label>
+    <input type="text" id="UserInput" name="UserInput" value="@Model.UserInput" />
+    <button type="submit">Send</button>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.AiResponse))
+{
+    <div>
+        <strong>AI Response:</strong>
+        <p>@Model.AiResponse</p>
+    </div>
+}
