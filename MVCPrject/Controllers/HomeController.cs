@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MVCPrject.Data;
 using MVCPrject.Models;
 
-namespace _0.Controllers
+namespace MVCPrject.Controllers
 {
     public class HomeController : Controller
     {

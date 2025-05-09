@@ -7,11 +7,11 @@ namespace MVCPrject.Models
         [Key]
         public int Id { get; set; }
         [Required]
-        public string RecipeName { get; set; }
+        public string? RecipeName { get; set; }
         [Required]
-        public string RecipeDescription { get; set; }
+        public string? RecipeDescription { get; set; }
         [Required]
-        public string RecipeIngredients { get; set; }
+        public string? RecipeIngredients { get; set; }
      
 
        

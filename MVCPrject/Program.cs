@@ -13,7 +13,7 @@ namespace MVCPrject
             builder.Services.AddControllersWithViews();
 
             builder.Services.AddDbContext<RecipeContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("RecipeDbConnection")));
+            options.UseSqlServer(builder.Configuration.GetConnectionString("RecipeDbConnection")));
 
 
 

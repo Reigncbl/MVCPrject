@@ -9,9 +9,5 @@ namespace MVCPrject.Data
       public   DbSet<Recipe> Recipes { get; set; }
         public RecipeContext(DbContextOptions<RecipeContext> options) : base(options){}
 
-
-       
-
-
     }
 }
