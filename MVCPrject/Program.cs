@@ -1,9 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
 using MVCPrject.Data;
-using Microsoft.Extensions.Configuration;
 namespace MVCPrject
 {
     public class Program
@@ -12,11 +10,6 @@ namespace MVCPrject
         {
 #pragma warning disable SKEXP0070
 
-          
-
-
-
-
             var builder = WebApplication.CreateBuilder(args);
 
 
@@ -24,7 +17,8 @@ namespace MVCPrject
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
-            builder.Services.AddSingleton<Kernel>(serviceProvider =>
+
+            IServiceCollection serviceCollection = builder.Services.AddSingleton<Kernel>(serviceProvider =>
             {
                 var kernelBuilder = Kernel.CreateBuilder();
 
@@ -33,7 +27,7 @@ namespace MVCPrject
                     apiKey: builder.Configuration["Gemini:ApiKey"],
                     apiVersion: GoogleAIVersion.V1
                 );
-
+    
                 return kernelBuilder.Build();
             });
 

@@ -7,7 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="JC.SemanticKernel.Connectors.Mistral" Version="1.5.0" />
+    <Content Remove="appsettings.Development.json" />
+    <Content Remove="appsettings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.4">
@@ -16,6 +20,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.SemanticKernel" Version="1.49.0" />
     <PackageReference Include="SemanticKernelPooling.Connectors.Google" Version="1.5.2" />
+    <PackageReference Include="SimpleFeedReader" Version="2.0.4" />
   </ItemGroup>
 
 </Project>
