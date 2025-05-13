@@ -1,19 +1,33 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MVCPrject.Data;
+using MVCPrject.Models;
 
-
-public class RecipesController : Controller
+[Route("Recipe")] 
+public class RecipeController : Controller
 {
-    public readonly RecipeContext _context;
 
-    public RecipesController(RecipeContext context)
+    private readonly UrlScraper _scraper;
+    private readonly DBContext _context;
+
+    public RecipeController(UrlScraper scraper, DBContext context)
     {
+        _scraper = scraper;
         _context = context;
     }
 
-    public IActionResult Index()
+   
+    [Route("Recipe")] 
+    public async Task<IActionResult> Recipe()
     {
-        var recipes = _context.Recipes.ToList();
-        return View(recipes);
+       
+        var recipe = await _scraper.ScrapeRecipeDataAsync();
+
+       
+        if (recipe == null)
+        {
+            return View("Error"); 
+        }
+       
+        return View(recipe);
     }
 }

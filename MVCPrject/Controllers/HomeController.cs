@@ -8,10 +8,10 @@ namespace MVCPrject.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly RecipeContext _context;
+        private readonly DBContext _context;
 
 
-        public HomeController(ILogger<HomeController> logger, RecipeContext context)
+        public HomeController(ILogger<HomeController> logger, DBContext context)
         {
             _logger = logger;
             _context = context;
@@ -31,7 +31,7 @@ namespace MVCPrject.Controllers
         {
             return View();
         }
-     
+
 
         public IActionResult CreateEditRecipeForm(Recipe model)
         {
