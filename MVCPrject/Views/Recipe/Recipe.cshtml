@@ -1,0 +1,24 @@
+﻿@model MVCPrject.Models.Recipe // Replace with your actual namespace
+
+@{
+    ViewData["Title"] = @Model.RecipeName ?? "Recipe Details";
+}
+
+<h1>@Model.RecipeName</h1>
+
+@if (!string.IsNullOrEmpty(Model.RecipeImage))
+{
+    <img src="@Model.RecipeImage" alt="@Model.RecipeName" style="max-width: 500px; height: auto;" />
+}
+
+<div>
+    <h2>Ingredients</h2>
+    <pre style="white-space: pre-wrap;">@Model.RecipeIngredients</pre>
+</div>
+
+<div>
+    <h2>Instructions</h2>
+    <pre style="white-space: pre-wrap;">@Model.RecipeDescription</pre>
+</div>
+
+@* You can add more details here based on the properties of your Recipe model *@

@@ -15,14 +15,14 @@ namespace MVCPrject.Controllers
             _chatService = kernel.GetRequiredService<IChatCompletionService>();
         }
 
-  
+
         [HttpGet("Chat")]
         public IActionResult Chat()
         {
             return View(new Chat());
         }
 
-       
+
         [HttpPost("Chat")]
         public async Task<IActionResult> Chat(Chat model)
         {
