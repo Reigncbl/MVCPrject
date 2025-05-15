@@ -1,0 +1,110 @@
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - MVCPrject</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/UserLogin.css" />
+    <style>
+        body {
+            height: 100vh;
+            margin: 0;
+            background-color: #f8f9fa;
+        }
+
+        .hero-container {
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+            transition: all 0.6s ease;
+        }
+
+        .hero-container.reverse {
+            flex-direction: row-reverse;
+        }
+
+        .hero-left,
+        .hero-right {
+            width: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.6s ease;
+        }
+
+        .hero-img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .form-wrapper {
+            width: 80%;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .form-content {
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .form-content.fade-out {
+            opacity: 0;
+        }
+
+
+        .toggle-link {
+            cursor: pointer;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .toggle-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hero-container transition-container">
+        <!-- Image Side -->
+        <div class="hero-left p-5">
+            <img src="~/img/hero.png" alt="Hero Cook" class="hero-img img-fluid" />
+        </div>
+
+        <!-- Form Side -->
+        <div class="hero-right bg-white rounded-4 p-5 text-center shadow">
+            <div class="form-wrapper">
+                <div id="formContent" class="form-content">
+                    <h2 class="fw-bold mb-4">Welcome Back!</h2>
+
+                    <form>
+                        <div class="mb-3 text-start">
+                            <label for="email" class="form-label">Email address</label>
+                            <input type="email" class="form-control" id="email" placeholder="Enter your email">
+                        </div>
+                        <div class="mb-4 text-start">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" placeholder="Enter your password">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mb-3">Login</button>
+                    </form>
+
+                    <p class="mt-3 small">
+                        Don't have an account?
+                        <a id="toggleMode" class="toggle-link fw-bold">Register here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <script src="~/js/RegisterToggle.js"></script>
+</body>
+
+</html>
