@@ -4,8 +4,16 @@ namespace YourProjectNamespace.Controllers
 {
     public class LandingController : Controller
     {
-        // GET: /Landing/
+
         public IActionResult Index()
+        {
+            return View();
+        }
+        public IActionResult Login()
+        {
+            return View();
+        }
+        public IActionResult Signin()
         {
             return View();
         }

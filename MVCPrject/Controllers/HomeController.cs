@@ -17,7 +17,12 @@ namespace MVCPrject.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+        public IActionResult Home()
+        {
+            return View();
+        }
+
+        public IActionResult Newview()
         {
             return View();
         }

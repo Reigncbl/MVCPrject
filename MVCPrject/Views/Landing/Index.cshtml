@@ -20,25 +20,29 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg">
         <div class="container-fluid px-custom pt-5">
-            <a class="navbar-brand" href="#"><img src="~/img/logo.png" alt="Logo" class="w-100"></a>
+            <a class="navbar-brand" asp-controller="Landing" asp-action="Index">
+                <img src="~/img/logo.png" alt="Logo" class="w-100" />
+            </a>
             <div class="d-flex justify-content-end" id="navbarNav">
                 <ul class="navbar-nav d-flex flex-row gap-5 fs-5 fw-bold">
-                    <li class="nav-item">
-                        <a class="nav-link active">Home</a>
+                    <li class="nav-item"></li>
+                    <a class="nav-link active" asp-controller="Landing" asp-action="Index">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link">About</a>
+                        <a class="nav-link" asp-controller="Landing" asp-action="About">About</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link">Contact</a>
+                        <a class="nav-link" asp-controller="Landing" asp-action="Contact">Contact</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link">Log in</a>
+                        <a class="nav-link" asp-controller="Landing" asp-action="Login">Log in</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
+
+
 
     <div class="container-fluid px-custom py-5">
         <!-- Hero Section -->
@@ -50,7 +54,7 @@
                     Tired of restaurant food and craving your mom’s cooking?
                     Make your favorite dishes at home and re-create the warmth of homemade Filipino meals.
                 </p>
-                <button class="register-btn mx-5">Register Now!</button>
+                <a class="register-btn mx-5" asp-controller="Landing" asp-action="Login">Register Now!</a>
             </div>
 
             <div class="col-md-6 text-end">
