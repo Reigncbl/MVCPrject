@@ -20,9 +20,9 @@ namespace MVCPrject
             builder.Services.AddControllersWithViews();
 
 
-            IServiceCollection serviceCollection =  builder.Services.AddSingleton<Kernel>(serviceProvider =>
+            IServiceCollection serviceCollection = builder.Services.AddSingleton<Kernel>(serviceProvider =>
             {
-                var kernelBuilder =  Kernel.CreateBuilder();
+                var kernelBuilder = Kernel.CreateBuilder();
 
                 kernelBuilder.AddGoogleAIGeminiChatCompletion(
                     modelId: "gemini-1.5-flash",
@@ -35,7 +35,7 @@ namespace MVCPrject
 
             builder.Services.AddDbContext<DBContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("RecipeDbConnection")));
-            builder.Services.AddScoped<UrlScraper>(); 
+            builder.Services.AddScoped<UrlScraper>();
 
 
             var app = builder.Build();
@@ -55,7 +55,7 @@ namespace MVCPrject
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}")
+                pattern: "{controller=Landing}/{action=Index}/{id?}")
                 .WithStaticAssets();
 
             app.Run();
