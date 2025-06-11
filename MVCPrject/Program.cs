@@ -38,6 +38,7 @@ namespace MVCPrject
             builder.Services.AddScoped<UrlScraper>();
 
 
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -55,7 +56,7 @@ namespace MVCPrject
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Landing}/{action=Index}/{id?}")
+                pattern: "{controller=Home}/{action=Home}/{id?}")
                 .WithStaticAssets();
 
             app.Run();

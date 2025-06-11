@@ -15,13 +15,11 @@ namespace MVCPrject.Controllers
             _chatService = kernel.GetRequiredService<IChatCompletionService>();
         }
 
-
         [HttpGet("Chat")]
         public IActionResult Chat()
         {
             return View(new Chat());
         }
-
 
         [HttpPost("Chat")]
         public async Task<IActionResult> Chat(Chat model)
@@ -29,10 +27,26 @@ namespace MVCPrject.Controllers
             if (ModelState.IsValid && !string.IsNullOrEmpty(model.UserInput))
             {
                 var chatHistory = new ChatHistory();
-                chatHistory.AddUserMessage(model.UserInput);
 
+                // Add previous history to the ChatHistory
+                if (model.History != null)
+                {
+                    foreach (var line in model.History)
+                    {
+                        if (line.StartsWith("User: "))
+                            chatHistory.AddUserMessage(line.Substring(6));
+                        else if (line.StartsWith("AI: "))
+                            chatHistory.AddAssistantMessage(line.Substring(4));
+                    }
+                }
+
+                chatHistory.AddUserMessage(model.UserInput);
                 var response = await _chatService.GetChatMessageContentAsync(chatHistory);
+
                 model.AiResponse = response?.Content ?? "No response from AI.";
+                model.History ??= new List<string>();
+                model.History.Add("User: " + model.UserInput);
+                model.History.Add("AI: " + model.AiResponse);
             }
 
             return View(model);
