@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Google;
 using MVCPrject.Data;
@@ -8,8 +8,6 @@ namespace MVCPrject
     {
         public static async Task Main(string[] args)
         {
-
-
 
 
 #pragma warning disable SKEXP0070
@@ -35,8 +33,8 @@ namespace MVCPrject
 
             builder.Services.AddDbContext<DBContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("RecipeDbConnection")));
-            builder.Services.AddScoped<UrlScraper>();
 
+            builder.Services.AddTransient<RecipeScraper>();
 
 
             var app = builder.Build();
@@ -59,7 +57,36 @@ namespace MVCPrject
                 pattern: "{controller=Home}/{action=Home}/{id?}")
                 .WithStaticAssets();
 
+            using (var scope = app.Services.CreateScope())
+            {
+                var scraper = scope.ServiceProvider.GetRequiredService<RecipeScraper>();
+
+                var categories = new[]
+                {
+        "chicken-recipes",
+        "pork-recipes",
+        "dessert-and-pastry-recipes",
+        "beef-recipes",
+        "vegetable-recipes",
+        "fish-recipes-recipes",
+        "pasta-recipes",
+        "rice-recipes",
+        "eggs",
+        "tofu-recipes-recipes",
+        "noodle-recipes"
+    };
+
+                foreach (var category in categories)
+                {
+                    Console.WriteLine($"Scraping category: {category}");
+                    await scraper.ScrapeAndSaveUrlsAsync(category);
+                }
+            }
+
+            Console.WriteLine(" Scraping complete.");
             app.Run();
+
+
         }
     }
 }

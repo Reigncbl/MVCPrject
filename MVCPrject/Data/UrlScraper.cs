@@ -1,58 +1,67 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-using HtmlAgilityPack;
-using System.Linq;
-using System.Collections.Generic;
+﻿using HtmlAgilityPack;
+using MVCPrject.Data;
 using MVCPrject.Models;
-using System.Text;
+using Microsoft.EntityFrameworkCore;
 
-public class UrlScraper
+public class RecipeScraper
 {
-    //chicken-recipes
-    //pork-recipes
-    //dessert-and-pastry-recipes
-    //beef-recipes
-    //vegetable-recipes
-    //fish-recipes-recipes
-    //fish-recipes-recipes
-    //pasta-recipes/
-    //rice-recipes
-    //eggs
-    //tofu-recipes-recipes/
-    //noodle-recipes/
+    private readonly DBContext _dbContext;
+    private readonly HttpClient _httpClient = new();
 
-    public static async Task<String> URLScraper(string catUrl)
+    public RecipeScraper(DBContext dbContext)
     {
-        string baseUrl = "https://panlasangpinoy.com/categories/recipes/"+catUrl;
-        var allUrls = new List<string>();
-        for (int page = 1; page <= 5; page++) 
-        {
-            string url = $"{baseUrl}page/{page}/";
-            try
-            {
-                var html = await new HttpClient().GetStringAsync(url);
-                var doc = new HtmlAgilityPack.HtmlDocument();
-                doc.LoadHtml(html);
-
-                doc.DocumentNode.SelectNodes("//h2[@class='entry-title']/a")?
-                   .Select(n => n?.GetAttributeValue("href", "").Trim())
-                   .Where(s => !string.IsNullOrWhiteSpace(s) && s.StartsWith("https://panlasangpinoy.com/"))
-                   .ToList()?.ForEach(u => allUrls.Add(u));
-                await Task.Delay(500);
-                if (!allUrls.Any() && page > 1 ) break;
-            }
-            catch (Exception exception)
-            {
-                Console.WriteLine($"Error scraping page {page}: {exception.Message}");
-                break;
-            }
-
-        }
-        return allUrls.ToString();
+        _dbContext = dbContext;
     }
 
-    /** 
+    public async Task ScrapeAndSaveUrlsAsync(string category)
+    {
+        string baseUrl = $"https://panlasangpinoy.com/categories/recipes/{category}/";
+
+        for (int page = 1; page <= 10; page++)
+        {
+            string url = $"{baseUrl}page/{page}/";
+
+            try
+            {
+                var html = await _httpClient.GetStringAsync(url);
+                var doc = new HtmlDocument();
+                doc.LoadHtml(html);
+
+                var links = doc.DocumentNode.SelectNodes("//h2[@class='entry-title']/a")
+                    ?.Select(n => n.GetAttributeValue("href", "").Trim())
+                    .Where(link => !string.IsNullOrEmpty(link) && link.StartsWith("https://"))
+                    .Distinct()
+                    .ToList();
+
+                if (links == null || !links.Any()) break;
+
+                foreach (var link in links)
+                {
+                    if (!await _dbContext.Recipes.AnyAsync(r => r.RecipeURL == link))
+                    {
+                        _dbContext.Recipes.Add(new Recipe
+                        {
+                            RecipeURL = link
+                        });
+                    }
+                }
+
+                await _dbContext.SaveChangesAsync();
+                await Task.Delay(500);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error on page {page}: {ex.Message}");
+                break;
+            }
+        }
+
+        Console.WriteLine($"Done scraping category: {category}");
+    }
+
+
+
+   
     public async Task<Recipe?> ScrapeRecipeDataAsync()
     {
         string url = "https://panlasangpinoy.com/filipino-chicken-ala-king/";
@@ -108,7 +117,6 @@ public class UrlScraper
         }
     }
 
-    **/
-
-
 }
+
+

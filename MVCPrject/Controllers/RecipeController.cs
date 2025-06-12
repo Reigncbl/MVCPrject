@@ -6,28 +6,5 @@ using MVCPrject.Models;
 public class RecipeController : Controller
 {
 
-    private readonly UrlScraper _scraper;
-    private readonly DBContext _context;
 
-    public RecipeController(UrlScraper scraper, DBContext context)
-    {
-        _scraper = scraper;
-        _context = context;
-    }
-
-   
-    [Route("Recipe")] 
-    public async Task<IActionResult> Recipe()
-    {
-       
-        var recipe = await _scraper.ScrapeRecipeDataAsync();
-
-       
-        if (recipe == null)
-        {
-            return View("Error"); 
-        }
-       
-        return View(recipe);
-    }
 }

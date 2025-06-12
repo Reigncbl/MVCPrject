@@ -1,11 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MVCPrject.Models
 {
+    [Table("stored_recipes")]
     public class Recipe
     {
         [Key]
-        public int Id { get; set; }
+        public int RecipeID { get; set; }
 
         [Required]
         public string? RecipeName { get; set; }
@@ -20,6 +22,8 @@ namespace MVCPrject.Models
         public string? RecipeIngredients { get; set; }
 
         [Required]
-        public string? RecipeInstructions { get; set; }
+        public string? RecipeURL{ get; set; }
+        [Required]
+        public string? RecipeType { get; set; }
     }
 }
