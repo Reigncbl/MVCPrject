@@ -52,7 +52,7 @@ public class UrlScraper
         return allUrls.ToString();
     }
 
-
+    /** 
     public async Task<Recipe?> ScrapeRecipeDataAsync()
     {
         string url = "https://panlasangpinoy.com/filipino-chicken-ala-king/";
@@ -108,7 +108,7 @@ public class UrlScraper
         }
     }
 
-
+    **/
 
 
 }
