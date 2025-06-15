@@ -1,10 +1,13 @@
-﻿namespace MVCPrject.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace MVCPrject.Models
 {
     public class Chat
     {
-        public string UserInput { get; set; }
-        public string AiResponse { get; set; }
+        [StringLength(2000)]
+        public string UserInput { get; set; } = "";
+
+        public string AiResponse { get; set; } = "";
         public List<string> History { get; set; } = new();
     }
-
 }
