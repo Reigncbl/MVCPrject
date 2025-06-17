@@ -1,10 +1,58 @@
 @{
     ViewData["Title"] = "Home";
 }
-@model MVCPrject.Models.Recipe;
+@section Styles {
+    <link rel="stylesheet" href="~/css/home.css" />
+}
+@section Scripts {
+    <script src="~/js/dashboardCards.js"></script>
+}
 
-<div class="text-center w-100">
-    <h1 class="display-4">Home</h1>
-    <a asp-action="Recipe" class="btn btn-primary"> Overveiw</a>
+<div class="container-fluid p-0">
+    <div class="border-bottom shadow-sm d-flex flex-row align-items-center justify-content-end gap-4 p-2">
+        <i data-feather="search" class="border p-3 rounded-pill fs-2"
+            style="background-color: #D9D9D980; width: 36px; height: 36px;"></i>
+        <h2 class="fs-5">Hello, <span>Username</span></h2>
+        <img src="~/img/image.png" alt="/" class="border rounded-pill" style="width: 48px;">
+    </div>
+    <div class="overflow-auto" style="height: calc(100vh - 64px);">
+        <!-- Cards -->
+        <div class="d-flex p-5 justify-content-between align-items-center gap-4">
+            <div class="p-4 bg-white shadow-sm rounded-4 border col-10">
+                <!-- Dashboard Summary -->
+                <div class="d-flex flex-column gap-2">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4>Mini Diet Dashboard</h4>
+                        <small class="text-muted">@DateTime.Now.ToString("dddd, MMMM dd")</small>
+                    </div>
+                    <!-- Dashboard Cards -->
+                    <div class="row g-3" id="dashboard-cards"></div>
+
+                </div>
+            </div>
+            <div class="w-100 gradient-border p-1 rounded-4">
+                <div class="meal-card bg-light pt-4 d-flex flex-column align-items-center">
+                    <div class="text-muted fs-5">Wed</div>
+                    <div class="date">15</div>
+                    <div class="mb-1 fs-5">3 meals</div>
+                    <div class="log-button text-center">Log Meal</div>
+                </div>
+            </div>
+
+
+        </div>
+
+        <!-- Suggested for You -->
+        <div class="mb-4 px-5">
+            <h5 class="fw-bold mb-3">Suggested for You</h5>
+            <div class="row g-3" id="suggested-cards"></div>
+        </div>
+        <!-- Cooking Tips by Ina -->
+        <div class="mb-4 px-5">
+            <h5 class="fw-bold mb-3">Cooking Tips by Ina</h5>
+            <div class="row g-3" id="cooking-tips"></div>
+        </div>
+    </div>
+
 
 </div>

@@ -1,0 +1,31 @@
+.gradient-border {
+  background: linear-gradient(to bottom right, #f94144, #f9c74f, #577590);
+  border-radius: 20px;
+}
+.meal-card {
+  background-color: #fafafa;
+  border-radius: 13px;
+}
+
+.meal-card .date {
+  font-weight: bold;
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.meal-card .log-button {
+  border-top: 3px solid;
+  border-image: linear-gradient(to bottom right, #f94144, #f9c74f, #577590) 1;
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  font-weight: 500;
+  width: 100%;
+}
+
+.card {
+  transition: transform 0.2s ease-in-out;
+}
+.card:hover {
+  transform: translateY(-4px);
+}

@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/MVCPrject.styles.css" asp-append-version="true" />
+    <script src="https://unpkg.com/feather-icons"></script>
+    @RenderSection("Styles", required: false)
+
 </head>
 
 <body class="d-flex flex-column min-vh-100 overflow-hidden">
@@ -51,19 +54,20 @@
         </div>
         <!-- Floating Buttons -->
         <div class="position-fixed bottom-0 end-0 p-4 d-flex flex-column gap-3 align-items-end">
-            <button class="btn btn-danger rounded-circle shadow" style="width: 56px; height: 56px;">
-                <span class="fs-4">+</span>
+            <button class="btn rounded-circle shadow" style="width: 56px; height: 56px; background-color: #EC433E;">
+                <i data-feather="plus" class="text-white fw-bold"></i>
             </button>
-            <button class="btn btn-light border rounded-circle shadow" style="width: 56px; height: 56px;">
-                <img src="~/img/settings-icon.svg" alt="Settings" style="width: 24px;">
+            <button class="btn rounded-circle shadow" style="width: 56px; height: 56px; background-color: #EC433E;">
+                <img src="~/img/bot-btn.png" alt="chatbot" style="width: 24px;">
             </button>
         </div>
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    <script>feather.replace()</script>
+
 </body>
 
 </html>
