@@ -9,28 +9,32 @@ namespace MVCPrject;
 [Route("Recipe")]
 public class RecipeController : Controller
 {
-
-    private DBContext _context;
-
-    public RecipeController(DBContext context)
+    private readonly RecipeManipulationService _repository;
+    public RecipeController(RecipeManipulationService repository)
     {
-        _context = context;
+        _repository = repository;
     }
 
 
     [Route("All")]
     public async Task<IActionResult> Recipe()
     {
-        var recipes = await _context.Recipes.ToListAsync();
+        var recipes =  await _repository.ReadAllRecipes();
         return View(recipes);
     }
 
-    [Route("")]
-    public async Task<IActionResult> Recipe()
+
+    [Route("Details/{id:int}")]
+    public async Task<IActionResult> RecipeSingle(int id)
     {
-        var recipes = await _context.Recipes.ToListAsync();
-        return View(recipes);
+        var recipe = await _repository.ReadRecipe(id);
+        if (recipe == null)
+        {
+            return NotFound();
+        }
+        return View(recipe);
     }
+
 
 
 

@@ -6,12 +6,12 @@ using MVCPrject.Models;
 namespace MVCPrject;
 using static System.Net.WebRequestMethods;
 
-public class RecipeScraper
+public class RecipeRetrieverService
 {
     private readonly DBContext _dbContext;
     private readonly HttpClient _httpClient = new();
 
-    public RecipeScraper(DBContext dbContext)
+    public RecipeRetrieverService(DBContext dbContext)
     {
         _dbContext = dbContext;
     }
@@ -61,9 +61,6 @@ public class RecipeScraper
 
         Console.WriteLine($"Done scraping category: {category}");
     }
-
-
-
     public async Task LoopUrlAsync()
     {
         var recipes = await _dbContext.Recipes.ToListAsync();
@@ -158,6 +155,10 @@ public class RecipeScraper
         }
         Console.WriteLine("All categories scraped successfully.");
     }
+
+
+
+
 
 }
 

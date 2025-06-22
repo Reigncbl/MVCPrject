@@ -37,10 +37,12 @@ namespace MVCPrject
 
 
             builder.Services.AddDbContext<DBContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("RecipeDbConnection")));
+          options.UseSqlServer(builder.Configuration.GetConnectionString("RecipeDbConnection")));
 
 
-            builder.Services.AddTransient<RecipeScraper>();
+
+            builder.Services.AddTransient<RecipeRetrieverService>();
+            builder.Services.AddScoped<RecipeManipulationService>();
 
 
             var app = builder.Build();
@@ -63,7 +65,7 @@ namespace MVCPrject
                 pattern: "{controller=Home}/{action=Home}/{id?}")
                 .WithStaticAssets();
 
-            /*  using (var scope = app.Services.CreateScope())
+                     /*  using (var scope = app.Services.CreateScope())
                         {
                             var recipeScraper = scope.ServiceProvider.GetRequiredService<RecipeScraper>();
                             await recipeScraper.LoopUrlAsync();
