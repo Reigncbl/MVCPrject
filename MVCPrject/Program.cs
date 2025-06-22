@@ -57,33 +57,7 @@ namespace MVCPrject
                 pattern: "{controller=Home}/{action=Home}/{id?}")
                 .WithStaticAssets();
 
-            using (var scope = app.Services.CreateScope())
-            {
-                var scraper = scope.ServiceProvider.GetRequiredService<RecipeScraper>();
-
-                var categories = new[]
-                {
-        "chicken-recipes",
-        "pork-recipes",
-        "dessert-and-pastry-recipes",
-        "beef-recipes",
-        "vegetable-recipes",
-        "fish-recipes-recipes",
-        "pasta-recipes",
-        "rice-recipes",
-        "eggs",
-        "tofu-recipes-recipes",
-        "noodle-recipes"
-    };
-
-                foreach (var category in categories)
-                {
-                    Console.WriteLine($"Scraping category: {category}");
-                    await scraper.ScrapeAndSaveUrlsAsync(category);
-                }
-            }
-
-            Console.WriteLine(" Scraping complete.");
+         
             app.Run();
 
 
