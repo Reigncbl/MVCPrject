@@ -10,20 +10,23 @@ namespace MVCPrject.Models
         public int RecipeID { get; set; }
 
         [Required]
-        public string? RecipeName { get; set; }
+        public string RecipeName { get; set; }
 
         [Required]
-        public string? RecipeImage { get; set; }
+        public string RecipeImage { get; set; }
 
         [Required]
-        public string? RecipeDescription { get; set; }
+        public string RecipeDescription { get; set; }
 
         [Required]
-        public string? RecipeIngredients { get; set; }
+        public string RecipeIngredients { get; set; }
 
         [Required]
-        public string? RecipeURL{ get; set; }
+        public string RecipeInstructions{ get; set; }
+
         [Required]
+        public string RecipeURL{ get; set; }
+     
         public string? RecipeType { get; set; }
     }
 }

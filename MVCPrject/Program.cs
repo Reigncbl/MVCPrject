@@ -1,7 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Google;
 using MVCPrject.Data;
+using MVCPrject.Models;
 namespace MVCPrject
 {
     public class Program
@@ -31,8 +34,11 @@ namespace MVCPrject
                 return kernelBuilder.Build();
             });
 
+
+
             builder.Services.AddDbContext<DBContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("RecipeDbConnection")));
+
 
             builder.Services.AddTransient<RecipeScraper>();
 
@@ -57,7 +63,15 @@ namespace MVCPrject
                 pattern: "{controller=Home}/{action=Home}/{id?}")
                 .WithStaticAssets();
 
-         
+            /*  using (var scope = app.Services.CreateScope())
+                        {
+                            var recipeScraper = scope.ServiceProvider.GetRequiredService<RecipeScraper>();
+                            await recipeScraper.LoopUrlAsync();
+                        }*/
+
+
+            Console.WriteLine(" Scraping complete.");
+
             app.Run();
 
 
