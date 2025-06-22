@@ -47,7 +47,6 @@ namespace MVCPrject.Controllers
                 model.History ??= new List<string>();
                 model.History.Add("User: " + model.UserInput);
                 model.History.Add("AI: " + model.AiResponse);
-                Console.WriteLine(model.History);
             }
 
             return View(model);
