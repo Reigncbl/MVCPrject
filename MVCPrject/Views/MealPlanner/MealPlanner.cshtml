@@ -1,0 +1,68 @@
+@{
+    ViewData["Title"] = "MealPlanner";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/MealPlanner.css" asp-append-version="true" />
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="~/js/mealPlanner.js" asp-append-version="true"></script>
+</head>
+
+<body>
+    <!-- Curved Red Header Section -->
+    <div class="curved-header text-center text-dark py-4 px-3 full-expand-right">
+    
+        <!-- Top Bar: Greeting + Calendar Icon -->
+        <div class="d-flex justify-content-between align-items-center px-4 mb-3">
+            <!-- Left Side: Greeting -->
+            <h5 class="fw-bold user-greeting">Kumusta, User!</h5>
+
+            <i data-feather="calendar" class="calendar-icon"></i>
+            <!-- Feather calendar icon -->
+        </div>
+
+        <!-- Date Navigation -->
+        <div class="d-flex justify-content-center align-items-center mb-3">
+            <!-- Centered arrows and date text -->
+            
+            <!-- Left arrow -->
+            <button class="btn p-2">
+                <i data-feather="chevron-left"></i>
+            </button>
+            <!-- Inside Date Navigation -->
+            <h6 id="current-date" class="mb-0 mx-2 fw-semibold"></h6>
+            <!-- Right arrow -->
+            <button class="btn p-2">
+                <i data-feather="chevron-right"></i>
+            </button>
+        </div>
+
+        <div id="date-cards" class="d-flex justify-content-center gap-2 flex-wrap mb-3"></div>
+
+        <!-- Log Button -->
+        <button class="btn btn-light rounded-pill px-4 shadow-sm log-btn">Log Breakfast</button>
+    </div>
+
+    <!-- MEALS LOGGED  -->
+
+    <div class="=container py-4 ps-4">
+        <div class="container py-4 ps-4" id="meals-container">
+            <div class="row" id="meal-row">
+                <!-- Meal cards will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Floating Button -->
+        <button class="btn btn-danger generate-btn">Generate Grocery List</button>
+    </div>
+
+    <!-- Floating Button -->
+    <button class="btn btn-danger generate-btn">Generate Grocery List</button>
+</body>
+</html>

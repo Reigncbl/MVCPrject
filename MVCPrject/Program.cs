@@ -63,7 +63,6 @@ namespace MVCPrject
                 Console.WriteLine("Scraping completed!");
             }*/
 
-
             Console.WriteLine(" Scraping complete.");
             app.Run();
          
