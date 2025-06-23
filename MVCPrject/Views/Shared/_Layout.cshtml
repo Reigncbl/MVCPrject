@@ -7,14 +7,15 @@
     <title>@ViewData["Title"] - MVCPrject</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/MVCPrject.styles.css" asp-append-version="true" />
+    <script src="https://unpkg.com/feather-icons"></script>
+    @RenderSection("Styles", required: false)
+
 </head>
 
-<body>
-    <header>
-        <nav class="d-flex flex-column flex-shrink-0 p-4 text-black bg-light position-fixed border-end"
-            style="width: 300px; height: 100vh;">
+<body class="d-flex flex-column min-vh-100 overflow-hidden">
+    <div class="d-flex">
+        <nav class="d-flex flex-column flex-shrink-0 p-4 text-black bg-light border-end"
+            style="width: 15vw; height: 100vh;">
             <a class="navbar-brand" href="#"><img src="~/img/logo-colored.png" alt="Logo" class="w-100 mb-5"></a>
             <ul class="nav nav-pills flex-column mb-auto">
                 <li class="nav-item">
@@ -24,8 +25,10 @@
                     <a class="nav-link text-black" asp-area="" asp-controller="Recipe" asp-action="Recipe">Explore</a>
                 </li>
                 <li>
-                    <a class="nav-link text-black" asp-area="" asp-controller="Recipe" asp-action="Recipe">Meal
-                        Planner</a>
+                    <a class="nav-link text-black" asp-area="" asp-controller="Recipe" asp-action="Recipe">
+                        Meal
+                        Planner
+                    </a>
                 </li>
                 <li>
                     <a class="nav-link text-black" asp-area="" asp-controller="Recipe" asp-action="Recipe">Community</a>
@@ -37,25 +40,31 @@
                     <a class="nav-link text-black" asp-area="" asp-controller="Profile" asp-action="Profile">Profile</a>
                 </li>
             </ul>
-
             <div class="mt-auto text-muted small border-top pt-3" style="font-size: 0.75rem;">
                 <p class="mb-0">Rules | Privacy | User Agreement</p>
                 <p class="mb-0">Cooking Ina, Inc. © 2025. All rights reserved.</p>
             </div>
         </nav>
 
-    </header>
-    <div class="container" style="margin-left: 300px;">
-        <main role="main">
-            @RenderBody()
-        </main>
+        <div class="flex-grow-1">
+            <main role="main">
+                @RenderBody()
+            </main>
+        </div>
+        <!-- Floating Buttons -->
+        <div class="position-fixed bottom-0 end-0 p-4 d-flex flex-column gap-3 align-items-end">
+            <button class="btn rounded-circle shadow" style="width: 56px; height: 56px; background-color: #EC433E;">
+                <i data-feather="feather" class="text-white fw-bold"></i>
+            </button>
+            <button class="btn rounded-circle shadow" style="width: 56px; height: 56px; background-color: #EC433E;">
+                <img src="~/img/bot-btn.png" alt="chatbot" style="width: 24px;">
+            </button>
+        </div>
     </div>
 
-
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    <script>feather.replace()</script>
+
 </body>
 
 </html>

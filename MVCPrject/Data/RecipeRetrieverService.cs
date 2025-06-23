@@ -1,0 +1,360 @@
+﻿using System.Net.Http;
+using System.Text.RegularExpressions;
+using HtmlAgilityPack;
+using Microsoft.EntityFrameworkCore;
+using MVCPrject.Data;
+using MVCPrject.Models;
+namespace MVCPrject;
+using static System.Net.WebRequestMethods;
+
+public class RecipeRetrieverService
+{
+    private readonly DBContext _dbContext;
+    private readonly HttpClient _httpClient = new();
+
+    public RecipeRetrieverService(DBContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+
+    public async Task ScrapeAndSaveUrlsAsync(string category)
+    {
+        string baseUrl = $"https://panlasangpinoy.com/categories/recipes/{category}/";
+
+        for (int page = 1; page <=3; page++)
+        {
+            string url = $"{baseUrl}page/{page}/";
+            try
+            {
+                var html = await _httpClient.GetStringAsync(url);
+                var doc = new HtmlDocument();
+                doc.LoadHtml(html);
+
+                var newLinks = doc.DocumentNode.SelectNodes("//h2[@class='entry-title']/a")
+                    ?.Select(n => n.GetAttributeValue("href", "").Trim())
+                    .Where(link => !string.IsNullOrEmpty(link) && link.StartsWith("https://"))
+                    .Distinct()
+                    .ToList();
+
+                if (newLinks == null || !newLinks.Any()) break;
+
+                var existingLinks = await _dbContext.Recipes
+                                                    .Where(r => newLinks.Contains(r.RecipeURL))
+                                                    .Select(r => r.RecipeURL)
+                                                    .ToListAsync();
+
+                var linksToAdd = newLinks.Except(existingLinks)
+                                         .Select(link => new Recipe { RecipeURL = link });
+
+                _dbContext.Recipes.AddRange(linksToAdd);
+                await _dbContext.SaveChangesAsync();
+                await Task.Delay(500);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error on page {page} for category '{category}': {ex.Message}");
+                break;
+            }
+        }
+        Console.WriteLine($"Done scraping category: {category}");
+    }
+   
+    public async Task ScrapeAllRecipesAsync()
+    {
+        var categories = new[] { "chicken-recipes",
+                  "pork-recipes",
+                  "dessert-and-pastry-recipes",
+                  "beef-recipes",
+                  "vegetable-recipes",
+                  "fish-recipes-recipes",
+                  "pasta-recipes",
+                  "rice-recipes",
+                  "eggs",
+                  "tofu-recipes-recipes",
+                  "noodle-recipes"};
+        foreach (var category in categories)
+        {
+            await ScrapeAndSaveUrlsAsync(category);
+        }
+        Console.WriteLine("All categories scraped successfully.");
+    }
+
+
+    public async Task ScrapeAndUpdateRecipesAsync()
+    {
+        var recipes = await _dbContext.Recipes.ToListAsync();
+
+        foreach (var recipe in recipes)
+        {
+            if (!string.IsNullOrEmpty(recipe.RecipeURL))
+            {
+                Console.WriteLine($"Scraping: {recipe.RecipeURL}");
+
+                try
+                {
+                    await RetrieveAndUpdateRecipeAsync(recipe);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error scraping {recipe.RecipeURL}: {ex.Message}");
+                }
+
+                await Task.Delay(1000); // Rate limiting
+            }
+        }
+
+        await _dbContext.SaveChangesAsync();
+        Console.WriteLine("Scraping completed!");
+    }
+
+    private async Task RetrieveAndUpdateRecipeAsync(Recipe recipe)
+    {
+        using var client = new HttpClient();
+        client.DefaultRequestHeaders.Add("User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+
+        var html = await client.GetStringAsync(recipe.RecipeURL);
+        var doc = new HtmlDocument();
+        doc.LoadHtml(html);
+
+        // Extract data directly
+        var recipeName = CleanText(GetNodeText(doc, "//h1[contains(@class, 'entry-title')]"));
+        var description = CleanText(GetNodeText(doc, "(//p)[5]"));
+        var image = GetImageSrc(doc, "https://panlasangpinoy.com/wp-content/uploads/");
+        var prepTime = ExtractTimeInMinutes(GetNodeText(doc, "//span[contains(@class, 'wprm-recipe-prep_time')]"));
+        var cookTime = ExtractTimeInMinutes(GetNodeText(doc, "//span[contains(@class, 'wprm-recipe-cook_time')]"));
+        var servings = ExtractServings(doc);
+        var ingredients = ExtractIngredients(doc);
+        var instructions = ExtractInstructions(doc);
+
+        // Update recipe properties
+        if (!string.IsNullOrEmpty(recipeName))
+            recipe.RecipeName = recipeName;
+
+        if (!string.IsNullOrEmpty(description))
+            recipe.RecipeDescription = description;
+
+        if (!string.IsNullOrEmpty(image))
+            recipe.RecipeImage = image;
+
+        if (prepTime.HasValue)
+            recipe.PrepTimeMin = prepTime.Value;
+
+        if (cookTime.HasValue)
+            recipe.CookTimeMin = cookTime.Value;
+
+        if (!string.IsNullOrEmpty(servings))
+            recipe.RecipeServings = servings;
+
+        // Clear existing data
+        var existingIngredients = await _dbContext.Set<RecipeIngredients>()
+            .Where(ri => ri.RecipeID == recipe.RecipeID)
+            .ToListAsync();
+        _dbContext.Set<RecipeIngredients>().RemoveRange(existingIngredients);
+
+        var existingInstructions = await _dbContext.Set<RecipeInstructions>()
+            .Where(ri => ri.RecipeID == recipe.RecipeID)
+            .ToListAsync();
+        _dbContext.Set<RecipeInstructions>().RemoveRange(existingInstructions);
+
+        // Add new ingredients
+        foreach (var rawIngredient in ingredients)
+        {
+            var (quantity, unit, name) = ParseIngredient(rawIngredient);
+
+            if (string.IsNullOrWhiteSpace(name)) continue;
+
+            var ingredient = new RecipeIngredients
+            {
+                RecipeID = recipe.RecipeID,
+                IngredientName = name,
+                Quantity = quantity,
+                Unit = unit
+            };
+
+            _dbContext.Set<RecipeIngredients>().Add(ingredient);
+        }
+
+        // Add new instructions
+        for (int i = 0; i < instructions.Count; i++)
+        {
+            var instruction = new RecipeInstructions
+            {
+                RecipeID = recipe.RecipeID,
+                StepNumber = i + 1,
+                Instruction = instructions[i]
+            };
+
+            _dbContext.Set<RecipeInstructions>().Add(instruction);
+        }
+    }
+
+    // Helper methods (same as before)
+    private static string GetNodeText(HtmlDocument doc, string xpath) =>
+        doc.DocumentNode.SelectSingleNode(xpath)?.InnerText?.Trim() ?? "";
+
+    private static string GetImageSrc(HtmlDocument doc, string startsWith) =>
+        doc.DocumentNode.Descendants("img")
+            .FirstOrDefault(img => img.GetAttributeValue("src", "").StartsWith(startsWith))
+            ?.GetAttributeValue("src", "") ?? "";
+
+    private static string ExtractServings(HtmlDocument doc)
+    {
+        var servingsInput = doc.DocumentNode.SelectSingleNode("//input[contains(@class, 'wprm-recipe-servings')]");
+        if (servingsInput != null)
+        {
+            var value = servingsInput.GetAttributeValue("value", "");
+            return CleanServings(value);
+        }
+
+        var servingsSpan = doc.DocumentNode.SelectSingleNode("//span[contains(@class, 'wprm-recipe-servings')]");
+        if (servingsSpan != null)
+        {
+            return CleanServings(servingsSpan.InnerText?.Trim() ?? "");
+        }
+
+        return "";
+    }
+
+    private static string CleanServings(string servings)
+    {
+        if (string.IsNullOrEmpty(servings)) return "";
+
+        servings = CleanText(servings);
+        var numberMatch = Regex.Match(servings, @"(\d+)");
+        if (numberMatch.Success)
+        {
+            return numberMatch.Groups[1].Value;
+        }
+
+        return servings;
+    }
+
+    private static List<string> ExtractIngredients(HtmlDocument doc)
+    {
+        return doc.DocumentNode.SelectNodes("//li[@class='wprm-recipe-ingredient']")
+            ?.Select(node =>
+            {
+                var amount = node.SelectSingleNode("./span[@class='wprm-recipe-ingredient-amount']")?.InnerText?.Trim() ?? "";
+                var unit = node.SelectSingleNode("./span[@class='wprm-recipe-ingredient-unit']")?.InnerText?.Trim() ?? "";
+                var name = node.SelectSingleNode("./span[@class='wprm-recipe-ingredient-name']")?.InnerText?.Trim() ?? "";
+
+                return $"{amount} {unit} {name}".Trim();
+            })
+            .Where(ingredient => !string.IsNullOrWhiteSpace(ingredient))
+            .ToList() ?? new List<string>();
+    }
+
+    private static List<string> ExtractInstructions(HtmlDocument doc)
+    {
+        return doc.DocumentNode.SelectNodes("//div[contains(@class, 'wprm-recipe-instruction-group')]/ul/li/div[contains(@class, 'wprm-recipe-instruction-text')]")
+            ?.Select(node => CleanText(node.InnerText))
+            .Where(instruction => !string.IsNullOrWhiteSpace(instruction))
+            .ToList() ?? new List<string>();
+    }
+
+    // Returns tuple instead of helper class
+    private static (decimal? quantity, string? unit, string name) ParseIngredient(string rawIngredient)
+    {
+        if (string.IsNullOrEmpty(rawIngredient))
+            return (null, null, "");
+
+        rawIngredient = CleanText(rawIngredient);
+
+        // Handle mixed numbers like "2 1/2"
+        var mixedNumberMatch = Regex.Match(rawIngredient, @"^(\d+)\s+(\d+/\d+)\s*([a-zA-Z]*)\s*(.+)$");
+        if (mixedNumberMatch.Success)
+        {
+            var wholeNumber = decimal.Parse(mixedNumberMatch.Groups[1].Value);
+            var fractionParts = mixedNumberMatch.Groups[2].Value.Split('/');
+            var fraction = decimal.Parse(fractionParts[0]) / decimal.Parse(fractionParts[1]);
+            var unit = mixedNumberMatch.Groups[3].Value.Trim();
+            var name = mixedNumberMatch.Groups[4].Value.Trim();
+
+            return (wholeNumber + fraction, string.IsNullOrEmpty(unit) ? null : unit, name);
+        }
+
+        // Handle simple patterns
+        var match = Regex.Match(rawIngredient, @"^(\d+(?:\.\d+)?(?:/\d+)?)\s*([a-zA-Z]+)?\s*(.+)$");
+
+        if (match.Success)
+        {
+            var quantityStr = match.Groups[1].Value;
+            var unit = match.Groups[2].Value.Trim();
+            var name = match.Groups[3].Value.Trim();
+
+            decimal? quantity = null;
+
+            if (quantityStr.Contains('/'))
+            {
+                var parts = quantityStr.Split('/');
+                if (parts.Length == 2 &&
+                    decimal.TryParse(parts[0], out var numerator) &&
+                    decimal.TryParse(parts[1], out var denominator) &&
+                    denominator != 0)
+                {
+                    quantity = numerator / denominator;
+                }
+            }
+            else if (decimal.TryParse(quantityStr, out var parsedQuantity))
+            {
+                quantity = parsedQuantity;
+            }
+
+            return (quantity, string.IsNullOrEmpty(unit) ? null : unit, name);
+        }
+
+        // Try simple number pattern
+        var simpleMatch = Regex.Match(rawIngredient, @"^(\d+(?:\.\d+)?)\s+(.+)$");
+        if (simpleMatch.Success && decimal.TryParse(simpleMatch.Groups[1].Value, out var qty))
+        {
+            return (qty, null, simpleMatch.Groups[2].Value.Trim());
+        }
+
+        return (null, null, rawIngredient);
+    }
+
+    private static string CleanText(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return "";
+
+        text = System.Net.WebUtility.HtmlDecode(text);
+        text = text.Replace("&#8217;", "'")
+                  .Replace("&#8216;", "'")
+                  .Replace("&#8220;", "\"")
+                  .Replace("&#8221;", "\"")
+                  .Replace("&nbsp;", " ");
+
+        text = Regex.Replace(text, @"\s+", " ");
+        return text.Trim();
+    }
+
+    private static int? ExtractTimeInMinutes(string timeString)
+    {
+        if (string.IsNullOrEmpty(timeString)) return null;
+
+        timeString = timeString.ToLower();
+
+        var hourMatch = Regex.Match(timeString, @"(\d+)\s*(?:hour|hr|h)");
+        var minuteMatch = Regex.Match(timeString, @"(\d+)\s*(?:minute|min|m)");
+
+        int totalMinutes = 0;
+
+        if (hourMatch.Success)
+            totalMinutes += int.Parse(hourMatch.Groups[1].Value) * 60;
+
+        if (minuteMatch.Success)
+            totalMinutes += int.Parse(minuteMatch.Groups[1].Value);
+
+        if (totalMinutes == 0)
+        {
+            var numberMatch = Regex.Match(timeString, @"(\d+)");
+            if (numberMatch.Success)
+                totalMinutes = int.Parse(numberMatch.Groups[1].Value);
+        }
+
+        return totalMinutes > 0 ? totalMinutes : null;
+    }
+
+}
+
