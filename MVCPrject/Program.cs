@@ -1,49 +1,40 @@
-﻿
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Google;
 using MVCPrject.Data;
-using MVCPrject.Models;
+
+
 namespace MVCPrject
 {
     public class Program
     {
-        public static async Task Main(string[] args)
+        public async static Task Main(string[] args)
         {
-
-
 #pragma warning disable SKEXP0070
-
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            
             builder.Services.AddControllersWithViews();
 
+            // Configure Mistral AI with Semantic Kernel
+            builder.Services.AddMistralChatCompletion(
+                modelId: "mistral-large-latest",
+                apiKey: builder.Configuration["Mistral:ApiKey"]
+            );
 
-            IServiceCollection serviceCollection = builder.Services.AddSingleton<Kernel>(serviceProvider =>
+    
+            builder.Services.AddTransient<Kernel>(serviceProvider =>
             {
-                var kernelBuilder = Kernel.CreateBuilder();
-
-                kernelBuilder.AddGoogleAIGeminiChatCompletion(
-                    modelId: "gemini-1.5-flash",
-                    apiKey: builder.Configuration["Gemini:ApiKey"],
-                    apiVersion: GoogleAIVersion.V1
-                );
-
-                return kernelBuilder.Build();
+                return new Kernel(serviceProvider);
             });
 
-
-
             builder.Services.AddDbContext<DBContext>(options =>
-          options.UseSqlServer(builder.Configuration.GetConnectionString("RecipeDbConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("RecipeDbConnection")));
 
-
-
-            builder.Services.AddTransient<RecipeRetrieverService>();
+            builder.Services.AddScoped<RecipeRetrieverService>();
             builder.Services.AddScoped<RecipeManipulationService>();
-
+          
 
             var app = builder.Build();
 
@@ -57,26 +48,25 @@ namespace MVCPrject
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseAuthorization();
-
             app.MapStaticAssets();
-
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Home}/{id?}")
                 .WithStaticAssets();
+            /*   using (var scope = app.Services.CreateScope())
+            {
+              
+                var migrationService = scope.ServiceProvider.GetRequiredService<RecipeRetrieverService>();
+                Console.WriteLine("Scrapping data!!!");
 
-                     /*  using (var scope = app.Services.CreateScope())
-                        {
-                            var recipeScraper = scope.ServiceProvider.GetRequiredService<RecipeScraper>();
-                            await recipeScraper.LoopUrlAsync();
-                        }*/
+                await migrationService.ScrapeAndUpdateRecipesAsync(); // Note: Your method name was MigrateToNormalizedTablesAsync, not MigrateRecipesToNormalizedTableAsync
+                Console.WriteLine("Scraping completed!");
+            }*/
 
 
             Console.WriteLine(" Scraping complete.");
-
             app.Run();
-
-
+         
         }
     }
 }

@@ -9,6 +9,8 @@ namespace MVCPrject.Data
     {
 
         public DbSet<Recipe> Recipes { get; set; }
+        public DbSet<RecipeIngredients> RecipeIngredients { get; set; }
+        public DbSet<RecipeInstructions> RecipeInstructions { get; set; }
         public DBContext(DbContextOptions<DBContext> options) : base(options) { }
 
     }

@@ -1,9 +1,7 @@
-﻿
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using MVCPrject.Models;
 
 namespace MVCPrject.Data
-
 {
     public class RecipeManipulationService
     {
@@ -14,18 +12,19 @@ namespace MVCPrject.Data
             _dbContext = dbContext;
         }
 
-        public async Task<Recipe?> ReadRecipe(int id)
+        // Fetch a single recipe with ingredients and instructions
+        public async Task<Recipe?> GetRecipeDetailsAsync(int id)
         {
-
-            return await _dbContext.Recipes.FirstOrDefaultAsync(r => r.RecipeID == id);
-              
+            return await _dbContext.Recipes
+                .Include(r => r.Ingredients)
+                .Include(r => r.Instructions)
+                .FirstOrDefaultAsync(r => r.RecipeID == id);
         }
 
-        public async Task<List<Recipe>> ReadAllRecipes()
+        // Fetch a list of recipes (default: top 10)
+        public async Task<List<Recipe>> GetAllRecipesAsync(int count = 10)
         {
-            return await _dbContext.Recipes.Take(10).ToListAsync();
+            return await _dbContext.Recipes.Take(count).ToListAsync();
         }
-
-
     }
 }

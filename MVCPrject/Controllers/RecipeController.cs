@@ -1,41 +1,36 @@
-﻿
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using MVCPrject.Data;
 
-
-namespace MVCPrject;
-
-[Route("Recipe")]
-public class RecipeController : Controller
+namespace MVCPrject
 {
-    private readonly RecipeManipulationService _repository;
-    public RecipeController(RecipeManipulationService repository)
+    [Route("Recipe")]
+    public class RecipeController : Controller
     {
-        _repository = repository;
-    }
+        private readonly RecipeManipulationService _repository;
 
-
-    [Route("All")]
-    public async Task<IActionResult> Recipe()
-    {
-        var recipes =  await _repository.ReadAllRecipes();
-        return View(recipes);
-    }
-
-
-    [Route("Details/{id:int}")]
-    public async Task<IActionResult> RecipeSingle(int id)
-    {
-        var recipe = await _repository.ReadRecipe(id);
-        if (recipe == null)
+        public RecipeController(RecipeManipulationService repository)
         {
-            return NotFound();
+            _repository = repository;
         }
-        return View(recipe);
+
+        // Action to fetch all recipes
+        [HttpGet("All")]
+        public async Task<IActionResult> Recipe()
+        {
+            var recipes = await _repository.GetAllRecipesAsync();
+            return View(recipes);
+        }
+
+        // Action to fetch a single recipe's details
+        [HttpGet("View/{id:int}")] // Changed from "Details" to "View" to avoid conflict
+        public async Task<IActionResult> Details(int id)
+        {
+            var recipe = await _repository.GetRecipeDetailsAsync(id);
+            if (recipe == null)
+            {
+                return NotFound();
+            }
+            return View(recipe);
+        }
     }
-
-
-
-
 }
