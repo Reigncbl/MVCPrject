@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore;
 using MVCPrject.Models;
 using LinqKit;
@@ -30,7 +30,7 @@ namespace MVCPrject.Data
             return await _dbContext.Recipes.OrderBy(r => r.RecipeID).Take(count).ToListAsync();
         }
 
-       
+
         public async Task<List<Recipe>> SearchRecipesByIngredientsAsync(string keywords)
         {
             var keywordList = keywords.Split(',')
@@ -50,7 +50,7 @@ namespace MVCPrject.Data
                         r.Ingredients.Any(i => EF.Functions.Like(i.IngredientName, $"%{k}%")) ||
                         EF.Functions.Like(r.RecipeName, $"%{k}%") ||
                         EF.Functions.Like(r.RecipeAuthor, $"%{k}%") ||
-                        EF.Functions.Like(r.RecipeType, $"%{k}%")); 
+                        EF.Functions.Like(r.RecipeType, $"%{k}%"));
                 }
                 query = query.Where(predicate);
             }
