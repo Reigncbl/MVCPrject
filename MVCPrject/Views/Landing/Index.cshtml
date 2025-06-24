@@ -1,0 +1,125 @@
+﻿@{
+    ViewData["Title"] = "Welcome";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - MVCPrject</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/landing.css" />
+</head>
+
+<body class="position-relative">
+    <div class="ellipse-1 position-absolute"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid px-custom pt-5">
+            <a class="navbar-brand" asp-controller="Landing" asp-action="Index">
+                <img src="~/img/logo.png" alt="Logo" class="w-100" />
+            </a>
+            <div class="d-flex justify-content-end" id="navbarNav">
+                <ul class="navbar-nav d-flex flex-row gap-5 fs-5 fw-bold">
+                    <li class="nav-item"></li>
+                    <a class="nav-link active" asp-controller="Landing" asp-action="Index">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Landing" asp-action="About">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Landing" asp-action="Contact">Contact</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Landing" asp-action="Login">Log in</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+
+    <div class="container-fluid px-custom py-5">
+        <!-- Hero Section -->
+        <div class="hero row align-items-center position-relative" style="min-height: 80vh;">
+            <div class="ellipse-2 position-absolute"></div>
+            <div class="col-md-6 hero-text">
+                <h2 class="fw-bold mb-5" style="font-size: 64px;">Missing Mom’s Home-Cooked Meals?</h2>
+                <p class="fw-light mb-5" style="font-size: 24px;">
+                    Tired of restaurant food and craving your mom’s cooking?
+                    Make your favorite dishes at home and re-create the warmth of homemade Filipino meals.
+                </p>
+                <a class="register-btn mx-5" asp-controller="Landing" asp-action="Login">Register Now!</a>
+            </div>
+
+            <div class="col-md-6 text-end">
+                <img src="/img/hero.png" alt="Hero Cook" class="hero-img" />
+            </div>
+        </div>
+
+        <!-- as-seen-section -->
+        <div class="as-seen-section " style="min-height: 20vh;">
+            <h1 class="fw-bold mb-5" style="font-size: 32px;">As Seen On:</h1>
+            <div class="d-flex justify-content-between align-items-center rounded-4 p-5"
+                style="background: linear-gradient(to right, #4E5DBC, rgb(255, 255, 255,0));">
+                <img src="/img/ninong.png" alt="Logo1" class="img-fluid" />
+                <img src="/img/master.png" alt="Logo2" class="img-fluid" />
+                <img src="/img/hirit.png" alt="Logo3" class="img-fluid" />
+                <img src="/img/korina.png" alt="Logo4" class="img-fluid" />
+                <img src="/img/pinoy.png" alt="Logo5" class="img-fluid" />
+            </div>
+        </div>
+
+        <!-- Info Section -->
+        <div class="info-section row align-items-center rounded-4 relative" style="min-height: 80vh;">
+            <div class="ellipse-3 position-absolute"></div>
+            <div class="col-8">
+                <h2 class="fw-bold mb-5" style="font-size: 54px;">Stressing on what to eat to lose fat?</h2>
+                <p class="fw-light mb-5" style="font-size: 32px;">Discover the secret foods that melt fat FAST! 🚀 <br>
+                    No
+                    more guesswork just science-backed
+                    results.</p>
+                <button class="btn btn-primary mt-5">Discover Science-Backed Secrets →</button>
+            </div>
+            <div class="info-img position-absolute" style="height: 600px;"></div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="cta-section row rounded-4 d-flex justify-content-between align-items-center"
+            style="min-height: 80vh;">
+            <div class="ellipse-4 position-absolute"></div>
+            <div class="cta-text bg-white rounded-4 p-5 col-md-6" style="min-height: 100%;">
+                <h2 class="fw-bold mb-5" style="font-size: 54px;">Having Problem in Ingredients?</h2>
+                <p class="fw-light mb-5" style="font-size: 32px;">No worries! Just tell us what you currently have and
+                    our AI will suggest a recipe you can make with it!
+                </p>
+                <button class="btn mt-5">Ask Our AI</button>
+            </div>
+            <img src="/img/logo-white.png" alt="Cooking Ina Logo" class="col-md-6"
+                style="height: 500px; width: auto;" />
+        </div>
+        @* <div class="ellipse-5 position-absolute"></div> *@
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer py-4 bg-light">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
+            <p class="mb-2 mb-md-0 text-center text-md-start">&copy; 2025 Cooking Ina Inc.</p>
+            <div class="social-icons d-flex gap-3">
+                <i class="bi bi-facebook fs-4">Facebook</i>
+                <i class="bi bi-twitter fs-4">Insta</i>
+                <i class="bi bi-instagram fs-4">X</i>
+            </div>
+        </div>
+    </footer>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

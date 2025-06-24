@@ -1,0 +1,41 @@
+﻿@model MVCPrject.Models.Recipe
+
+@{
+    ViewData["Title"] = "Recipe Details";
+}
+
+<div class="container mt-4">
+    <h3 class="text-center mb-4">Recipe Details</h3>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+            <h1>@Model.RecipeName</h1>
+            <img src="@Model.RecipeImage" alt="@Model.RecipeName" class="img-fluid rounded my-3" />
+            <p>@Model.RecipeDescription</p>
+        </div>
+    </div>
+
+    <section class="mb-4">
+        <h2 class="text-primary">Ingredients</h2>
+        <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+            <ul class="list-group">
+                @foreach (var ingredient in Model.Ingredients)
+                {
+                    <li class="list-group-item">@ingredient.Quantity @ingredient.Unit @ingredient.IngredientName</li>
+                }
+            </ul>
+        </div>
+    </section>
+
+    <section>
+        <h2 class="text-primary">Instructions</h2>
+        <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+            <ol class="list-group list-group-numbered">
+                @foreach (var instruction in Model.Instructions.OrderBy(i => i.StepNumber))
+                {
+                    <li class="list-group-item">@instruction.Instruction</li>
+                }
+            </ol>
+        </div>
+    </section>
+</div>

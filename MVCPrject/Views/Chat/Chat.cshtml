@@ -1,0 +1,44 @@
+﻿@model MVCPrject.Models.Chat
+
+@{
+    ViewData["Title"] = "Chat with AI";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="Chat" method="post" class="mb-3">
+    <div class="form-group">
+        <label asp-for="UserInput">Your Message:</label>
+        <input asp-for="UserInput" class="form-control" autocomplete="off" />
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Send</button>
+
+    @* Persist history through hidden fields *@
+    @if (Model.History != null)
+    {
+        for (int i = 0; i < Model.History.Count; i++)
+        {
+            <input type="hidden" name="History[@i]" value="@Model.History[i]" />
+        }
+    }
+</form>
+
+@if (Model.History?.Any() == true)
+{
+    <div class="mt-3">
+        <strong>Conversation:</strong>
+        <div class="border rounded p-2" style="background:#f8f9fa;">
+            @foreach (var line in Model.History)
+            {
+                <p class="mb-1">@line</p>
+            }
+        </div>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.AiResponse))
+{
+    <div class="alert alert-info mt-3">
+        <strong>AI:</strong> @Model.AiResponse
+    </div>
+}
