@@ -30,7 +30,7 @@ namespace MVCPrject
             );
 
 
-            builder.Services.AddTransient<Kernel>(serviceProvider =>
+            builder.Services.AddScoped<Kernel>(serviceProvider =>
             {
                 return new Kernel(serviceProvider);
             });
