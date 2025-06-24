@@ -29,7 +29,7 @@ namespace MVCPrject.Data
             return await _dbContext.Recipes.Take(count).ToListAsync();
         }
 
-        // Add this method to your RecipeManipulationService class
+       
         public async Task<List<Recipe>> SearchRecipesByIngredientsAsync(string keywords)
         {
             var keywordList = keywords.Split(',')
@@ -41,7 +41,7 @@ namespace MVCPrject.Data
 
             if (keywordList.Any())
             {
-                var predicate = PredicateBuilder.False<Recipe>();
+                var predicate = PredicateBuilder.New<Recipe>();
                 foreach (var keyword in keywordList)
                 {
                     var k = keyword; // Local variable for closure

@@ -17,7 +17,7 @@ namespace MVCPrject
 
         // Action to fetch all recipes
         [HttpGet("All")]
-        public async Task<IActionResult> Recipe(string keywords = null)
+        public async Task<IActionResult> Recipe(string? keywords = null)
         {
             List<Recipe> recipes;
 
