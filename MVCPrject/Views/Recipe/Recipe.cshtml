@@ -37,6 +37,53 @@
         <div class="container mt-3">
             <h1 class="text-center mb-4">All Recipes</h1>
 
+			<!-- Search Bar -->
+            <div class="row mb-4">
+                <div class="col-md-6 offset-md-3">
+                    <form asp-controller="Recipe" asp-action="Search" method="get" class="input-group">
+                        <input type="text" name="keywords" class="form-control"
+                               placeholder="Search For recipe, users, posts, ingredients....." />
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </form>
+				</div>
+
+                <!-- Recipe Filter Navigation - Simple Version -->
+                <div class="mb-4">
+                    <button onclick="addKeyword('Dinner')" class="btn btn-warning btn-sm">Dinner</button>
+                    <button onclick="addKeyword('Main Course')" class="btn btn-warning btn-sm">Main Course</button>
+                    <button onclick="addKeyword('Dessert')" class="btn btn-warning btn-sm">Dessert</button>
+                    <button onclick="addKeyword('Breakfast')" class="btn btn-warning btn-sm">Breakfast</button>
+                    <button onclick="addKeyword('Lunch')" class="btn btn-warning btn-sm">Lunch</button>
+                    <button onclick="addKeyword('Snack')" class="btn btn-warning btn-sm">Snack</button>
+                    <button onclick="addKeyword('Appetizer')" class="btn btn-warning btn-sm">Appetizer</button>
+                    <button onclick="addKeyword('Side Dish')" class="btn btn-warning btn-sm">Side Dish</button>
+                    <button onclick="addKeyword('Soup')" class="btn btn-warning btn-sm">Soup</button>
+                    <button onclick="addKeyword('Salad')" class="btn btn-warning btn-sm">Salad</button>
+                    <button onclick="addKeyword('Healthy')" class="btn btn-warning btn-sm">Healthy</button>
+                    <button onclick="addKeyword('Vegetarian')" class="btn btn-warning btn-sm">Vegetarian</button>
+                    <button onclick="addKeyword('Vegan')" class="btn btn-warning btn-sm">Vegan</button>
+                    <button onclick="addKeyword('Comfort Food')" class="btn btn-warning btn-sm">Comfort Food</button>
+
+                    <button onclick="clearFilters()" class="btn btn-outline-secondary btn-sm">Clear All</button>
+                </div>
+
+                <script>
+                    function addKeyword(keyword) {
+                        var keywords = new URLSearchParams(window.location.search).get('keywords') || '';
+                        var list = keywords ? keywords.split(',') : [];
+
+                        if (!list.includes(keyword)) {
+                            list.push(keyword);
+                            window.location.href = '/Recipe/Search?keywords=' + list.join(',');
+                        }
+                    }
+
+                    function clearFilters() {
+                        window.location.href = '/Recipe/Search';
+                    }
+                </script>
+
+
             @if (!Model.Any())
             {
                 <!-- Empty State -->

@@ -1,6 +1,8 @@
-﻿        namespace MVCPrject.Data
+﻿namespace MVCPrject.Data
 {
     public class AIServices
     {
+
+
     }
 }
