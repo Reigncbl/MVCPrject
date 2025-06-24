@@ -7,8 +7,13 @@
     <title>@ViewData["Title"] - MVCPrject</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/MVCPrject.styles.css" asp-append-version="true" />
     <script src="https://unpkg.com/feather-icons"></script>
     @RenderSection("Styles", required: false)
+
+
+
 
 </head>
 
@@ -54,7 +59,7 @@
         <!-- Floating Buttons -->
         <div class="position-fixed bottom-0 end-0 p-4 d-flex flex-column gap-3 align-items-end">
             <button class="btn rounded-circle shadow" style="width: 56px; height: 56px; background-color: #EC433E;">
-                <i data-feather="feather" class="text-white fw-bold"></i>
+                <i data-feather="plus" class="text-white fw-bold"></i>
             </button>
             <button class="btn rounded-circle shadow" style="width: 56px; height: 56px; background-color: #EC433E;">
                 <img src="~/img/bot-btn.png" alt="chatbot" style="width: 24px;">
@@ -62,6 +67,12 @@
         </div>
     </div>
 
+    <script>feather.replace()</script>
+
+
+
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
     <script>feather.replace()</script>
 
