@@ -39,7 +39,7 @@ public class RecipeRetrieverService
                 if (newLinks == null || !newLinks.Any()) break;
 
                 var existingLinks = await _dbContext.Recipes
-                                                    .Where(r => newLinks.Contains(r.RecipeURL))
+                                                    .Where(r => r.RecipeURL != null && newLinks.Contains(r.RecipeURL))
                                                     .Select(r => r.RecipeURL)
                                                     .ToListAsync();
 

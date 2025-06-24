@@ -11,9 +11,13 @@ namespace MVCPrject
     {
         public async static Task Main(string[] args)
         {
+            var configuration = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddEnvironmentVariables()
+    .Build();
 
             var builder = WebApplication.CreateBuilder(args);
-          
+
             builder.Services.AddControllersWithViews();
             var apiKey = builder.Configuration["Mistral:ApiKey"];
             if (string.IsNullOrWhiteSpace(apiKey))
@@ -28,7 +32,7 @@ namespace MVCPrject
                 apiKey: apiKey
             );
 
-    
+
             builder.Services.AddTransient<Kernel>(serviceProvider =>
             {
                 return new Kernel(serviceProvider);
@@ -39,7 +43,7 @@ namespace MVCPrject
 
             builder.Services.AddScoped<RecipeRetrieverService>();
             builder.Services.AddScoped<RecipeManipulationService>();
-          
+
 
             var app = builder.Build();
 
@@ -73,7 +77,7 @@ namespace MVCPrject
             await Task.Delay(100);
             Console.WriteLine("Starting the application...");
             app.Run();
-         
+
         }
     }
 }
