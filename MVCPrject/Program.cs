@@ -11,10 +11,7 @@ namespace MVCPrject
     {
         public async static Task Main(string[] args)
         {
-            var configuration = new ConfigurationBuilder()
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddEnvironmentVariables()
-    .Build();
+
 
             var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +40,7 @@ namespace MVCPrject
 
             builder.Services.AddScoped<RecipeRetrieverService>();
             builder.Services.AddScoped<RecipeManipulationService>();
+
 
 
             var app = builder.Build();
