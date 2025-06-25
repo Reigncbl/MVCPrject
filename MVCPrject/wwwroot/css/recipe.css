@@ -1,0 +1,27 @@
+.search-input:focus {
+  background-color: #ffffff !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.recipe-card {
+  border-radius: 1.25rem;
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
+  overflow: hidden;
+}
+.recipe-card .card-img-top {
+  border-top-left-radius: 1.25rem;
+  border-top-right-radius: 1.25rem;
+}
+.recipe-card .badge {
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  border-radius: 1rem;
+}
+.recipe-card .btn-danger {
+  background-color: #ec433e;
+  border: none;
+}
+.recipe-card .btn-danger:hover {
+  background-color: #d12f2d;
+}
