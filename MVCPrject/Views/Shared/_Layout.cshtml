@@ -7,8 +7,13 @@
     <title>@ViewData["Title"] - MVCPrject</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/MVCPrject.styles.css" asp-append-version="true" />
     <script src="https://unpkg.com/feather-icons"></script>
     @RenderSection("Styles", required: false)
+
+
+
 
 </head>
 
@@ -58,6 +63,10 @@
             </button>
         </div>
     </div>
+
+    <script>feather.replace()</script>
+
+
 
 
     @await RenderSectionAsync("Scripts", required: false)
