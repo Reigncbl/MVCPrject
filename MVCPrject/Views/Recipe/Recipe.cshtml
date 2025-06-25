@@ -3,68 +3,98 @@
 @{
     ViewData["Title"] = "Recipes";
 }
-
 @section Styles {
-    <link rel="stylesheet" href="~/css/home.css" />
+    <link rel="stylesheet" href="~/css/recipe.css" />
 }
 
 
 
-
     <!-- Header Navigation -->
-    <div class="border-bottom shadow-sm d-flex flex-row align-items-center justify-content-end gap-4 p-2">
-        <div>
-            <h1 class="position-absolute top-0 start-50 translate-middle-x">Explore Recipe</h1>
+    <div class="p-4 d-flex justify-content-between align-items-center">
+        <h1 class=" text-start fs-1 fw-normal">Explore Recipe</h1>
+        <div class="d-flex align-items-center gap-5">
+            <h2 class="fs-5">Hello, <span>Username</span></h2>
+            <img src="~/img/image.png" alt="/" class="border rounded-pill" style="width: 48px;">
         </div>
-        <i data-feather="search"
-           class="border p-3 rounded-pill fs-2"
-           style="background-color: #D9D9D980; width: 36px; height: 36px;">
-        </i>
-
-
-        <h2 class="fs-5">
-            Hello, <span>Username</span>
-        </h2>
-
-        <img src="~/img/image.png"
-             alt="/"
-             class="border rounded-pill"
-             style="width: 48px;">
     </div>
 
-    <!-- Main Content Container -->
-    <div class="overflow-auto" style="height: calc(100vh - 64px);">
-        <div class="container mt-3">
-            <h1 class="text-center mb-4">All Recipes</h1>
 
-            <!-- Search Bar -->
+    <!-- Main Content Container -->
+    <div class=" overflow-auto" style="height: calc(100vh - 124px);">
+        <div class="container">
+
+
             <div class="row mb-4">
-                <div class="col-md-6 offset-md-3">
-                    <form asp-controller="Recipe" asp-action="Search" method="get" class="input-group">
-                        <input type="text" name="keywords" class="form-control"
-                               placeholder="Search For recipe, users, posts, ingredients....." />
-                        <button type="submit" class="btn btn-primary">Search</button>
-                    </form>
+                <!-- Search Bar -->
+                <div class="d-flex justify-content-between align-items-center mb-3 ">
+                    <div class="col-md-4 d-flex justify-content-between gap-3">
+                        <a
+                            class="text-decoration-none text-reset fs-4 fw-medium p-3 border-bottom border-primary">All</a>
+                        <a class="text-decoration-none text-reset fs-4 fw-medium p-3">Trending</a>
+                        <a class="text-decoration-none text-reset fs-4 fw-medium p-3">Top-Rated</a>
+                    </div>
+                    <div class="col-md-4 d-flex justify-content-end gap-3 px-3">
+                        <button class="btn border border-2 border-opacity-75 fw-medium text-secondary fs-6">
+                            <a>Compose Recipe</a>
+                        </button>
+                        <button
+                            class="btn border border-2 border-opacity-75 fw-medium text-secondary fs-6 d-flex align-items-center gap-2">
+                            <i data-feather="filter"></i>
+                            <a href="/" class="text-decoration-none text-reset">Filter</a>
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <form asp-controller="Recipe" asp-action="Search" method="get"
+                            class="input-group p-2 border rounded-4 bg-dark-subtle d-flex align-items-center gap-2">
+                            <i data-feather="search"></i>
+                            <input type="text" name="keywords"
+                                class="fs-6 form-control border-0 bg-dark-subtle search-input rounded"
+                                placeholder="Search For recipe, users, posts, ingredients....." />
+                            <button type="submit" class="rounded text-white fw-medium border-0 py-1 px-3"
+                                style="background-color: #EC433E;">Search</button>
+                        </form>
+                    </div>
                 </div>
 
                 <!-- Recipe Filter Navigation - Simple Version -->
                 <div class="mb-4">
-                    <button onclick="addKeyword('Dinner')" class="btn btn-warning btn-sm">Dinner</button>
-                    <button onclick="addKeyword('Main Course')" class="btn btn-warning btn-sm">Main Course</button>
-                    <button onclick="addKeyword('Dessert')" class="btn btn-warning btn-sm">Dessert</button>
-                    <button onclick="addKeyword('Breakfast')" class="btn btn-warning btn-sm">Breakfast</button>
-                    <button onclick="addKeyword('Lunch')" class="btn btn-warning btn-sm">Lunch</button>
-                    <button onclick="addKeyword('Snack')" class="btn btn-warning btn-sm">Snack</button>
-                    <button onclick="addKeyword('Appetizer')" class="btn btn-warning btn-sm">Appetizer</button>
-                    <button onclick="addKeyword('Side Dish')" class="btn btn-warning btn-sm">Side Dish</button>
-                    <button onclick="addKeyword('Soup')" class="btn btn-warning btn-sm">Soup</button>
-                    <button onclick="addKeyword('Salad')" class="btn btn-warning btn-sm">Salad</button>
-                    <button onclick="addKeyword('Healthy')" class="btn btn-warning btn-sm">Healthy</button>
-                    <button onclick="addKeyword('Vegetarian')" class="btn btn-warning btn-sm">Vegetarian</button>
-                    <button onclick="addKeyword('Vegan')" class="btn btn-warning btn-sm">Vegan</button>
-                    <button onclick="addKeyword('Comfort Food')" class="btn btn-warning btn-sm">Comfort Food</button>
+                    <button onclick="addKeyword('Dinner')"
+                        class="btn btn-warning rounded-3 text-white fw-medium fs-6 py-0 px-2">Dinner</button>
+                    <button onclick="addKeyword('Main Course')"
+                        class="btn btn-warning rounded-3 text-white fw-medium fs-6 py-0 px-2">Main Course</button>
+                    <button onclick="addKeyword('Dessert')"
+                        class="btn btn-warning rounded-3 text-white fw-medium fs-6 py-0 px-2">Dessert</button>
+                    <button onclick="addKeyword('Breakfast')"
+                        class="btn btn-warning rounded-3 text-white fw-medium fs-6 py-0 px-2">Breakfast</button>
+                    <button onclick="addKeyword('Lunch')"
+                        class="btn btn-warning rounded-3 text-white fw-medium fs-6 py-0 px-2">Lunch</button>
+                    <button onclick="addKeyword('Snack')"
+                        class="btn btn-warning rounded-3 text-white fw-medium fs-6 py-0 px-2">Snack</button>
+                    <button onclick="addKeyword('Appetizer')"
+                        class="btn btn-warning rounded-3 text-white fw-medium fs-6 py-0 px-2">Appetizer</button>
+                    <button onclick="addKeyword('Side Dish')"
+                        class="btn btn-warning rounded-3 text-white fw-medium fs-6 py-0 px-2">Side Dish</button>
+                    <button onclick="addKeyword('Soup')"
+                        class="btn btn-warning rounded-3 text-white fw-medium fs-6 py-0 px-2">Soup</button>
+                    <button onclick="addKeyword('Salad')"
+                        class="btn btn-warning rounded-3 text-white fw-medium fs-6 py-0 px-2">Salad</button>
+                    <button onclick="addKeyword('Healthy')"
+                        class="btn btn-warning rounded-3 text-white fw-medium fs-6 py-0 px-2">Healthy</button>
+                    <button onclick="addKeyword('Vegetarian')"
+                        class="btn btn-warning rounded-3 text-white fw-medium fs-6 py-0 px-2">Vegetarian</button>
+                    <button onclick="addKeyword('Vegan')"
+                        class="btn btn-warning rounded-3 text-white fw-medium fs-6 py-0 px-2">Vegan</button>
+                    <button onclick="addKeyword('Comfort Food')"
+                        class="btn btn-warning rounded-3 text-white fw-medium fs-6 py-0 px-2">Comfort
+                        Food</button>
 
-                    <button onclick="clearFilters()" class="btn btn-outline-secondary btn-sm">Clear All</button>
+                    <button onclick="clearFilters()"
+                        class="btn btn-outline-secondary btn-sm fw-medium fs-6 py-0 px-2">Clear
+                        All</button>
+                </div>
+
+                <div>
+                    <h1 class=" text-start fs-2 fw-normal pb-4">Explore Recipe</h1>
                 </div>
 
                 <script>
@@ -106,16 +136,44 @@
                     <div class="row">
                         @foreach (var recipe in Model)
                         {
-                            <div class="col-sm-6 col-md-4 col-lg-3 mb-4">
-                                <div class="card h-100">
-                                    <img class="card-img-top"
-                                         src="@recipe.RecipeImage"
-                                         alt="@recipe.RecipeName"
-                                         style="height: 200px; object-fit: cover;">
+                            <div class="col-sm-6 col-md-3 col-lg-3 mb-4 ">
+                                <div class="card recipe-card h-100 shadow-sm border-0 rounded-4 position-relative mx-3">
+                                    <!-- AI-Curated label -->
+                                    <span
+                                        class="badge bg-danger position-absolute top-0 start-0 m-3 rounded-pill px-3 py-2 fs-6"
+                                        style="z-index:2;">AI-Curated</span>
+
+                                    <!-- Image -->
+                                    <img class="card-img-top rounded-top-4" src="@recipe.RecipeImage" alt="@recipe.RecipeName"
+                                        style="height: 200px; object-fit: cover;">
 
                                     <div class="card-body d-flex flex-column">
-                                        <h4 class="card-title">@recipe.RecipeName</h4>
-                                        <a asp-controller="Recipe" asp-action="Details" asp-route-id="@recipe.RecipeID">View Details</a>
+                                        <!-- Title -->
+                                        <h5 class="card-title fw-bold mb-2">@recipe.RecipeName</h5>
+                                        <!-- Author row -->
+                                        <div class="d-flex align-items-center mb-2">
+                                            <span class="rounded-circle bg-secondary me-2"
+                                                style="display:inline-block; width:32px; height:32px;"></span>
+                                            <span class="fw-semibold">@recipe.RecipeAuthor</span>
+                                        </div>
+                                        <!-- Calendar and time -->
+                                        <div class="d-flex align-items-center mb-2 text-secondary" style="font-size: 0.95rem;">
+                                            <i data-feather="calendar" class="me-1"></i>
+                                            <span class="me-3">Posted in @DateTime.Now.ToString("MMMM dd, yyyy")</span>
+                                        </div>
+                                        <div class="d-flex align-items-center mb-2 text-secondary" style="font-size: 0.95rem;">
+                                            <i data-feather="clock" class="me-1"></i>
+                                            <span>@recipe.PrepTimeMin min</span>
+                                        </div>
+                                        <!-- Likes and button -->
+                                        <div class="d-flex align-items-center mt-auto justify-content-between">
+                                            <div class="d-flex align-items-center text-danger">
+                                                <i data-feather="heart" class="me-1"></i>
+                                                <span>43</span>
+                                            </div>
+                                            <a asp-controller="Recipe" asp-action="Details" asp-route-id="@recipe.RecipeID"
+                                                class="btn btn-danger rounded-pill px-4 py-1 fw-medium">View</a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
