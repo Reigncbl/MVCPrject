@@ -2,40 +2,39 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.AspNetCore.Identity;
 using MVCPrject.Data;
-using Microsoft.AspNetCore.Identity; // 
-using MVCPrject.Models; //
+using MVCPrject.Models;
 
-#pragma warning disable SKEXP0070
+
 namespace MVCPrject
 {
     public class Program
     {
         public async static Task Main(string[] args)
         {
-
-
+#pragma warning disable SKEXP0070 
             var builder = WebApplication.CreateBuilder(args);
 
+
             builder.Services.AddControllersWithViews();
-            var apiKey = builder.Configuration["Mistral:ApiKey"];
-            if (string.IsNullOrWhiteSpace(apiKey))
+
+
+            var apikey = builder.Configuration["Mistral:ApiKey"];
+            if (string.IsNullOrEmpty(apikey))
             {
-                throw new ArgumentNullException(nameof(apiKey), "Mistral API Key is missing or empty.");
+                throw new InvalidOperationException("Mistral API key is not configured.");
             }
 
-
-            // Configure Mistral AI with Semantic Kernel
             builder.Services.AddMistralChatCompletion(
                 modelId: "mistral-large-latest",
-                apiKey: apiKey
+                apiKey: apikey
             );
 
 
-            builder.Services.AddScoped<Kernel>(serviceProvider =>
-            {
-                return new Kernel(serviceProvider);
-            });
+
+            builder.Services.AddScoped<Kernel>();
+
 
             builder.Services.AddDbContext<DBContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("RecipeDbConnection")));
@@ -60,9 +59,11 @@ namespace MVCPrject
                 options.AccessDeniedPath = "/Landing/AccessDenied"; // Handle unauthorized access
             });
 
+            // Register your custom application services
             builder.Services.AddScoped<RecipeRetrieverService>();
             builder.Services.AddScoped<RecipeManipulationService>();
-
+            // Register RecipeLabelingService so it can be resolved from the DI container
+            builder.Services.AddScoped<RecipeLabelingService>();
 
             var app = builder.Build();
 
@@ -74,21 +75,18 @@ namespace MVCPrject
             }
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
+            app.UseStaticFiles(); // Serves static files from wwwroot
             app.UseRouting();
-            app.UseAuthentication(); // 
+
+            app.UseAuthentication(); // IMPORTANT: Must be before UseAuthorization
             app.UseAuthorization();
-            app.MapStaticAssets();
+
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Landing}/{action=Index}/{id?}")
-                .WithStaticAssets();
+                pattern: "{controller=Landing}/{action=Index}/{id?}");
 
-            Console.WriteLine(" Scraping complete.");
-            await Task.Delay(100);
-            Console.WriteLine("Starting the application...");
+            await Task.Delay(10);
             app.Run();
-
         }
     }
 }

@@ -17,7 +17,7 @@ namespace MVCPrject
 
         // Action to fetch all recipes
         [HttpGet("All")]
-        public async Task<IActionResult> Recipe(string? keywords = null)
+        public async Task<IActionResult> Recipe(string keywords = null!)
         {
             List<Recipe> recipes;
 
@@ -50,8 +50,7 @@ namespace MVCPrject
 
         [HttpGet("Search")]
         public async Task<IActionResult> Search(string keywords)
-        {
-            await Task.Delay(100);
+        {   await Task.Delay(100); 
             return RedirectToAction("Recipe", new { keywords = keywords });
         }
 

@@ -9,9 +9,11 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/MVCPrject.styles.css" asp-append-version="true" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
     @RenderSection("Styles", required: false)
+
+
+
 
 </head>
 
@@ -65,13 +67,18 @@
         </div>
     </div>
 
-
-
-
-
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
     <script>feather.replace()</script>
+
+
+
+
+    @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        // Initialize feather icons after the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            feather.replace();
+        });
+    </script>
 
 </body>
 

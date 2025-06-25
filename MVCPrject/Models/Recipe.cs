@@ -20,8 +20,8 @@ namespace MVCPrject.Models
     {
         [Key]
         public int InstructionID { get; set; }
-        public int RecipeID { get; set; }
-        public int StepNumber { get; set; }
+        public int? RecipeID { get; set; }
+        public int? StepNumber { get; set; }
         public string? Instruction { get; set; }
 
         public Recipe? Recipe { get; set; }
@@ -43,9 +43,17 @@ namespace MVCPrject.Models
         public int? PrepTimeMin { get; set; }
         public int? CookTimeMin { get; set; }
 
+        // Computed property for total time
+        public int? TotalTimeMin
+        {
+            get
+            {
+                return (PrepTimeMin ?? 0) + (CookTimeMin ?? 0);
+            }
+        }
+
         public virtual ICollection<RecipeIngredients> Ingredients { get; set; } = new List<RecipeIngredients>();
         public virtual ICollection<RecipeInstructions> Instructions { get; set; } = new List<RecipeInstructions>();
-
-
     }
+
 }
