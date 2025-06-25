@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -75,7 +75,7 @@ namespace MVCPrject
             app.MapStaticAssets();
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Landing}/{action=Index}/{id?}")
+                pattern: "{controller=Home}/{action=Home}/{id?}")
                 .WithStaticAssets();
 
             /* using (var scope = app.Services.CreateScope())
