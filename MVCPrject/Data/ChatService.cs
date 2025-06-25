@@ -43,7 +43,7 @@ namespace MVCPrject.Data
             var session = _http.HttpContext?.Session;
             var history = LoadChatHistory(session);
 
-            return history.Select(msg => (msg.Role.ToString(), msg.Content ?? string.Empty)).ToList();
+            return history.Select(msg => (msg.Role.ToString(), msg.Content)).ToList();
         }
 
         private ChatHistory LoadChatHistory(ISession? session)

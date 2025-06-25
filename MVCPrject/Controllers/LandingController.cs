@@ -34,7 +34,7 @@ namespace MVCPrject.Controllers
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Home", "Home");
                 }
                 ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             }
@@ -69,7 +69,7 @@ namespace MVCPrject.Controllers
                 if (result.Succeeded)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Index", "Landing");
                 }
                 foreach (var error in result.Errors)
                 {

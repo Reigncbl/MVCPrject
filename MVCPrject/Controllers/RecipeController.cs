@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MVCPrject.Data;
-using MVCPrject.Models;
-using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
 namespace MVCPrject
 {
@@ -17,22 +15,9 @@ namespace MVCPrject
 
         // Action to fetch all recipes
         [HttpGet("All")]
-        public async Task<IActionResult> Recipe(string? keywords = null)
+        public async Task<IActionResult> Recipe()
         {
-            List<Recipe> recipes;
-
-            if (string.IsNullOrEmpty(keywords))
-            {
-                recipes = await _repository.GetAllRecipesAsync();
-                ViewBag.PageTitle = "All Recipes";
-            }
-            else
-            {
-                recipes = await _repository.SearchRecipesByIngredientsAsync(keywords);
-                ViewBag.PageTitle = "Search Results";
-                ViewBag.SearchKeywords = keywords;
-            }
-
+            var recipes = await _repository.GetAllRecipesAsync();
             return View(recipes);
         }
 
@@ -47,13 +32,5 @@ namespace MVCPrject
             }
             return View(recipe);
         }
-
-        [HttpGet("Search")]
-        public async Task<IActionResult> Search(string keywords)
-        {
-            await Task.Delay(100);
-            return RedirectToAction("Recipe", new { keywords = keywords });
-        }
-
     }
 }
