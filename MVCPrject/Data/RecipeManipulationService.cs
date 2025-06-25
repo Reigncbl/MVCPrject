@@ -20,16 +20,17 @@ namespace MVCPrject.Data
             return await _dbContext.Recipes
                 .Include(r => r.Ingredients)
                 .Include(r => r.Instructions)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(r => r.RecipeID == id);
         }
 
         // Fetch a list of recipes (default: top 10)
         public async Task<List<Recipe>> GetAllRecipesAsync(int count = 10)
         {
-            return await _dbContext.Recipes.Take(count).ToListAsync();
+            return await _dbContext.Recipes.OrderBy(r => r.RecipeID).Take(count).ToListAsync();
         }
 
-        // Add this method to your RecipeManipulationService class
+
         public async Task<List<Recipe>> SearchRecipesByIngredientsAsync(string keywords)
         {
             var keywordList = keywords.Split(',')
@@ -57,6 +58,8 @@ namespace MVCPrject.Data
             return await query
                 .Include(r => r.Ingredients)
                 .Include(r => r.Instructions)
+                .OrderBy(r => r.RecipeID)
+                .AsSplitQuery()
                 .Take(300).ToListAsync();
         }
 

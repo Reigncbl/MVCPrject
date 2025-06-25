@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using MVCPrject.Data;
 using MVCPrject.Models;
 namespace MVCPrject;
+
 using static System.Net.WebRequestMethods;
 
 public class RecipeRetrieverService
@@ -24,7 +25,7 @@ public class RecipeRetrieverService
     {
         string baseUrl = $"https://panlasangpinoy.com/categories/recipes/{category}/";
 
-        for (int page = 1; page <=10; page++)
+        for (int page = 1; page <= 10; page++)
         {
             string url = $"{baseUrl}page/{page}/";
             try
@@ -42,9 +43,9 @@ public class RecipeRetrieverService
                 if (newLinks == null || !newLinks.Any()) break;
 
                 var existingLinks = await _dbContext.Recipes
-                                                    .Where(r => newLinks.Contains(r.RecipeURL))
-                                                    .Select(r => r.RecipeURL)
-                                                    .ToListAsync();
+          .Where(r => newLinks.Where(link => link != null).Contains(r.RecipeURL))
+          .Select(r => r.RecipeURL)
+          .ToListAsync();
 
                 var linksToAdd = newLinks.Except(existingLinks)
                                          .Select(link => new Recipe { RecipeURL = link });
@@ -61,7 +62,7 @@ public class RecipeRetrieverService
         }
         Console.WriteLine($"Done scraping category: {category}");
     }
-   
+
     public async Task ScrapeAllRecipesAsync()
     {
         var categories = new[] { "chicken-recipes",
@@ -102,7 +103,7 @@ public class RecipeRetrieverService
                     Console.WriteLine($"Error scraping {recipe.RecipeURL}: {ex.Message}");
                 }
 
-                await Task.Delay(1000); // Rate limiting
+                await Task.Delay(1000);
             }
         }
 
@@ -366,9 +367,9 @@ public class RecipeRetrieverService
         try
         {
             // Step 1: Scrape all categories to fetch URLs
-             Console.WriteLine("Step 1: Scraping URLs from all categories...");
-              await ScrapeAllRecipesAsync();
-             Console.WriteLine("URL scraping completed!");
+            Console.WriteLine("Step 1: Scraping URLs from all categories...");
+            await ScrapeAllRecipesAsync();
+            Console.WriteLine("URL scraping completed!");
 
             // Step 2: Update each recipe in the database with detailed information
             Console.WriteLine("Step 2: Updating recipes with detailed information...");
@@ -389,58 +390,58 @@ public class RecipeRetrieverService
 
 
 
-    public static class RecipeLabelingPromptBuilder
+public static class RecipeLabelingPromptBuilder
+{
+    public static string BuildLabelingPrompt(Recipe recipe)
     {
-        public static string BuildLabelingPrompt(Recipe recipe)
+        var promptBuilder = new StringBuilder();
+
+        promptBuilder.AppendLine("You are a culinary expert. Analyze this recipe and provide ONE category label.");
+        promptBuilder.AppendLine();
+        promptBuilder.AppendLine("Choose from these categories ONLY:");
+        promptBuilder.AppendLine("Breakfast, Lunch, Dinner, Appetizer, Dessert, Snack, Beverage, Salad, Soup, Main Course, Side Dish, Vegetarian, Vegan, Healthy, Comfort Food, Quick & Easy");
+        promptBuilder.AppendLine();
+        promptBuilder.AppendLine($"Recipe Name: {recipe.RecipeName}");
+
+        if (!string.IsNullOrEmpty(recipe.RecipeDescription))
         {
-            var promptBuilder = new StringBuilder();
-
-            promptBuilder.AppendLine("You are a culinary expert. Analyze this recipe and provide ONE category label.");
-            promptBuilder.AppendLine();
-            promptBuilder.AppendLine("Choose from these categories ONLY:");
-            promptBuilder.AppendLine("Breakfast, Lunch, Dinner, Appetizer, Dessert, Snack, Beverage, Salad, Soup, Main Course, Side Dish, Vegetarian, Vegan, Healthy, Comfort Food, Quick & Easy");
-            promptBuilder.AppendLine();
-            promptBuilder.AppendLine($"Recipe Name: {recipe.RecipeName}");
-
-            if (!string.IsNullOrEmpty(recipe.RecipeDescription))
-            {
-                promptBuilder.AppendLine($"Description: {recipe.RecipeDescription.Substring(0, Math.Min(200, recipe.RecipeDescription.Length))}...");
-            }
-
-            if (recipe.Ingredients?.Any() == true)
-            {
-                var topIngredients = recipe.Ingredients
-                    .Take(5)
-                    .Select(i => i.IngredientName)
-                    .Where(name => !string.IsNullOrEmpty(name));
-
-                if (topIngredients.Any())
-                {
-                    promptBuilder.AppendLine($"Key Ingredients: {string.Join(", ", topIngredients)}");
-                }
-            }
-
-            promptBuilder.AppendLine();
-            promptBuilder.AppendLine("Return ONLY the single most appropriate category name from the list above. No explanation, no punctuation, just the category name.");
-
-            return promptBuilder.ToString();
+            promptBuilder.AppendLine($"Description: {recipe.RecipeDescription.Substring(0, Math.Min(200, recipe.RecipeDescription.Length))}...");
         }
+
+        if (recipe.Ingredients?.Any() == true)
+        {
+            var topIngredients = recipe.Ingredients
+                .Take(5)
+                .Select(i => i.IngredientName)
+                .Where(name => !string.IsNullOrEmpty(name));
+
+            if (topIngredients.Any())
+            {
+                promptBuilder.AppendLine($"Key Ingredients: {string.Join(", ", topIngredients)}");
+            }
+        }
+
+        promptBuilder.AppendLine();
+        promptBuilder.AppendLine("Return ONLY the single most appropriate category name from the list above. No explanation, no punctuation, just the category name.");
+
+        return promptBuilder.ToString();
     }
+}
 
 public class RecipeLabelingService
 {
     private readonly DBContext _dbContext;
     private readonly Kernel _kernel;
     private readonly ILogger<RecipeLabelingService> _logger;
-    private readonly int _apiDelayMs; 
+    private readonly int _apiDelayMs;
 
-    public RecipeLabelingService(DBContext dbContext, Kernel kernel, ILogger<RecipeLabelingService> logger) 
+    public RecipeLabelingService(DBContext dbContext, Kernel kernel, ILogger<RecipeLabelingService> logger)
     {
         _dbContext = dbContext;
         _kernel = kernel;
         _logger = logger;
- 
-        _apiDelayMs = 2000; 
+
+        _apiDelayMs = 2000;
     }
 
 

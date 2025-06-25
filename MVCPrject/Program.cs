@@ -3,8 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.AspNetCore.Identity;
-using MVCPrject.Data;     
-using MVCPrject.Models;   
+using MVCPrject.Data;
+using MVCPrject.Models;
 
 
 namespace MVCPrject
@@ -13,22 +13,29 @@ namespace MVCPrject
     {
         public async static Task Main(string[] args)
         {
-#pragma warning disable SKEXP0070 // Suppress warning for experimental Semantic Kernel API
+#pragma warning disable SKEXP0070 
             var builder = WebApplication.CreateBuilder(args);
 
 
             builder.Services.AddControllersWithViews();
 
-         
+
+            var apikey = builder.Configuration["Mistral:ApiKey"];
+            if (string.IsNullOrEmpty(apikey))
+            {
+                throw new InvalidOperationException("Mistral API key is not configured.");
+            }
+
             builder.Services.AddMistralChatCompletion(
                 modelId: "mistral-large-latest",
-                apiKey: builder.Configuration["Mistral:ApiKey"]
+                apiKey: apikey
             );
 
-            // Register the Semantic Kernel instance. AddScoped is appropriate for web requests.
+
+
             builder.Services.AddScoped<Kernel>();
 
-            // Add DbContext for Entity Framework Core
+
             builder.Services.AddDbContext<DBContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("RecipeDbConnection")));
 
@@ -41,7 +48,7 @@ namespace MVCPrject
                 options.Password.RequireUppercase = false;
                 options.Password.RequireLowercase = false;
             })
-            .AddEntityFrameworkStores<DBContext>() // Link Identity to your DBContext
+            .AddEntityFrameworkStores<DBContext>()
             .AddDefaultTokenProviders();
 
             // Configure authentication cookies
@@ -78,30 +85,8 @@ namespace MVCPrject
                 name: "default",
                 pattern: "{controller=Landing}/{action=Index}/{id?}");
 
-            using (var scope = app.Services.CreateScope())
-              {
-                  var serviceProvider = scope.ServiceProvider;
-                  var labelingService = serviceProvider.GetRequiredService<RecipeLabelingService>();
-                  var configuration = serviceProvider.GetRequiredService<IConfiguration>(); // Get configuration from scope
-
-                  // Get API Delay from configuration, defaulting to 2 seconds if not found
-                  int apiDelayMs = configuration.GetValue<int>("ApiSettings:DelayBetweenRequestsMs", 2000);
-
-                  // Re-instantiate the service with the explicit delay
-                  // (Alternatively, you could configure the service with options directly in DI setup)
-                  var logger = serviceProvider.GetRequiredService<ILogger<RecipeLabelingService>>();
-                  var dbContext = serviceProvider.GetRequiredService<DBContext>();
-                  var kernel = serviceProvider.GetRequiredService<Kernel>();
-
-                  var labelingServiceWithDelay = new RecipeLabelingService(dbContext, kernel, logger, apiDelayMs);
-
-                  Console.WriteLine("Starting recipe labeling process on application startup...");
-                  await labelingServiceWithDelay.LabelAllRecipesAsync();
-                  Console.WriteLine("Recipe labeling process completed on application startup.");
-              }
-
-
-            app.Run(); // Starts the web application
+            await Task.Delay(10);
+            app.Run();
         }
     }
 }
