@@ -21,7 +21,7 @@ public class RecipeRetrieverService
     {
         string baseUrl = $"https://panlasangpinoy.com/categories/recipes/{category}/";
 
-        for (int page = 1; page <=3; page++)
+        for (int page = 1; page <=10; page++)
         {
             string url = $"{baseUrl}page/{page}/";
             try
@@ -356,5 +356,36 @@ public class RecipeRetrieverService
         return totalMinutes > 0 ? totalMinutes : null;
     }
 
+    public async Task AutomateScrapingAndUpdatingRecipes()
+    {
+        Console.WriteLine("Starting automation of scraping and updating recipes...");
+
+        try
+        {
+            // Step 1: Scrape all categories to fetch URLs
+           // Console.WriteLine("Step 1: Scraping URLs from all categories...");
+          //  await ScrapeAllRecipesAsync();
+          //  Console.WriteLine("URL scraping completed!");
+
+            // Step 2: Update each recipe in the database with detailed information
+            Console.WriteLine("Step 2: Updating recipes with detailed information...");
+            await ScrapeAndUpdateRecipesAsync();
+            Console.WriteLine("Recipe updates completed!");
+
+            // Step 3: Automation complete
+            Console.WriteLine("Automation process completed successfully!");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during automation: {ex.Message}");
+        }
+    }
+
+
 }
 
+
+public class RecipeLabeler
+{
+
+}

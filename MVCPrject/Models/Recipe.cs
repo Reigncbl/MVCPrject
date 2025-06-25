@@ -9,21 +9,21 @@ namespace MVCPrject.Models
         [Key]
         public int IngredientID { get; set; }
         public int RecipeID { get; set; }
-        public string IngredientName { get; set; }
+        public string? IngredientName { get; set; }
         public decimal? Quantity { get; set; }
-        public string Unit { get; set; }
-       public Recipe Recipe { get; set; }
+        public string? Unit { get; set; }
+       public Recipe? Recipe { get; set; }
     }
     [Table("recipe_instructions")]
     public class RecipeInstructions
     {
         [Key]
         public int InstructionID { get; set; }
-        public int RecipeID { get; set; }
-        public int StepNumber { get; set; }
-        public string Instruction { get; set; }
+        public int? RecipeID { get; set; }
+        public int? StepNumber { get; set; }
+        public string? Instruction { get; set; }
 
-        public Recipe Recipe { get; set; }
+        public Recipe? Recipe { get; set; }
     }
 
 

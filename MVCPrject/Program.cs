@@ -78,7 +78,22 @@ namespace MVCPrject
                 pattern: "{controller=Landing}/{action=Index}/{id?}")
                 .WithStaticAssets();
 
-            Console.WriteLine(" Scraping complete.");
+            /* using (var scope = app.Services.CreateScope())
+            {
+                var migrationService = scope.ServiceProvider.GetRequiredService<RecipeRetrieverService>();
+                Console.WriteLine("Scraping data!!!");
+
+                // Run both tasks concurrently
+                var scrapeTask = migrationService.ScrapeAndUpdateRecipesAsync();
+
+
+
+                await Task.WhenAll(scrapeTask);
+
+                Console.WriteLine("Scraping and migration completed!");
+            }
+*/
+
             app.Run();
 
         }
