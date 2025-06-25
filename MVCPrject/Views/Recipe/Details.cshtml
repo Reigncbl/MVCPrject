@@ -2,40 +2,133 @@
 
 @{
     ViewData["Title"] = "Recipe Details";
+    var totalTime = (Model.PrepTimeMin ?? 0) + (Model.CookTimeMin ?? 0);
 }
 
-<div class="container mt-4">
-    <h3 class="text-center mb-4">Recipe Details</h3>
-
-    <div class="card shadow-sm mb-4">
-        <div class="card-body text-center">
-            <h1>@Model.RecipeName</h1>
-            <img src="@Model.RecipeImage" alt="@Model.RecipeName" class="img-fluid rounded my-3" />
-            <p>@Model.RecipeDescription</p>
+<div class="container-fluid p-0">
+    <!-- Header Navigation -->
+    <div class="p-4 d-flex justify-content-between align-items-center">
+        <a href="javascript:history.back()"
+            class="btn rounded-circle shadow-sm d-flex align-items-center justify-content-center"
+            style="width: 48px; height: 48px; background-color: #e0e0e0;">
+            <i data-feather="chevron-left" style="width: 20px; height: 20px;"></i>
+        </a>
+        <div class="d-flex align-items-center gap-5">
+            <h2 class="fs-5">Hello, <span>Username</span></h2>
+            <img src="~/img/image.png" alt="/" class="border rounded-pill" style="width: 48px;">
         </div>
     </div>
 
-    <section class="mb-4">
-        <h2 class="text-primary">Ingredients</h2>
-        <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
-            <ul class="list-group">
-                @foreach (var ingredient in Model.Ingredients)
-                {
-                    <li class="list-group-item">@ingredient.Quantity @ingredient.Unit @ingredient.IngredientName</li>
-                }
-            </ul>
-        </div>
-    </section>
 
-    <section>
-        <h2 class="text-primary">Instructions</h2>
-        <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
-            <ol class="list-group list-group-numbered">
-                @foreach (var instruction in Model.Instructions.OrderBy(i => i.StepNumber))
-                {
-                    <li class="list-group-item">@instruction.Instruction</li>
-                }
-            </ol>
+    <!-- Main Content Container -->
+    <div class=" overflow-auto" style="height: calc(100vh - 124px);">
+        <div class="container-fluid px-5">
+            <div class="row mb-4">
+                <div class="col-md-8">
+
+                    <h2 class="fw-bold fs-1">@Model.RecipeName</h2>
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="rounded-circle bg-secondary me-2"
+                            style="display:inline-block; width:32px; height:32px;"></span>
+                        <span class="fw-semibold">@Model.RecipeAuthor</span>
+                    </div>
+
+                    <div class="d-flex bg-white shadow-lg rounded-4 p-4 justify-content-between text-center align-items-center mb-4"
+                        style="max-width: 1000px;">
+                        <!-- Time -->
+                        <div class="flex-fill d-flex flex-row align-items-center justify-content-center gap-3">
+                            <i data-feather="clock" style="width: 50px; height: 50px; color: #324089;"></i>
+                            <div class="text-start">
+                                <div class="fw-bold fs-1">@totalTime</div>
+                                <small class="fs-5">mins</small>
+                            </div>
+                        </div>
+
+                        <div class="vr mx-4"></div>
+
+                        <!-- Servings -->
+                        <div class="flex-fill d-flex flex-row align-items-center justify-content-center gap-3">
+                            <i data-feather="bell" style="width: 50px; height: 50px; color: #324089;"></i>
+                            <div class="text-start">
+                                <div class="fw-bold fs-1">@Model.RecipeServings</div>
+                                <small class="fs-5">people</small>
+                            </div>
+                        </div>
+
+                        <div class="vr mx-4"></div>
+
+                        <!-- Likes -->
+                        <div class="flex-fill d-flex flex-row align-items-center justify-content-center gap-3">
+                            <i data-feather="heart" style="width: 50px; height: 50px; color: #324089;"></i>
+                            <div class="text-start">
+                                <div class="fw-bold fs-1">1,908</div>
+                                <small class="fs-5">likes</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h1 class="fs-3 fw-bold">About this dish</h1>
+                    <p class="text-justify fs-5" style="text-indent: 2em;">@Model.RecipeDescription</p>
+
+                    <div class="mt-4">
+                        <label for="servings" class="fs-3 fw-bold">Set Servings</label>
+                        <div class="d-flex gap-2 align-items-center mt-2">
+                            <input type="number" id="servings" class="form-control border rounded-3"
+                                style="max-width: 80px;" value="@Model.RecipeServings" />
+                            <button class="btn btn-danger px-4">Set</button>
+                        </div>
+
+                    </div>
+
+                    <div class="mt-4">
+                        <h5 class="fs-3 fw-bold">Ingredients</h5>
+                        <ul class="list-unstyled">
+                            @foreach (var ingredient in Model.Ingredients)
+                            {
+                                <li class="fs-5">• @ingredient.Quantity @ingredient.Unit @ingredient.IngredientName</li>
+                            }
+                        </ul>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5 class="fs-3 fw-bold">Instructions</h5>
+                        <ol>
+                            @foreach (var instruction in Model.Instructions.OrderBy(i => i.StepNumber))
+                            {
+                                <li class="fs-5">@instruction.Instruction</li>
+                            }
+                        </ol>
+                    </div>
+
+                    <div class="mt-4">
+                        <h6 class="fs-5 fw-bold">Nutrition Value</h6>
+                        <ul class="list-unstyled fs-5">
+                            <li>• Calories: 230 cal</li>
+                            <li>• Protein: 34g</li>
+                            <li>• Carbs: 9g</li>
+                            <li>• Fat: 1g</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card shadow-sm">
+                        <img src="@Model.RecipeImage" alt="@Model.RecipeName" class="card-img-top rounded" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <h5 class="fs-3 fw-bold">Gallery</h5>
+                <div class="d-flex gap-3 flex-wrap">
+                    <img src="@Model.RecipeImage" alt="Gallery" class="img-thumbnail"
+                        style="width: 120px; height: 120px; object-fit: cover;" />
+                    <img src="@Model.RecipeImage" alt="Gallery" class="img-thumbnail"
+                        style="width: 120px; height: 120px; object-fit: cover;" />
+                    <img src="@Model.RecipeImage" alt="Gallery" class="img-thumbnail"
+                        style="width: 120px; height: 120px; object-fit: cover;" />
+                </div>
+            </div>
         </div>
-    </section>
+    </div>
 </div>
