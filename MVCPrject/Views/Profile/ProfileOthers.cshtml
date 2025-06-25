@@ -1,10 +1,11 @@
   @{
-      ViewData["Title"] = "Profile";
+      ViewData["Title"] = "OtherProfile";
   }
-  @section Styles {
-    <link rel="stylesheet" href="~/css/profile.css" />
+  @section Scripts {
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="~/js/mealPlanner.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
   }
-
 
   <!-- Profile Above -->
   <div class="container-fluid py-4 justify-content-center">
@@ -22,8 +23,7 @@
           </div>
           <div class="d-flex align-items-center gap-4">
             <i data-feather="search" class="fs-5"></i>
-            <i data-feather="settings" class="fs-5"></i>
-            <button class="btn btn-custom-red">Edit Profile</button>
+            <button class="btn btn-custom-red">Follow</button>
           </div>
         </div>
 
@@ -40,6 +40,7 @@
           </div>
           <div class="d-flex gap-4">
             <a href="#" class="text-dark"><i data-feather="link-2" class="fs-5"></i></a>
+            <a href="#" class="text-dark"><i data-feather="youtube" class="fs-5"></i></a>
           </div>
         </div>
       </div>
@@ -48,16 +49,7 @@
 
   <!-- Recipe tab -->
 <div class="container-fluid border-top mt-1 pt-2">
-  <h4 class="fw-bold fs-2" style="padding-left: 4vh; color: #EC433E;">Recipes</h4>
-  <!-- Upload First Recipe Section -->
-  <div class="d-flex flex-column align-items-center justify-content-center mt-5" style="min-height: 400px; padding: 2rem;">
-    <!-- Grid Icon -->
-    <div class="mb-4">
-      <i data-feather="grid" style="width: 80px; height: 80px; color: #9CA3AF;"></i>
-    </div>
-    
-    <!-- Upload Text -->
-    <h5 class="text-muted upload-title">Upload your first recipe</h5>
-    <p class="text-muted upload-subtitle">Your recipes will appear here</p>
+  <h4 class="fw-bold fs-2" style="padding-left: 4vh; color: #EC433E; font: Poppins">Recipes</h4>
+  
 
 </div>

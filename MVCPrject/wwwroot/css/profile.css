@@ -1,0 +1,28 @@
+body {
+  font-family: 'Poppins', sans-serif;
+  background: #fff;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.btn-custom-red {
+  background-color: #EC433E;
+  color: white;
+}
+
+.btn-custom-red:hover {
+  background-color: #c3322e; /* slightly darker on hover */
+  color: white;
+}
+
+
+.upload-title {
+  font-weight: 800;
+  font-size: 32px;
+  margin-bottom: 0.5rem;
+}
+
+.upload-subtitle {
+  font-size: 20px;
+  margin-bottom: 1.5rem;
+}
