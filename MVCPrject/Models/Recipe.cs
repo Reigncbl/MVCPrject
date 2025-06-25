@@ -5,15 +5,14 @@ namespace MVCPrject.Models
 {
 
     [Table("recipe_ingredients")]
-    public class RecipeIngredients
-    {
+    public class RecipeIngredients {
         [Key]
         public int IngredientID { get; set; }
         public int RecipeID { get; set; }
-        public string? IngredientName { get; set; }
+        public string IngredientName { get; set; }
         public decimal? Quantity { get; set; }
-        public string? Unit { get; set; }
-        public Recipe? Recipe { get; set; }
+        public string Unit { get; set; }
+       public Recipe Recipe { get; set; }
     }
     [Table("recipe_instructions")]
     public class RecipeInstructions
@@ -22,9 +21,9 @@ namespace MVCPrject.Models
         public int InstructionID { get; set; }
         public int RecipeID { get; set; }
         public int StepNumber { get; set; }
-        public string? Instruction { get; set; }
+        public string Instruction { get; set; }
 
-        public Recipe? Recipe { get; set; }
+        public Recipe Recipe { get; set; }
     }
 
 

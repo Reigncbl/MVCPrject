@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -6,33 +6,27 @@ using MVCPrject.Data;
 using Microsoft.AspNetCore.Identity; // 
 using MVCPrject.Models; //
 
-#pragma warning disable SKEXP0070
+
 namespace MVCPrject
 {
     public class Program
     {
         public async static Task Main(string[] args)
         {
-
-
+#pragma warning disable SKEXP0070
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddControllersWithViews();
-            var apiKey = builder.Configuration["Mistral:ApiKey"];
-            if (string.IsNullOrWhiteSpace(apiKey))
-            {
-                throw new ArgumentNullException(nameof(apiKey), "Mistral API Key is missing or empty.");
-            }
 
+            builder.Services.AddControllersWithViews();
 
             // Configure Mistral AI with Semantic Kernel
             builder.Services.AddMistralChatCompletion(
                 modelId: "mistral-large-latest",
-                apiKey: apiKey
+                apiKey: builder.Configuration["Mistral:AIzaSyBhTIw3N_NmeqxUYdWP5ardejMHen_LLjU"]
             );
 
 
-            builder.Services.AddScoped<Kernel>(serviceProvider =>
+            builder.Services.AddTransient<Kernel>(serviceProvider =>
             {
                 return new Kernel(serviceProvider);
             });
@@ -85,8 +79,6 @@ namespace MVCPrject
                 .WithStaticAssets();
 
             Console.WriteLine(" Scraping complete.");
-            await Task.Delay(100);
-            Console.WriteLine("Starting the application...");
             app.Run();
 
         }

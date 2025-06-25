@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using MVCPrject.Data;
 using MVCPrject.Models;
 namespace MVCPrject;
-
 using static System.Net.WebRequestMethods;
 
 public class RecipeRetrieverService
@@ -22,7 +21,7 @@ public class RecipeRetrieverService
     {
         string baseUrl = $"https://panlasangpinoy.com/categories/recipes/{category}/";
 
-        for (int page = 1; page <= 3; page++)
+        for (int page = 1; page <=3; page++)
         {
             string url = $"{baseUrl}page/{page}/";
             try
@@ -40,7 +39,7 @@ public class RecipeRetrieverService
                 if (newLinks == null || !newLinks.Any()) break;
 
                 var existingLinks = await _dbContext.Recipes
-                                                    .Where(r => r.RecipeURL != null && newLinks.Contains(r.RecipeURL))
+                                                    .Where(r => newLinks.Contains(r.RecipeURL))
                                                     .Select(r => r.RecipeURL)
                                                     .ToListAsync();
 
@@ -59,7 +58,7 @@ public class RecipeRetrieverService
         }
         Console.WriteLine($"Done scraping category: {category}");
     }
-
+   
     public async Task ScrapeAllRecipesAsync()
     {
         var categories = new[] { "chicken-recipes",
