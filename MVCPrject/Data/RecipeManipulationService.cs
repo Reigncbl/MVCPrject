@@ -24,7 +24,7 @@ namespace MVCPrject.Data
                 .FirstOrDefaultAsync(r => r.RecipeID == id);
         }
 
-        // Fetch a list of recipes (default: top 10)
+
         public async Task<List<Recipe>> GetAllRecipesAsync(int count = 10)
         {
             return await _dbContext.Recipes.OrderBy(r => r.RecipeID).Take(count).ToListAsync();
@@ -69,5 +69,7 @@ namespace MVCPrject.Data
                               "Main Course", "Appetizer", "Side Dish", "Soup", "Salad" };
             return recipeTypes.Contains(keyword, StringComparer.OrdinalIgnoreCase);
         }
+
+
     }
 }

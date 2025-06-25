@@ -18,6 +18,7 @@
 
 <body style="overflow-y: hidden;">
     <div style="height: 100vh;" class="position-relative">
+        <!-- Background Design -->
         <div class="ellipse-1 position-absolute"></div>
         <div class="ellipse-2 position-absolute"></div>
         <div class="ellipse-3 position-absolute"></div>
@@ -47,64 +48,58 @@
             </div>
         </nav>
 
+        <!-- Main Container -->
         <div class="hero-container transition-container">
+            <!-- Left Section -->
             <div class="hero-left">
                 <img src="~/img/login-img.png" alt="Hero Cook" class="hero-img img-fluid align-content-center" />
             </div>
 
+            <!-- Right Section -->
             <div class="hero-right">
                 <div class="form-wrapper bg-light rounded-4 p-5 text-center">
-                    <div id="formContent" class="form-content">
-                        <h2 class="fw-bold mb-4">Create an Account</h2>
+                    <h2 class="fw-bold mb-4">Create an Account</h2>
+                    <form asp-action="Register" asp-controller="Landing" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-                        <form asp-action="Register" asp-controller="Landing" method="post"
-                            class="d-flex flex-column justify-content-between h-100">
-                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div class="mb-3 text-start">
+                            <label asp-for="Name" class="form-label fs-4 fw-bolder">Name</label>
+                            <input asp-for="Name" class="form-control fs-5 p-2" placeholder="Your name"
+                                style="background-color: #D9D9D9;" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
 
-                            <div>
-                                <div class="mb-3 text-start form-group">
-                                    <label asp-for="Name" class="form-label fs-4 fw-bolder">Name</label>
-                                    <input asp-for="Name" class="form-control fs-5 p-2" placeholder="Your name"
-                                        style="background-color: #D9D9D9;" />
-                                    <span asp-validation-for="Name" class="text-danger"></span>
-                                </div>
+                        <div class="mb-3 text-start">
+                            <label asp-for="Email" class="form-label fs-4 fw-bolder">Email</label>
+                            <input asp-for="Email" class="form-control fs-5 p-2" placeholder="Your email"
+                                style="background-color: #D9D9D9;" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
 
-                                <div class="mb-3 text-start form-group">
-                                    <label asp-for="Email" class="form-label fs-4 fw-bolder">Email</label>
-                                    <input asp-for="Email" class="form-control fs-5 p-2" placeholder="Your email"
-                                        style="background-color: #D9D9D9;" />
-                                    <span asp-validation-for="Email" class="text-danger"></span>
-                                </div>
+                        <div class="mb-3 text-start">
+                            <label asp-for="Password" class="form-label fs-4 fw-bolder">Password</label>
+                            <input asp-for="Password" class="form-control fs-5 p-2" placeholder="Password"
+                                style="background-color: #D9D9D9;" type="password" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
 
-                                <div class="mb-4 text-start form-group">
-                                    <label asp-for="Password" class="form-label fs-4 fw-bolder">Password</label>
-                                    <input asp-for="Password" class="form-control fs-5 p-2" placeholder="Password"
-                                        style="background-color: #D9D9D9;" />
-                                    <span asp-validation-for="Password" class="text-danger"></span>
-                                </div>
+                        <div class="mb-4 text-start">
+                            <label asp-for="ConfirmPassword" class="form-label fs-4 fw-bolder">Confirm Password</label>
+                            <input asp-for="ConfirmPassword" class="form-control fs-5 p-2"
+                                placeholder="Confirm password" style="background-color: #D9D9D9;" type="password" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                        </div>
 
-                                <div class="mb-4 text-start form-group">
-                                    <label asp-for="ConfirmPassword" class="form-label fs-4 fw-bolder">Confirm
-                                        Password</label>
-                                    <input asp-for="ConfirmPassword" class="form-control fs-5 p-2"
-                                        placeholder="Confirm password" style="background-color: #D9D9D9;" />
-                                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-                                </div>
-                            </div>
+                        <button type="submit" class="btn w-100 fs-5 fw-bold mb-3 text-black"
+                            style="background-color: #FBAE1F;">
+                            Register
+                        </button>
+                    </form>
 
-                            <div>
-                                <button type="submit" class="btn w-100 fs-5 fw-bold mb-3 text-black"
-                                    style="background-color: #FBAE1F;" asp-controller="Landing" asp-action="Index">
-                                    Register
-                                </button>
-                            </div>
-                        </form>
-
-                        <p class="mt-3 small">
-                            Already have an account?
-                            <a asp-action="Login" asp-controller="Landing">Login here</a>
-                        </p>
-                    </div>
+                    <p class="mt-3 small">
+                        Already have an account?
+                        <a asp-action="Login" asp-controller="Landing">Login here</a>
+                    </p>
                 </div>
             </div>
         </div>
