@@ -2,9 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using MVCPrject.Data;
-using Microsoft.AspNetCore.Identity; // 
-using MVCPrject.Models; //
+using Microsoft.AspNetCore.Identity;
+using MVCPrject.Data;     
+using MVCPrject.Models;   
 
 
 namespace MVCPrject
@@ -13,24 +13,22 @@ namespace MVCPrject
     {
         public async static Task Main(string[] args)
         {
-#pragma warning disable SKEXP0070
+#pragma warning disable SKEXP0070 // Suppress warning for experimental Semantic Kernel API
             var builder = WebApplication.CreateBuilder(args);
 
 
             builder.Services.AddControllersWithViews();
 
-            // Configure Mistral AI with Semantic Kernel
+         
             builder.Services.AddMistralChatCompletion(
                 modelId: "mistral-large-latest",
-                apiKey: builder.Configuration["Mistral:AIzaSyBhTIw3N_NmeqxUYdWP5ardejMHen_LLjU"]
+                apiKey: builder.Configuration["Mistral:ApiKey"]
             );
 
+            // Register the Semantic Kernel instance. AddScoped is appropriate for web requests.
+            builder.Services.AddScoped<Kernel>();
 
-            builder.Services.AddTransient<Kernel>(serviceProvider =>
-            {
-                return new Kernel(serviceProvider);
-            });
-
+            // Add DbContext for Entity Framework Core
             builder.Services.AddDbContext<DBContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("RecipeDbConnection")));
 
@@ -43,7 +41,7 @@ namespace MVCPrject
                 options.Password.RequireUppercase = false;
                 options.Password.RequireLowercase = false;
             })
-            .AddEntityFrameworkStores<DBContext>()
+            .AddEntityFrameworkStores<DBContext>() // Link Identity to your DBContext
             .AddDefaultTokenProviders();
 
             // Configure authentication cookies
@@ -54,9 +52,11 @@ namespace MVCPrject
                 options.AccessDeniedPath = "/Landing/AccessDenied"; // Handle unauthorized access
             });
 
+            // Register your custom application services
             builder.Services.AddScoped<RecipeRetrieverService>();
             builder.Services.AddScoped<RecipeManipulationService>();
-
+            // Register RecipeLabelingService so it can be resolved from the DI container
+            builder.Services.AddScoped<RecipeLabelingService>();
 
             var app = builder.Build();
 
@@ -68,34 +68,40 @@ namespace MVCPrject
             }
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
+            app.UseStaticFiles(); // Serves static files from wwwroot
             app.UseRouting();
-            app.UseAuthentication(); // 
+
+            app.UseAuthentication(); // IMPORTANT: Must be before UseAuthorization
             app.UseAuthorization();
-            app.MapStaticAssets();
+
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Home}/{id?}")
-                .WithStaticAssets();
+                pattern: "{controller=Landing}/{action=Index}/{id?}");
 
-            /* using (var scope = app.Services.CreateScope())
-            {
-                var migrationService = scope.ServiceProvider.GetRequiredService<RecipeRetrieverService>();
-                Console.WriteLine("Scraping data!!!");
+            using (var scope = app.Services.CreateScope())
+              {
+                  var serviceProvider = scope.ServiceProvider;
+                  var labelingService = serviceProvider.GetRequiredService<RecipeLabelingService>();
+                  var configuration = serviceProvider.GetRequiredService<IConfiguration>(); // Get configuration from scope
 
-                // Run both tasks concurrently
-                var scrapeTask = migrationService.ScrapeAndUpdateRecipesAsync();
+                  // Get API Delay from configuration, defaulting to 2 seconds if not found
+                  int apiDelayMs = configuration.GetValue<int>("ApiSettings:DelayBetweenRequestsMs", 2000);
+
+                  // Re-instantiate the service with the explicit delay
+                  // (Alternatively, you could configure the service with options directly in DI setup)
+                  var logger = serviceProvider.GetRequiredService<ILogger<RecipeLabelingService>>();
+                  var dbContext = serviceProvider.GetRequiredService<DBContext>();
+                  var kernel = serviceProvider.GetRequiredService<Kernel>();
+
+                  var labelingServiceWithDelay = new RecipeLabelingService(dbContext, kernel, logger, apiDelayMs);
+
+                  Console.WriteLine("Starting recipe labeling process on application startup...");
+                  await labelingServiceWithDelay.LabelAllRecipesAsync();
+                  Console.WriteLine("Recipe labeling process completed on application startup.");
+              }
 
 
-
-                await Task.WhenAll(scrapeTask);
-
-                Console.WriteLine("Scraping and migration completed!");
-            }
-*/
-
-            app.Run();
-
+            app.Run(); // Starts the web application
         }
     }
 }
