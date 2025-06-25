@@ -1,0 +1,55 @@
+body {
+  height: 100vh;
+  margin: 0;
+  background-color: #f8f9fa;
+}
+
+.hero-container {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  transition: all 0.6s ease;
+}
+
+.hero-container.reverse {
+  flex-direction: row-reverse;
+}
+
+.hero-left,
+.hero-right {
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.6s ease;
+}
+
+.hero-img {
+  max-width: 100%;
+  height: auto;
+}
+
+.form-wrapper {
+  width: 80%;
+  max-width: 400px;
+  position: relative;
+}
+
+.form-content {
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+
+.form-content.fade-out {
+  opacity: 0;
+}
+
+.toggle-link {
+  cursor: pointer;
+  color: #007bff;
+  text-decoration: none;
+}
+
+.toggle-link:hover {
+  text-decoration: underline;
+}
