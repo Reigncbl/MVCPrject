@@ -41,7 +41,7 @@ namespace MVCPrject.Data
 
             if (keywordList.Any())
             {
-                var predicate = PredicateBuilder.False<Recipe>();
+                var predicate = PredicateBuilder.New<Recipe>();
                 foreach (var keyword in keywordList)
                 {
                     var k = keyword; // Local variable for closure

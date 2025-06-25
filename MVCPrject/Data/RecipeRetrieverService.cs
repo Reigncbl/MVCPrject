@@ -1,7 +1,10 @@
 ﻿using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using MVCPrject.Data;
 using MVCPrject.Models;
 namespace MVCPrject;
@@ -363,9 +366,9 @@ public class RecipeRetrieverService
         try
         {
             // Step 1: Scrape all categories to fetch URLs
-           // Console.WriteLine("Step 1: Scraping URLs from all categories...");
-          //  await ScrapeAllRecipesAsync();
-          //  Console.WriteLine("URL scraping completed!");
+             Console.WriteLine("Step 1: Scraping URLs from all categories...");
+              await ScrapeAllRecipesAsync();
+             Console.WriteLine("URL scraping completed!");
 
             // Step 2: Update each recipe in the database with detailed information
             Console.WriteLine("Step 2: Updating recipes with detailed information...");
@@ -385,7 +388,146 @@ public class RecipeRetrieverService
 }
 
 
-public class RecipeLabeler
-{
 
+    public static class RecipeLabelingPromptBuilder
+    {
+        public static string BuildLabelingPrompt(Recipe recipe)
+        {
+            var promptBuilder = new StringBuilder();
+
+            promptBuilder.AppendLine("You are a culinary expert. Analyze this recipe and provide ONE category label.");
+            promptBuilder.AppendLine();
+            promptBuilder.AppendLine("Choose from these categories ONLY:");
+            promptBuilder.AppendLine("Breakfast, Lunch, Dinner, Appetizer, Dessert, Snack, Beverage, Salad, Soup, Main Course, Side Dish, Vegetarian, Vegan, Healthy, Comfort Food, Quick & Easy");
+            promptBuilder.AppendLine();
+            promptBuilder.AppendLine($"Recipe Name: {recipe.RecipeName}");
+
+            if (!string.IsNullOrEmpty(recipe.RecipeDescription))
+            {
+                promptBuilder.AppendLine($"Description: {recipe.RecipeDescription.Substring(0, Math.Min(200, recipe.RecipeDescription.Length))}...");
+            }
+
+            if (recipe.Ingredients?.Any() == true)
+            {
+                var topIngredients = recipe.Ingredients
+                    .Take(5)
+                    .Select(i => i.IngredientName)
+                    .Where(name => !string.IsNullOrEmpty(name));
+
+                if (topIngredients.Any())
+                {
+                    promptBuilder.AppendLine($"Key Ingredients: {string.Join(", ", topIngredients)}");
+                }
+            }
+
+            promptBuilder.AppendLine();
+            promptBuilder.AppendLine("Return ONLY the single most appropriate category name from the list above. No explanation, no punctuation, just the category name.");
+
+            return promptBuilder.ToString();
+        }
+    }
+
+public class RecipeLabelingService
+{
+    private readonly DBContext _dbContext;
+    private readonly Kernel _kernel;
+    private readonly ILogger<RecipeLabelingService> _logger;
+    private readonly int _apiDelayMs; 
+
+    public RecipeLabelingService(DBContext dbContext, Kernel kernel, ILogger<RecipeLabelingService> logger) 
+    {
+        _dbContext = dbContext;
+        _kernel = kernel;
+        _logger = logger;
+ 
+        _apiDelayMs = 2000; 
+    }
+
+
+    public RecipeLabelingService(DBContext dbContext, Kernel kernel, ILogger<RecipeLabelingService> logger, int apiDelayMs)
+        : this(dbContext, kernel, logger)
+    {
+        _apiDelayMs = apiDelayMs; // Allows overriding the default delay
+    }
+
+    public async Task LabelAllRecipesAsync()
+    {
+        _logger.LogInformation("📊 Fetching recipes without labels...");
+
+        var unlabeledRecipes = await _dbContext.Recipes
+            .Include(r => r.Ingredients)
+            .Where(r => string.IsNullOrEmpty(r.RecipeType))
+            .ToListAsync();
+
+        _logger.LogInformation($"Found {unlabeledRecipes.Count} recipes to label.");
+
+        int processed = 0;
+        int successful = 0;
+
+        foreach (var recipe in unlabeledRecipes)
+        {
+            processed++;
+            _logger.LogInformation($"[{processed}/{unlabeledRecipes.Count}] Processing: {recipe.RecipeName}...");
+
+            try
+            {
+                var label = await GenerateRecipeLabelAsync(recipe);
+                recipe.RecipeType = label;
+                successful++;
+
+                _logger.LogInformation($"✅ Labeled as: {label}");
+
+                await _dbContext.SaveChangesAsync();
+
+                await Task.Delay(_apiDelayMs);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"❌ Error labeling recipe '{recipe.RecipeName}' (ID: {recipe.RecipeID}): {ex.Message}");
+                recipe.RecipeType = "Uncategorized";
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+
+        _logger.LogInformation($"\n📈 Summary:");
+        _logger.LogInformation($"   Total processed: {processed}");
+        _logger.LogInformation($"   Successfully labeled: {successful}");
+        _logger.LogInformation($"   Errors: {processed - successful}");
+    }
+
+    private async Task<string> GenerateRecipeLabelAsync(Recipe recipe)
+    {
+        var prompt = RecipeLabelingPromptBuilder.BuildLabelingPrompt(recipe);
+
+        var chatService = _kernel.GetRequiredService<IChatCompletionService>();
+
+        var promptExecutionSettings = new PromptExecutionSettings
+        {
+            ExtensionData = new Dictionary<string, object>
+                {
+                    { "Temperature", 0.3 },
+                    { "MaxTokens", 20 }
+                }
+        };
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage(prompt);
+
+        var result = await chatService.GetChatMessageContentAsync(chatHistory, promptExecutionSettings);
+
+        var labeledContent = result.Content?.Trim();
+
+        var validCategories = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Breakfast", "Lunch", "Dinner", "Appetizer", "Dessert", "Snack", "Beverage", "Salad", "Soup", "Main Course", "Side Dish", "Vegetarian", "Vegan", "Healthy", "Comfort Food", "Quick & Easy"
+            };
+
+        if (string.IsNullOrEmpty(labeledContent) || !validCategories.Contains(labeledContent))
+        {
+            _logger.LogWarning($"Invalid or unexpected label '{labeledContent}' received for recipe '{recipe.RecipeName}' (ID: {recipe.RecipeID}). Defaulting to 'Uncategorized'.");
+            return "Uncategorized";
+        }
+
+        return labeledContent;
+    }
 }
