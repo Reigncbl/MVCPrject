@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using MVCPrject.Models;
 using LinqKit;
 
@@ -8,31 +11,92 @@ namespace MVCPrject.Data
     public class RecipeManipulationService
     {
         private readonly DBContext _dbContext;
+        private readonly IDistributedCache _cache;
 
-        public RecipeManipulationService(DBContext dbContext)
+        public RecipeManipulationService(DBContext dbContext, IDistributedCache cache)
         {
             _dbContext = dbContext;
+            _cache = cache;
         }
 
-        // Fetch a single recipe with ingredients and instructions
+        // Fetch a single recipe with caching
         public async Task<Recipe?> GetRecipeDetailsAsync(int id)
         {
-            return await _dbContext.Recipes
+            string cacheKey = $"RecipeDetails_{id}";
+
+            // Check cache first
+            var cachedData = await _cache.GetStringAsync(cacheKey);
+            if (!string.IsNullOrEmpty(cachedData))
+            {
+                return JsonSerializer.Deserialize<Recipe>(cachedData);
+            }
+
+            // Cache miss: Fetch from database
+            var recipe = await _dbContext.Recipes
                 .Include(r => r.Ingredients)
                 .Include(r => r.Instructions)
                 .AsSplitQuery()
                 .FirstOrDefaultAsync(r => r.RecipeID == id);
+
+            if (recipe != null)
+            {
+                // Cache the result
+                var jsonOptions = new JsonSerializerOptions
+                {
+                    ReferenceHandler = ReferenceHandler.IgnoreCycles
+                };
+
+                var serializedData = JsonSerializer.Serialize(recipe, jsonOptions);
+                await _cache.SetStringAsync(cacheKey, serializedData, new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(10) // 10 hours
+                });
+            }
+
+            return recipe;
         }
 
-
+        // Fetch all recipes with caching
         public async Task<List<Recipe>> GetAllRecipesAsync(int count = 10)
         {
-            return await _dbContext.Recipes.OrderBy(r => r.RecipeID).Take(count).ToListAsync();
+            string cacheKey = $"AllRecipes_{count}";
+
+            // Check cache first
+            var cachedData = await _cache.GetStringAsync(cacheKey);
+            if (!string.IsNullOrEmpty(cachedData))
+            {
+                return JsonSerializer.Deserialize<List<Recipe>>(cachedData) ?? new List<Recipe>();
+            }
+
+            // Cache miss: Fetch from database
+            var recipes = await _dbContext.Recipes
+                .OrderBy(r => r.RecipeID)
+                .Take(count)
+                .ToListAsync();
+
+            // Cache the result
+            var serializedData = JsonSerializer.Serialize(recipes);
+            await _cache.SetStringAsync(cacheKey, serializedData, new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(10) // 10 hours
+            });
+
+            return recipes;
         }
 
-
+        // Search recipes by ingredients with caching
         public async Task<List<Recipe>> SearchRecipesByIngredientsAsync(string keywords)
         {
+            string cacheKey = $"SearchRecipes_{keywords.GetHashCode()}";
+
+            // Check cache first
+            var cachedData = await _cache.GetStringAsync(cacheKey);
+            if (!string.IsNullOrEmpty(cachedData))
+            {
+                return JsonSerializer.Deserialize<List<Recipe>>(cachedData) ?? new List<Recipe>();
+            }
+
+            // Cache miss: Build query and fetch from database
             var keywordList = keywords.Split(',')
                 .Select(k => k.Trim())
                 .Where(k => !string.IsNullOrEmpty(k))
@@ -55,21 +119,51 @@ namespace MVCPrject.Data
                 query = query.Where(predicate);
             }
 
-            return await query
+            var recipes = await query
                 .Include(r => r.Ingredients)
                 .Include(r => r.Instructions)
                 .OrderBy(r => r.RecipeID)
                 .AsSplitQuery()
-                .Take(300).ToListAsync();
+                .Take(300)
+                .ToListAsync();
+
+            // Cache the result
+            var jsonOptions = new JsonSerializerOptions
+            {
+                ReferenceHandler = ReferenceHandler.IgnoreCycles
+            };
+
+            var serializedData = JsonSerializer.Serialize(recipes, jsonOptions);
+            await _cache.SetStringAsync(cacheKey, serializedData, new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(10) // 10 hours
+            });
+
+            return recipes;
         }
 
         private bool IsRecipeTypeKeyword(string keyword)
         {
-            var recipeTypes = new[] { "Dinner", "Breakfast", "Lunch", "Snack", "Dessert",
-                              "Main Course", "Appetizer", "Side Dish", "Soup", "Salad" };
+            var recipeTypes = new[] {
+                "Dinner", "Breakfast", "Lunch", "Snack", "Dessert",
+                "Main Course", "Appetizer", "Side Dish", "Soup", "Salad","Healthy","Vegetarian","Vegan","Comfort Food"
+            };
             return recipeTypes.Contains(keyword, StringComparer.OrdinalIgnoreCase);
         }
 
+        // Prepopulate cache for all recipe type filters
+        public async Task PrepopulateCacheAsync()
+        {
+            // Prepopulate all recipes (default 10)
+            await GetAllRecipesAsync();
 
+            // Prepopulate for each filter
+            var filters = new[] {  "Dinner", "Breakfast", "Lunch", "Snack", "Dessert",
+                "Main Course", "Appetizer", "Side Dish", "Soup", "Salad","Healthy","Vegetarian","Vegan","Comfort Food"};
+            foreach (var filter in filters)
+            {
+                await SearchRecipesByIngredientsAsync(filter);
+            }
+        }
     }
 }

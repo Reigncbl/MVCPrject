@@ -5,6 +5,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.AspNetCore.Identity;
 using MVCPrject.Data;
 using MVCPrject.Models;
+using StackExchange.Redis;
 
 
 namespace MVCPrject
@@ -19,25 +20,31 @@ namespace MVCPrject
 
             builder.Services.AddControllersWithViews();
 
+            builder.Services.AddControllersWithViews();
 
+            //Redis
+            builder.Services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = builder.Configuration["Redis:ConnectionString"];
+                options.InstanceName = builder.Configuration["Redis:InstanceName"];
+            });
+            //Mistral AI API
             var apikey = builder.Configuration["Mistral:ApiKey"];
             if (string.IsNullOrEmpty(apikey))
             {
                 throw new InvalidOperationException("Mistral API key is not configured.");
             }
-
             builder.Services.AddMistralChatCompletion(
                 modelId: "mistral-large-latest",
                 apiKey: apikey
             );
-
-
-
+            //Azure DB Connection
             builder.Services.AddScoped<Kernel>();
-
-
             builder.Services.AddDbContext<DBContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("RecipeDbConnection")));
+                options.UseSqlServer(
+                    builder.Configuration.GetConnectionString("RecipeDbConnection"),
+                    sqlOptions => sqlOptions.EnableRetryOnFailure()
+                ));
 
             // Add Identity services
             builder.Services.AddIdentity<User, IdentityRole>(options =>
@@ -55,14 +62,13 @@ namespace MVCPrject
             builder.Services.AddAuthentication()
             .AddCookie(options =>
             {
-                options.LoginPath = "/Landing/Login"; // Redirect to login page
-                options.AccessDeniedPath = "/Landing/AccessDenied"; // Handle unauthorized access
+                options.LoginPath = "/Landing/Login";
+                options.AccessDeniedPath = "/Landing/AccessDenied";
             });
 
-            // Register your custom application services
+            //Class Built
             builder.Services.AddScoped<RecipeRetrieverService>();
             builder.Services.AddScoped<RecipeManipulationService>();
-            // Register RecipeLabelingService so it can be resolved from the DI container
             builder.Services.AddScoped<RecipeLabelingService>();
 
             var app = builder.Build();
@@ -75,15 +81,23 @@ namespace MVCPrject
             }
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles(); // Serves static files from wwwroot
+            app.UseStaticFiles();
             app.UseRouting();
 
-            app.UseAuthentication(); // IMPORTANT: Must be before UseAuthorization
+            app.UseAuthentication();
             app.UseAuthorization();
+
+            //Prepopulate Recipes
+            using (var scope = app.Services.CreateScope())
+            {
+                var recipeService = scope.ServiceProvider.GetRequiredService<RecipeManipulationService>();
+                await recipeService.PrepopulateCacheAsync();
+            }
 
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Landing}/{action=Index}/{id?}");
+
 
             await Task.Delay(10);
             app.Run();
