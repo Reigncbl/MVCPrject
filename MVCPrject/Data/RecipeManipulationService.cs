@@ -148,7 +148,7 @@ namespace MVCPrject.Data
             var serializedData = JsonSerializer.Serialize(recipes, jsonOptions);
             await _cache.SetStringAsync(cacheKey, serializedData, new DistributedCacheEntryOptions
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(10) // 10 hours
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24) // 10 hours
             });
 
             return recipes;
