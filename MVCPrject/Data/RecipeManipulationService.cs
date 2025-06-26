@@ -22,7 +22,7 @@ namespace MVCPrject.Data
         // Fetch a single recipe with caching
         public async Task<Recipe?> GetRecipeDetailsAsync(int id)
         {
-            string cacheKey = $"RecipeDetails_{id}";
+            string cacheKey = $"recipeRecipeDetails_{id}";
 
             // Check cache first
             var cachedData = await _cache.GetStringAsync(cacheKey);
@@ -59,7 +59,7 @@ namespace MVCPrject.Data
         // Fetch all recipes with caching
         public async Task<List<Recipe>> GetAllRecipesAsync(int count = 10)
         {
-            string cacheKey = $"AllRecipes_{count}";
+            string cacheKey = $"recipeAllRecipes_{count}";
 
             // Check cache first
             var cachedData = await _cache.GetStringAsync(cacheKey);
@@ -85,9 +85,21 @@ namespace MVCPrject.Data
         }
 
         // Search recipes by ingredients with caching
+        private string GetSearchRecipesCacheKey(string keywords)
+        {
+            // Normalize keywords to avoid key mismatches (trim, lower, remove extra spaces)
+            var normalized = string.Join(",", keywords.Split(',')
+                .Select(k => k.Trim().ToLowerInvariant())
+                .Where(k => !string.IsNullOrEmpty(k))
+                .OrderBy(k => k));
+
+            // Use the normalized string directly instead of GetHashCode()
+            return $"recipeSearchRecipes_{normalized}";
+        }
+
         public async Task<List<Recipe>> SearchRecipesByIngredientsAsync(string keywords)
         {
-            string cacheKey = $"SearchRecipes_{keywords.GetHashCode()}";
+            string cacheKey = GetSearchRecipesCacheKey(keywords);
 
             // Check cache first
             var cachedData = await _cache.GetStringAsync(cacheKey);
@@ -154,16 +166,27 @@ namespace MVCPrject.Data
         // Prepopulate cache for all recipe type filters
         public async Task PrepopulateCacheAsync()
         {
-            // Prepopulate all recipes (default 10)
-            await GetAllRecipesAsync();
+            // Prepopulate all recipes (default 10) only if not already cached
+            string allRecipesKey = $"recipeAllRecipes_10";
+            var allRecipesCache = await _cache.GetStringAsync(allRecipesKey);
+            if (string.IsNullOrEmpty(allRecipesCache))
+            {
+                await GetAllRecipesAsync();
+            }
 
-            // Prepopulate for each filter
-            var filters = new[] {  "Dinner", "Breakfast", "Lunch", "Snack", "Dessert",
+            // Prepopulate for each filter only if not already cached
+            var filters = new[] { "Dinner", "Breakfast", "Lunch", "Snack", "Dessert",
                 "Main Course", "Appetizer", "Side Dish", "Soup", "Salad","Healthy","Vegetarian","Vegan","Comfort Food"};
             foreach (var filter in filters)
             {
-                await SearchRecipesByIngredientsAsync(filter);
+                string filterKey = GetSearchRecipesCacheKey(filter);
+                var filterCache = await _cache.GetStringAsync(filterKey);
+                if (string.IsNullOrEmpty(filterCache))
+                {
+                    await SearchRecipesByIngredientsAsync(filter);
+                }
             }
         }
+
     }
 }
