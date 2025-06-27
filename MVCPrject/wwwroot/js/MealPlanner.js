@@ -52,12 +52,18 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 
-    // Re-render when window is resized (including split screen scenarios)
-    let resizeTimeout;
-    window.addEventListener('resize', () => {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(renderDateSection, 100); // Debounce for performance
+    // Initialize Flatpickr
+    flatpickr("#calendarWrapper", {
+        wrap: true,
+        allowInput: true,
+        position: "left", // or just "auto"
+        onChange: function(selectedDates, dateStr) {
+            console.log("Picked:", dateStr);
+        }
     });
+
+    feather.replace();
+
 
     // MEAL LOGS
 
@@ -79,16 +85,21 @@ document.addEventListener("DOMContentLoaded", function () {
         const html = `
         <div class="col-md-6 mb-4">
             <div class="card meal-card" id="${meal.id}-card">
-            <div class="meal-header">
-                <div>
-                    <span class="fw-bold meal-label">${mainLabel}</span>
-                    <span class="fw-normal ms-1 meal-label">${parenthesisPart}</span>
-                </div>
-            <span class="add-btn" style="cursor:pointer;" onclick="openMealModal('${meal.id}')">+</span>
-            </div>
-            <div class="p-3" id="${meal.id}-list">
-                <p class="text-muted">No logged meals yet.</p>
-            </div>
+              <div class="meal-header">
+                  <div>
+                      <span class="fw-bold meal-label">${mainLabel}</span>
+                      <span class="fw-normal ms-1 meal-label fs-6">${parenthesisPart}</span>
+                  </div>
+                <span class="add-btn" style="cursor:pointer;" onclick="openMealModal('${meal.id}')">+</span>
+              </div>
+              <div class="p-3" id="${meal.id}-list">
+                  <p class="text-muted">No logged meals yet.</p>
+              </div>
+              <div class="m-3">
+                  <span class="md-3 text-muted">0 Cal</span>
+                  <span class="md-3 text-muted"> | </span>
+                  <span class="md-3 text-muted">0g Protein</span>
+              </div>
             </div>
         </div>
         `;
@@ -103,137 +114,217 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById('mealType').value = mealId;
 
         const meal = meals.find(m => m.id === mealId);
-        document.getElementById('mealModalLabel').textContent = `Log ${meal.label}`;
+        
+        // Split label into main text and parenthesis part
+        const match = meal.label.match(/^(.*?)(\s*\(.*\))?$/);
+        const mainLabel = match ? match[1].trim() : meal.label;
+        const parenthesisPart = match ? match[2] : '';
+        
+        // Set modal title with styled HTML
+        document.getElementById('mealModalLabel').innerHTML = `Add ${mainLabel}<span class="fw-normal small">${parenthesisPart}</span>`;
 
         modal.show();
+
+        // Reset and clear form when modal is hidden or exited
+        const mealModalEl = document.getElementById('mealModal');
+
+        mealModalEl.addEventListener('hidden.bs.modal', function () {
+            // Clear form fields
+            document.getElementById('mealForm').reset();
+
+            // Hide image preview
+            const preview = document.getElementById('mealPhotoPreview');
+            if (preview) {
+                preview.src = '';
+                preview.classList.add('d-none');
+            }
+
+            // Show upload label again
+            const uploadLabel = document.getElementById('uploadLabel');
+            if (uploadLabel) {
+                uploadLabel.style.display = '';
+            }
+        });
+
     };
 
     // MODAL FUNCTIONALITY
-  const formContent = document.getElementById("formContent");
-  const submitText = document.getElementById("submitText");
-  // const submitBtn = document.getElementById("submitBtn");
-  const modeButtons = document.querySelectorAll('.mode-btn');
-  
-  let currentMode = "planned";
-  
-  function loadForm(mode) {
-    if (mode === "planned") {
-      submitText.textContent = "Plan Meal";
-      formContent.innerHTML = `
-        <div class="mb-3">
-            <div class="d-flex gap-2">
-                <div class="flex-fill">
-                    <label for="plannedDate" class="form-label">Date</label>
-                    <input type="date" name="plannedDate" id="plannedDate" class="form-control" required>
+    const submitText = document.getElementById("submitText");
+    const modeButtons = document.querySelectorAll('.mode-btn');
+    
+    let currentMode = "planned";
+    
+    // Load the single form (same content for both modes)
+    function loadForm() {
+        const formContent = document.getElementById("formContent");
+        formContent.innerHTML = `
+            <div class="mb-4">
+              <div class="row g-3 align-items-stretch">
+                <!-- Left: Photo Upload -->
+                <div class="col-md-6 d-flex flex-column">
+                  <label for="mealPhoto" class="form-label">Photo</label>
+                  <div class="position-relative meal-photo-box text-center">
+                    <input type="file" name="mealPhoto" id="mealPhoto" class="form-control d-none" accept="image/*">
+                    <label for="mealPhoto" class="stretched-link d-flex flex-column justify-content-center align-items-center h-100 w-100" id="uploadLabel">
+                      <i data-feather="upload" class="text-muted mb-2"></i>
+                      <div class="text-muted small">Click to upload</div>
+                    </label>
+                    <img id="mealPhotoPreview" src="" alt="Preview"
+                        class="img-fluid rounded d-none position-absolute top-0 start-0 w-100 h-100 object-fit-cover" />
+                  </div>
                 </div>
-                <div class="flex-fill">
-                    <label for="plannedTime" class="form-label">Time</label>
-                    <input type="time" name="plannedTime" id="plannedTime" class="form-control" required>
+
+                <!-- Right: Form Inputs -->
+                <div class="col-md-6 d-flex flex-column justify-content-between">
+                  <div class="d-flex flex-column flex-grow-1">
+                    <!-- Date, Time, Meal -->
+                    <div class="mt-1 mb-2">
+                      <label for="mealDate" class="form-label mb-1">Date</label>
+                      <input type="date" name="mealDate" id="mealDate" class="form-control" required>
+                    </div>
+                    <div class="mb-2">
+                      <label for="mealTime" class="form-label mb-1">Time</label>
+                      <input type="time" name="mealTime" id="mealTime" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                      <label for="mealName" class="form-label mb-1">Meal</label>
+                      <input type="text" name="mealName" id="mealName" class="form-control" placeholder="e.g. Chicken Adobo" required>
+                    </div>                   
+                  </div>
                 </div>
+
+              </div>
             </div>
-        </div>
 
-        <div class="mb-3">
-          <label for="mealName" class="form-label">What meal do you have in mind?</label>
-          <input type="text" name="mealName" id="mealName" class="form-control" placeholder="e.g. Chicken Adobo with Rice" required>
-        </div>
-
-        <div class="row">
-          <div class="col-3 mb-3">
-            <label for="calories" class="form-label">Calories</label>
-            <input type="number" name="calories" id="calories" class="form-control" required>
-          </div>
-          <div class="col-3 mb-3">
-            <label for="protein" class="form-label">Protein (g)</label>
-            <input type="number" name="protein" id="protein" class="form-control">
-          </div>
-          <div class="col-3 mb-3">
-            <label for="carbs" class="form-label">Carbs (g)</label>
-            <input type="number" name="carbs" id="carbs" class="form-control">
-          </div>
-          <div class="col-3 mb-3">
-            <label for="fat" class="form-label">Fat (g)</label>
-            <input type="number" name="fat" id="fat" class="form-control">
-          </div>
-        </div>
-
-        <div class="text-center my-2">
-            <label class="form-label fw-normal">OR</label>
-        </div>
-
-        <div class="mb-3">
-            <label for="mealName" class="form-label">Find a Recipe</label>
-            <!-- EDIT LATER FOR SEARCH RECIPES -->
-            <input type="text" name="mealName" id="mealName" class="form-control" placeholder="Select a recipe from the list..." required>
-        </div>
-        
-      `;
-    } else if (mode === "logged") {
-      submitText.textContent = "Log Meal";
-      const now = new Date().toISOString().slice(0, 16);
-      formContent.innerHTML = `
-        <div class="mb-3">
-            <div class="d-flex gap-2">
-                <div class="flex-fill">
-                    <label for="loggedDate" class="form-label">Date</label>
-                    <input type="date" name="loggedDate" id="loggedDate" class="form-control" required>
-                </div>
-                <div class="flex-fill">
-                    <label for="loggedTime" class="form-label">Time</label>
-                    <input type="time" name="loggedTime" id="loggedTime" class="form-control" required>
-                </div>
+            <!-- Macronutrients: Calories, Protein, Carbs, Fat -->
+            <div class="row mb-4">
+              <div class="col">
+                <label for="calories" class="form-label">Calories</label>
+                <input type="number" name="calories" id="calories" class="form-control" required>
+              </div>
+              <div class="col">
+                <label for="protein" class="form-label">Protein (g)</label>
+                <input type="number" name="protein" id="protein" class="form-control form-control-sm">
+              </div>
+              <div class="col">
+                <label for="carbs" class="form-label">Carbs (g)</label>
+                <input type="number" name="carbs" id="carbs" class="form-control form-control-sm">
+              </div>
+              <div class="col">
+                <label for="fat" class="form-label">Fat (g)</label>
+                <input type="number" name="fat" id="fat" class="form-control form-control-sm">
+              </div>
             </div>
-        </div>
 
-        <div class="mb-3">
-          <label for="mealName" class="form-label">🍽️ What did you eat?</label>
-          <input type="text" name="mealName" id="mealName" class="form-control" placeholder="e.g. Chicken Adobo with Rice" required>
-        </div>
-        
-        <div class="row">
-          <div class="col-3 mb-3">
-            <label for="calories" class="form-label">Calories</label>
-            <input type="number" name="calories" id="calories" class="form-control" required>
-          </div>
-          <div class="col-3 mb-3">
-            <label for="protein" class="form-label">Protein (g)</label>
-            <input type="number" name="protein" id="protein" class="form-control">
-          </div>
-          <div class="col-3 mb-3">
-            <label for="carbs" class="form-label">Carbs (g)</label>
-            <input type="number" name="carbs" id="carbs" class="form-control">
-          </div>
-          <div class="col-3 mb-3">
-            <label for="fat" class="form-label">Fat (g)</label>
-            <input type="number" name="fat" id="fat" class="form-control">
-          </div>
-        </div>
-        
-        <div class="mb-3">
-          <label for="mealNotes" class="form-label">📝 Notes (Optional)</label>
-          <textarea name="mealNotes" id="mealNotes" rows="2" class="form-control" placeholder="How was the meal? Any thoughts..."></textarea>
-        </div>
-      `;
+            <div class="text-center my-2">
+                <label class="form-label fw-normal">OR</label>
+            </div>
+
+            <div class="mb-3">
+                <label for="recipeSearch" class="form-label">Find a Recipe</label>
+                <input type="text" name="recipeSearch" id="recipeSearch" class="form-control" placeholder="Select a recipe from the list...">
+            </div>
+        `;
+
+        // Set up preview AFTER form content is injected
+        const fileInput = document.getElementById('mealPhoto');
+        const preview = document.getElementById('mealPhotoPreview');
+        const uploadLabel = document.getElementById('uploadLabel');
+
+        fileInput.addEventListener('change', function (event) {
+          const file = event.target.files[0];
+
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              preview.src = e.target.result;
+              preview.classList.remove('d-none');
+              
+              // Hide the upload label
+              uploadLabel.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+          } else {
+            preview.src = '';
+            preview.classList.add('d-none');
+            
+            // Show the label again if user clears file
+            uploadLabel.style.display = '';
+          }
+        });
     }
-  }
-  
-  // Load default form
-  loadForm(currentMode);
-  
-  // Mode toggle functionality
-  modeButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const mode = btn.dataset.mode;
-      if (mode !== currentMode) {
-        currentMode = mode;
-        
-        // Update button states
-        modeButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        
-        loadForm(currentMode);
-      }
+    
+    // Update submit button text based on mode
+    function updateSubmitButton() {
+        submitText.textContent = currentMode === "planned" ? "Plan Meal" : "Log Meal";
+    }
+    
+    // Load the form initially
+    loadForm();
+    updateSubmitButton();
+    
+    // Mode toggle functionality (just changes the button states and submit text)
+    modeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const mode = btn.dataset.mode;
+            if (mode !== currentMode) {
+                currentMode = mode;
+                
+                // Update button states
+                modeButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Only update submit button text, form content stays the same
+                updateSubmitButton();
+            }
+        });
     });
+
+    // Handle form submission
+    document.getElementById('mealForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const form = e.target;
+      const formData = new FormData(form);
+
+      const mealId = formData.get('mealType');
+      const mealName = formData.get('mealName');
+      const calories = parseInt(formData.get('calories'), 10) || 0;
+      const protein = parseInt(formData.get('protein'), 10) || 0;
+      const mealTime = formData.get('mealTime') || '';
+      const formattedTime = formatTimeTo12Hour(mealTime);
+      const mealDate = formData.get('mealDate') || '';
+      const photoInput = document.getElementById('mealPhoto');
+      const photoFile = photoInput.files[0];
+      const photoURL = photoFile ? URL.createObjectURL(photoFile) : '';
+
+      const mode = currentMode; // "planned" or "logged"
+
+      logMeal(mealId, {
+          name: mealName,
+          calories,
+          protein,
+          time: formattedTime,  // not mealTime
+          date: mealDate,
+          photo: photoURL,
+          mode
+      });
+
+      form.reset();
+
+      const preview = document.getElementById('mealPhotoPreview');
+      if (preview) {
+          preview.src = '';
+          preview.classList.add('d-none');
+      }
+
+      const uploadLabel = document.getElementById('uploadLabel');
+      if (uploadLabel) {
+          uploadLabel.style.display = '';
+      }
+
+      const modal = bootstrap.Modal.getInstance(document.getElementById('mealModal'));
+      if (modal) modal.hide();
   });
 
 
@@ -241,10 +332,99 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // OUTSIDE the DOMContentLoaded event listener
 
+// Function to format time from 24-hour to 12-hour format
+// Example: "14:30" -> "2:30 PM"
+function formatTimeTo12Hour(timeStr) {
+    if (!timeStr) return '';
+
+    const [hour, minute] = timeStr.split(':').map(Number);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+
+    return `${hour12}:${minute.toString().padStart(2, '0')} ${ampm}`;
+}
+
 // For generate grocery list btn
 function generateGroceryList() {
-    alert('Generate grocery list coming soon!');
+    const modalEl = document.getElementById('groceryListModal');
+    if (modalEl) {
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+        feather.replace();
+    } else {
+        console.error('Modal not found.');
+    }
 }
+
+function closeGroceryModal() {
+    const modalEl = document.getElementById('groceryListModal');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) {
+        modal.hide();
+    }
+}
+
+function printGroceryList() {
+  // Clone the modal content
+  const printContent = document.getElementById('groceryListModal').cloneNode(true);
+  
+  // Create a hidden iframe for printing
+  const printFrame = document.createElement('iframe');
+  printFrame.style.position = 'absolute';
+  printFrame.style.width = '0';
+  printFrame.style.height = '0';
+  printFrame.style.border = 'none';
+  
+  // When iframe loads, print its content
+  printFrame.onload = function() {
+    const printDocument = printFrame.contentWindow.document;
+    
+    // Add print-specific styles
+    const style = printDocument.createElement('style');
+    style.innerHTML = `
+      @page { size: auto; margin: 5mm; }
+      body { padding: 10px; font-family: Arial, sans-serif; }
+      .list-group-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+      }
+      .badge {
+        background-color: #007bff !important;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 10px;
+        font-size: 12px;
+      }
+      h5 {
+        color: #007bff;
+        text-align: center;
+        margin-bottom: 15px;
+      }
+    `;
+    
+    printDocument.head.appendChild(style);
+    printDocument.body.appendChild(printContent.querySelector('.modal-content'));
+    
+    // Remove unnecessary elements for printing
+    const modalFooter = printDocument.querySelector('.modal-footer');
+    const modalHeader = printDocument.querySelector('.modal-header button');
+    if (modalFooter) modalFooter.remove();
+    if (modalHeader) modalHeader.remove();
+    
+    // Focus and print
+    printFrame.contentWindow.focus();
+    printFrame.contentWindow.print();
+    
+    // Clean up
+    setTimeout(() => document.body.removeChild(printFrame), 1000);
+  };
+  
+  document.body.appendChild(printFrame);
+}
+
+
 
 // To update dropdown btn text
 function updateDateButton(selectedOption) {
@@ -252,6 +432,114 @@ function updateDateButton(selectedOption) {
 }
 
 // For set goal btn
-function setGoal() {
-    alert('Set goal functionality coming soon!');
+document.getElementById('setGoalBtn').addEventListener('click', function() {
+    // Show the modal
+    var modal = new bootstrap.Modal(document.getElementById('nutritionGoalModal'));
+    modal.show();
+});
+
+// Log Meal BTN on Calendar
+
+function openLogMealForm() {
+    const modal = new bootstrap.Modal(document.getElementById('mealModal'));
+    
+    // Optional: Set mealType hidden input to empty or default
+    document.getElementById('mealType').value = '';
+
+    // Update the modal title
+    document.getElementById('mealModalLabel').innerHTML = `Log Meal`;
+
+    // Ensure form content is loaded (in case it hasn't been)
+    const formContent = document.getElementById("formContent");
+    if (!formContent.innerHTML.trim()) {
+        loadForm(); // call your existing function
+    }
+
+    // Reset form
+    document.getElementById('mealForm').reset();
+
+    // Hide preview
+    const preview = document.getElementById('mealPhotoPreview');
+    if (preview) {
+        preview.src = '';
+        preview.classList.add('d-none');
+    }
+
+    const uploadLabel = document.getElementById('uploadLabel');
+    if (uploadLabel) {
+        uploadLabel.style.display = '';
+    }
+
+    // Optionally hide the toggle buttons (if still shown)
+    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.add('d-none'));
+
+    // Set submit button text to "Log Meal"
+    const submitText = document.getElementById("submitText");
+    if (submitText) submitText.textContent = "Log Meal";
+
+    modal.show();
 }
+
+// Function to log a meal
+const loggedMeals = {};
+
+function logMeal(mealId, mealData) {
+    if (!loggedMeals[mealId]) {
+        loggedMeals[mealId] = [];
+    }
+
+    loggedMeals[mealId].push(mealData);
+    updateMealSummary(mealId);
+}
+
+// Function to update the UI
+function updateMealSummary(mealId) {
+    const mealLogs = loggedMeals[mealId] || [];
+    const totalCalories = mealLogs.reduce((sum, log) => sum + log.calories, 0);
+    const totalProtein = mealLogs.reduce((sum, log) => sum + log.protein, 0);
+
+    const card = document.getElementById(`${mealId}-card`);
+    const summaryEl = card.querySelector('.m-3');
+    summaryEl.innerHTML = `
+        <span class="md-3 text-muted">${totalCalories} Cal</span>
+        <span class="md-3 text-muted"> | </span>
+        <span class="md-3 text-muted">${totalProtein}g Protein</span>
+    `;
+
+    const listEl = document.getElementById(`${mealId}-list`);
+    listEl.innerHTML = mealLogs.map(log => `
+        <div class="card shadow-sm mb-2">
+            <div class="card-body log-entry position-relative">
+                <div class="row align-items-center">
+                    <!-- Image -->
+                    <div class="col-auto">
+                        <img src="${log.photo || 'https://via.placeholder.com/50'}" class="rounded" style="width:50px; height:50px; object-fit:cover;" alt="Meal Image">
+                    </div>
+
+                    <!-- Content -->
+                    <div class="col">
+                        <h6 class="mb-1 fw-bold">${log.name}</h6>
+                        <div class="text-muted small">
+                            ${log.calories} cal <span class="mx-2">|</span>
+                            ${log.time || 'Time N/A'}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top-right: Badge -->
+                <span class="badge position-absolute top-0 end-0 mt-2 me-2 p-2 custom-badge ${log.mode}">
+                  ${log.mode.charAt(0).toUpperCase() + log.mode.slice(1)}
+                </span>
+
+                <!-- Bottom-right: Action Icons -->
+                <div class="action-buttons position-absolute bottom-0 end-0 mb-2 me-2 d-flex gap-2">
+                  <i data-feather="edit-2" style="cursor: pointer;"></i>
+                  <i data-feather="trash-2" style="cursor: pointer;"></i>
+                </div>
+
+            </div>
+        </div>
+    `).join('');
+    feather.replace(); // Re-apply Feather icons to new content
+}
+
