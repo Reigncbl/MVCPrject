@@ -20,14 +20,14 @@ namespace MVCPrject
 
             builder.Services.AddControllersWithViews();
 
-            builder.Services.AddControllersWithViews();
-
             //Redis
             builder.Services.AddStackExchangeRedisCache(options =>
             {
                 options.Configuration = builder.Configuration["Redis:ConnectionString"];
                 options.InstanceName = builder.Configuration["Redis:InstanceName"];
             });
+
+
             //Mistral AI API
             var apikey = builder.Configuration["Mistral:ApiKey"];
             if (string.IsNullOrEmpty(apikey))
@@ -70,6 +70,7 @@ namespace MVCPrject
             builder.Services.AddScoped<RecipeRetrieverService>();
             builder.Services.AddScoped<RecipeManipulationService>();
             builder.Services.AddScoped<RecipeLabelingService>();
+            builder.Services.AddScoped<UserService>();
 
             var app = builder.Build();
 

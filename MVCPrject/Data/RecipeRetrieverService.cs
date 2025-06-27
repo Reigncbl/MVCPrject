@@ -384,7 +384,112 @@ public class RecipeRetrieverService
             Console.WriteLine($"Error during automation: {ex.Message}");
         }
     }
+    public async Task ScrapeAndSaveRecipeNutritionAsync(int recipeId, string recipeUrl)
+    {
+        try
+        {
+            var html = await _httpClient.GetStringAsync(recipeUrl);
+            var doc = new HtmlDocument();
+            doc.LoadHtml(html);
 
+            // Locate the nutrition container
+            var nutritionContainer = doc.DocumentNode.SelectSingleNode("//div[contains(@class, 'wprm-nutrition-label-container')]");
+            if (nutritionContainer == null)
+            {
+                Console.WriteLine($"No nutrition information found for RecipeID {recipeId}");
+                return;
+            }
+
+            // Map DB fields to label text
+            var nutritionMap = new Dictionary<string, string>
+            {
+                {"Calories", "Calories"},
+                {"Carbohydrates", "Carbohydrates"},
+                {"Protein", "Protein"},
+                {"Fat", "Fat"},
+                {"Monounsaturated_Fat", "Monounsaturated Fat"},
+                {"Trans_Fat", "Trans Fat"},
+                {"Cholesterol", "Cholesterol"},
+                {"Sodium", "Sodium"},
+                {"Potassium", "Potassium"},
+                {"Fiber", "Fiber"},
+                {"Sugar", "Sugar"},
+                {"Vitamin_A", "Vitamin A"},
+                {"Vitamin_C", "Vitamin C"},
+                {"Calcium", "Calcium"},
+                {"Iron", "Iron"}
+            };
+
+            // Check if nutrition facts already exist for this recipe
+            var nutritionFacts = await _dbContext.RecipeNutritionFacts.FirstOrDefaultAsync(n => n.RecipeID == recipeId);
+            bool isNew = false;
+            if (nutritionFacts == null)
+            {
+                nutritionFacts = new RecipeNutritionFacts { RecipeID = recipeId };
+                isNew = true;
+            }
+            var nutritionFactsType = typeof(RecipeNutritionFacts);
+
+            foreach (var kvp in nutritionMap)
+            {
+                var value = ExtractNutritionValue(nutritionContainer, kvp.Value);
+                var prop = nutritionFactsType.GetProperty(kvp.Key);
+                if (prop != null && prop.CanWrite)
+                {
+                    prop.SetValue(nutritionFacts, value);
+                }
+            }
+
+            // Save to database (add or update)
+            if (isNew)
+                _dbContext.RecipeNutritionFacts.Add(nutritionFacts);
+            else
+                _dbContext.RecipeNutritionFacts.Update(nutritionFacts);
+            await _dbContext.SaveChangesAsync();
+
+            Console.WriteLine($"Nutrition facts saved for RecipeID {recipeId}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error scraping nutrition facts for RecipeID {recipeId}: {ex.Message}");
+        }
+    }
+
+    // Helper function to extract specific nutrition values
+    private string? ExtractNutritionValue(HtmlNode container, string label)
+    {
+        // Find the span with the label text (e.g., "Calories:")
+        var labelSpan = container.SelectSingleNode($".//span[contains(@class, 'wprm-nutrition-label-text-nutrition-label') and normalize-space(text())='{label}:']");
+        if (labelSpan != null && labelSpan.ParentNode != null)
+        {
+            // Find the value span within the same parent
+            var valueSpan = labelSpan.ParentNode.SelectSingleNode(".//span[contains(@class, 'wprm-nutrition-label-text-nutrition-value')]");
+            return valueSpan?.InnerText?.Trim();
+        }
+        return null;
+    }
+
+    public async Task ScrapeAndSaveNutritionForAllRecipesAsync()
+    {
+        try
+        {
+            // Fetch all recipes with non-empty URLs
+            var recipes = await _dbContext.Recipes
+                .Where(r => !string.IsNullOrEmpty(r.RecipeURL))
+                .ToListAsync();
+
+            foreach (var recipe in recipes)
+            {
+                await ScrapeAndSaveRecipeNutritionAsync(recipe.RecipeID, recipe.RecipeURL);
+            }
+
+            Console.WriteLine("Nutrition facts scraping completed for all recipes.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in scraping nutrition for all recipes: {ex.Message}");
+        }
+    }
 
 }
 
@@ -426,6 +531,8 @@ public static class RecipeLabelingPromptBuilder
 
         return promptBuilder.ToString();
     }
+
+
 }
 
 public class RecipeLabelingService
@@ -531,4 +638,6 @@ public class RecipeLabelingService
 
         return labeledContent;
     }
+
+
 }

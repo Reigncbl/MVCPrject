@@ -56,4 +56,65 @@ namespace MVCPrject.Models
         public virtual ICollection<RecipeInstructions> Instructions { get; set; } = new List<RecipeInstructions>();
     }
 
+
+
+    [Table("RecipeNutritionFacts")]
+    public class RecipeNutritionFacts
+    {
+        [Key]
+        public int NutritionFactsID { get; set; }
+        public int? RecipeID { get; set; }
+        public string? Calories { get; set; }
+        public string? Carbohydrates { get; set; }
+        public string? Protein { get; set; }
+        public string? Fat { get; set; }
+        public string? Monounsaturated_Fat { get; set; }
+        public string? Trans_Fat { get; set; }
+        public string? Cholesterol { get; set; }
+        public string? Sodium { get; set; }
+        public string? Potassium { get; set; }
+        public string? Fiber { get; set; }
+        public string? Sugar { get; set; }
+        public string? Vitamin_A { get; set; }
+        public string? Vitamin_C { get; set; }
+        public string? Calcium { get; set; }
+        public string? Iron { get; set; }
+
+    }
+
+    [Table("recipe_likes")]
+    public class RecipeLikes
+    {
+        [Key]
+        public int LikeID { get; set; }
+
+        [Required]
+        [ForeignKey("Recipe")]
+        public int RecipeID { get; set; }
+
+        [Required]
+        [ForeignKey("User")]
+        public string? UserID { get; set; }
+
+        [Required]
+        public DateTime LikedAt { get; set; } = DateTime.UtcNow;
+
+        public virtual Recipe? Recipe { get; set; }
+
+        // Assuming a User model exists
+        public virtual User? User { get; set; }
+    }
+
+    public class RecipeDetailsViewModel
+    {
+        public Recipe? Recipe { get; set; }
+        public RecipeNutritionFacts? NutritionFacts { get; set; }
+    }
+
+
+    public class LikeRequest
+    {
+        public int RecipeId { get; set; }
+    }
+
 }

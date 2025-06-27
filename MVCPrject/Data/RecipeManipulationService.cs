@@ -19,39 +19,58 @@ namespace MVCPrject.Data
             _cache = cache;
         }
 
-        // Fetch a single recipe with caching
-        public async Task<Recipe?> GetRecipeDetailsAsync(int id)
+        // Fetch a single recipe with caching (recipe only, nutrition fetched separately)
+        public async Task<RecipeDetailsViewModel?> GetRecipeDetailsWithNutritionAsync(int id)
         {
-            string cacheKey = $"recipeRecipeDetails_{id}";
+            string cacheKey = $"recipeDetails_{id}";
 
+            // Check the cache for recipe data only
             var cachedData = await _cache.GetStringAsync(cacheKey);
+            Recipe? recipe = null;
+
             if (!string.IsNullOrEmpty(cachedData))
             {
-                return JsonSerializer.Deserialize<Recipe>(cachedData);
+                recipe = JsonSerializer.Deserialize<Recipe>(cachedData);
             }
-
-            var recipe = await _dbContext.Recipes
-                .Include(r => r.Ingredients)
-                .Include(r => r.Instructions)
-                .AsSplitQuery()
-                .FirstOrDefaultAsync(r => r.RecipeID == id);
-
-            if (recipe != null)
+            else
             {
+                // Fetch recipe from database
+                recipe = await _dbContext.Recipes
+                    .Include(r => r.Ingredients)
+                    .Include(r => r.Instructions)
+                    .FirstOrDefaultAsync(r => r.RecipeID == id);
+
+                if (recipe == null)
+                    return null;
+
+                // Cache only the recipe data
                 var jsonOptions = new JsonSerializerOptions
                 {
                     ReferenceHandler = ReferenceHandler.IgnoreCycles
                 };
-
                 var serializedData = JsonSerializer.Serialize(recipe, jsonOptions);
+
                 await _cache.SetStringAsync(cacheKey, serializedData, new DistributedCacheEntryOptions
                 {
                     AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(10)
                 });
             }
 
-            return recipe;
+            // Always fetch nutrition facts fresh from database (not cached)
+            var nutritionFacts = await _dbContext.RecipeNutritionFacts
+                .FirstOrDefaultAsync(nf => nf.RecipeID == id);
+
+#pragma warning disable CS8601 // Possible null reference assignment.
+            var viewModel = new RecipeDetailsViewModel
+            {
+                Recipe = recipe,
+                NutritionFacts = nutritionFacts
+            };
+#pragma warning restore CS8601 // Possible null reference assignment.
+
+            return viewModel;
         }
+
 
         // Fetch all recipes with caching
         public async Task<List<Recipe>> GetAllRecipesAsync(int count = 10)

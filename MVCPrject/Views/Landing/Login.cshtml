@@ -60,6 +60,13 @@
                         <form asp-action="Login" asp-controller="Landing" method="post"
                             class="d-flex flex-column justify-content-between h-100">
                             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                            
+                            @if (ViewBag.LoginSuccess != null)
+                            {
+                                <div class="alert alert-success mb-3">
+                                    @ViewBag.LoginSuccess
+                                </div>
+                            }
 
                             <div>
                                 <div class="mb-3 text-start form-group">

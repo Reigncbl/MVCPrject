@@ -13,7 +13,20 @@
     <div class="border-bottom shadow-sm d-flex flex-row align-items-center justify-content-end gap-4 p-2">
         <i data-feather="search" class="border p-2 rounded-pill fs-1"
             style="background-color: #D9D9D980; width: 36px; height: 36px;"></i>
-        <h2 class="fs-5">Hello, <span>Username</span></h2>
+
+
+
+
+        @if (User.Identity.IsAuthenticated)
+        {
+            <h2 class="fs-5">Welcome, @ViewBag.Name!</h2>
+        }
+        else
+        {
+            <a href="/Landing/Login" class="btn btn-primary">Please log in</a>
+        }
+
+
         <img src="~/img/image.png" alt="/" class="border rounded-pill " style="width: 48px; margin-right: 36px;">
     </div>
     <div class="overflow-auto" style="height: calc(100vh - 64px);">

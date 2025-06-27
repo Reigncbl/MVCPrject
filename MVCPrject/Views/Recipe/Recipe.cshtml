@@ -5,6 +5,20 @@
 }
 @section Styles {
     <link rel="stylesheet" href="~/css/recipe.css" />
+    <style>
+        .like-container:hover {
+            transform: scale(1.1);
+            transition: transform 0.2s ease;
+        }
+
+        .heart-icon {
+            transition: fill 0.3s ease;
+        }
+
+        .like-container:hover .heart-icon {
+            fill: #dc3545 !important;
+        }
+    </style>
 }
 
 
@@ -13,7 +27,18 @@
 <div class="p-4 d-flex justify-content-between align-items-center">
     <h1 class=" text-start fs-1 fw-normal">Explore Recipe</h1>
     <div class="d-flex align-items-center gap-5">
-        <h2 class="fs-5">Hello, <span>Username</span></h2>
+        @if (User.Identity.IsAuthenticated)
+        {
+            <h2 class="fs-5">Welcome, @ViewBag.UserName!</h2>
+        }
+        else
+        {
+            <a href="/Landing/Login" class="btn btn-primary">Please log in</a>
+        }
+
+
+
+
         <img src="~/img/image.png" alt="/" class="border rounded-pill" style="width: 48px;">
     </div>
 </div>
@@ -109,6 +134,64 @@
                 function clearFilters() {
                     window.location.href = '/Recipe/Search';
                 }
+
+                // Toggle like/unlike functionality
+                async function toggleLike(recipeId, element) {
+                    const heartIcon = element.querySelector('.heart-icon');
+                    const isLiked = heartIcon.style.fill === 'rgb(220, 53, 69)' || heartIcon.getAttribute('data-liked') === 'true';
+
+                    try {
+                        const endpoint = isLiked ? '/Recipe/Unlike' : '/Recipe/Like';
+                        const response = await fetch(endpoint, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ recipeId: recipeId })
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            // Update the like count
+                            const likeCountSpan = element.querySelector('.like-count');
+                            likeCountSpan.textContent = result.likeCount;
+
+                            // Toggle heart appearance
+                            if (isLiked) {
+                                // Unlike - make heart empty
+                                heartIcon.style.fill = 'none';
+                                heartIcon.style.stroke = '#dc3545';
+                                heartIcon.setAttribute('data-liked', 'false');
+                            } else {
+                                // Like - make heart filled
+                                heartIcon.style.fill = '#dc3545';
+                                heartIcon.style.stroke = '#dc3545';
+                                heartIcon.setAttribute('data-liked', 'true');
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error toggling like:', error);
+                        showToast('An error occurred while updating the like.', 'error');
+                    }
+                }
+
+                // Simple toast notification function
+                function showToast(message, type) {
+                    // Create toast element
+                    const toast = document.createElement('div');
+                    toast.className = `alert alert-${type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'danger'} position-fixed`;
+                    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+                    toast.textContent = message;
+
+                    // Add to page
+                    document.body.appendChild(toast);
+
+                    // Remove after 3 seconds
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 3000);
+                }
             </script>
 
 
@@ -164,17 +247,20 @@
                                     </div>
                                     <!-- Likes and button -->
                                     <div class="d-flex align-items-center mt-auto justify-content-between">
-                                        <div class="d-flex align-items-center text-danger">
-                                            <i data-feather="heart" class="me-1"></i>
-                                            <span>43</span>
-                                        </div>
-                                        <a asp-controller="Recipe" asp-action="Details" asp-route-id="@recipe.RecipeID"
-                                            class="btn btn-danger rounded-pill px-4 py-1 fw-medium">View</a>
-                                    </div>
+                                        <div class="d-flex align-items-center text-danger like-container"
+                                            style="cursor: pointer;" onclick="toggleLike(@recipe.RecipeID, this)">
+                                            <i data-feather="heart" class="me-1 heart-icon" data-liked="false"
+                                                style="fill: none; stroke: #dc3545;"></i>
+                                            <span class="like-count">@(((IDictionary<int,
+                                                                                        int>)ViewBag.LikeCounts)[recipe.RecipeID])</span>
                                 </div>
+                                <a asp-controller="Recipe" asp-action="Details" asp-route-id="@recipe.RecipeID"
+                                    class="btn btn-danger rounded-pill px-4 py-1 fw-medium">View</a>
                             </div>
                         </div>
-                    }
+                    </div>
+                </div>
+                                }
                 </div>
             }
         </div>

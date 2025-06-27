@@ -1,8 +1,8 @@
-﻿@model MVCPrject.Models.Recipe
+﻿@model MVCPrject.Models.RecipeDetailsViewModel
 
 @{
     ViewData["Title"] = "Recipe Details";
-    var totalTime = (Model.PrepTimeMin ?? 0) + (Model.CookTimeMin ?? 0);
+
 }
 
 <div class="container-fluid p-0">
@@ -14,7 +14,17 @@
             <i data-feather="chevron-left" style="width: 20px; height: 20px;"></i>
         </a>
         <div class="d-flex align-items-center gap-5">
-            <h2 class="fs-5">Hello, <span>Username</span></h2>
+      
+           @if (User.Identity.IsAuthenticated)
+        {
+            <h2 class="fs-5">Welcome, @ViewBag.UserName!</h2>
+        }
+        else
+        {
+            <a href="/Landing/Login" class="btn btn-primary">Please log in</a>
+        }
+
+
             <img src="~/img/image.png" alt="/" class="border rounded-pill" style="width: 48px;">
         </div>
     </div>
@@ -26,11 +36,11 @@
             <div class="row mb-4">
                 <div class="col-md-8">
 
-                    <h2 class="fw-bold fs-1">@Model.RecipeName</h2>
+                    <h2 class="fw-bold fs-1">@Model.Recipe.RecipeName</h2>
                     <div class="d-flex align-items-center mb-3">
                         <span class="rounded-circle bg-secondary me-2"
                             style="display:inline-block; width:32px; height:32px;"></span>
-                        <span class="fw-semibold">@Model.RecipeAuthor</span>
+                        <span class="fw-semibold">@Model.Recipe.RecipeAuthor</span>
                     </div>
 
                     <div class="d-flex bg-white shadow-lg rounded-4 p-4 justify-content-between text-center align-items-center mb-4"
@@ -39,7 +49,7 @@
                         <div class="flex-fill d-flex flex-row align-items-center justify-content-center gap-3">
                             <i data-feather="clock" style="width: 50px; height: 50px; color: #324089;"></i>
                             <div class="text-start">
-                                <div class="fw-bold fs-1">@totalTime</div>
+                                <div class="fw-bold fs-1">@Model.Recipe.TotalTimeMin</div>
                                 <small class="fs-5">mins</small>
                             </div>
                         </div>
@@ -50,7 +60,7 @@
                         <div class="flex-fill d-flex flex-row align-items-center justify-content-center gap-3">
                             <i data-feather="bell" style="width: 50px; height: 50px; color: #324089;"></i>
                             <div class="text-start">
-                                <div class="fw-bold fs-1">@Model.RecipeServings</div>
+                                <div class="fw-bold fs-1">@Model.Recipe.RecipeServings</div>
                                 <small class="fs-5">people</small>
                             </div>
                         </div>
@@ -68,13 +78,13 @@
                     </div>
 
                     <h1 class="fs-3 fw-bold">About this dish</h1>
-                    <p class="text-justify fs-5" style="text-indent: 2em;">@Model.RecipeDescription</p>
+                    <p class="text-justify fs-5" style="text-indent: 2em;">@Model.Recipe.RecipeDescription</p>
 
                     <div class="mt-4">
                         <label for="servings" class="fs-3 fw-bold">Set Servings</label>
                         <div class="d-flex gap-2 align-items-center mt-2">
                             <input type="number" id="servings" class="form-control border rounded-3"
-                                style="max-width: 80px;" value="@Model.RecipeServings" />
+                                style="max-width: 80px;" value="@Model.Recipe.RecipeServings" />
                             <button class="btn btn-danger px-4">Set</button>
                         </div>
 
@@ -83,7 +93,7 @@
                     <div class="mt-4">
                         <h5 class="fs-3 fw-bold">Ingredients</h5>
                         <ul class="list-unstyled">
-                            @foreach (var ingredient in Model.Ingredients)
+                            @foreach (var ingredient in Model.Recipe.Ingredients)
                             {
                                 <li class="fs-5">• @ingredient.Quantity @ingredient.Unit @ingredient.IngredientName</li>
                             }
@@ -93,7 +103,7 @@
                     <div class="mt-4">
                         <h5 class="fs-3 fw-bold">Instructions</h5>
                         <ol>
-                            @foreach (var instruction in Model.Instructions.OrderBy(i => i.StepNumber))
+                            @foreach (var instruction in Model.Recipe.Instructions.OrderBy(i => i.StepNumber))
                             {
                                 <li class="fs-5">@instruction.Instruction</li>
                             }
@@ -102,18 +112,31 @@
 
                     <div class="mt-4">
                         <h6 class="fs-5 fw-bold">Nutrition Value</h6>
-                        <ul class="list-unstyled fs-5">
-                            <li>• Calories: 230 cal</li>
-                            <li>• Protein: 34g</li>
-                            <li>• Carbs: 9g</li>
-                            <li>• Fat: 1g</li>
-                        </ul>
-                    </div>
+                       <ul class="list-unstyled fs-5">
+    <li>• Calories: @Model.NutritionFacts?.Calories @((Model.NutritionFacts?.Calories != "Not Present") ? "kcal" : "")</li>
+    <li>• Carbohydrates: @Model.NutritionFacts?.Carbohydrates @((Model.NutritionFacts?.Carbohydrates != "Not Present") ? "g" : "")</li>
+    <li>• Protein: @Model.NutritionFacts?.Protein @((Model.NutritionFacts?.Protein != "Not Present") ? "g" : "")</li>
+    <li>• Fat: @Model.NutritionFacts?.Fat @((Model.NutritionFacts?.Fat != "Not Present") ? "g" : "")</li>
+    <li>• Monounsaturated Fat: @Model.NutritionFacts?.Monounsaturated_Fat @((Model.NutritionFacts?.Monounsaturated_Fat != "Not Present") ? "g" : "")</li>
+    <li>• Trans Fat: @Model.NutritionFacts?.Trans_Fat @((Model.NutritionFacts?.Trans_Fat != "Not Present") ? "g" : "")</li>
+    <li>• Cholesterol: @Model.NutritionFacts?.Cholesterol @((Model.NutritionFacts?.Cholesterol != "Not Present") ? "mg" : "")</li>
+    <li>• Sodium: @Model.NutritionFacts?.Sodium @((Model.NutritionFacts?.Sodium != "Not Present") ? "mg" : "")</li>
+    <li>• Potassium: @Model.NutritionFacts?.Potassium @((Model.NutritionFacts?.Potassium != "Not Present") ? "mg" : "")</li>
+    <li>• Fiber: @Model.NutritionFacts?.Fiber @((Model.NutritionFacts?.Fiber != "Not Present") ? "g" : "")</li>
+    <li>• Sugar: @Model.NutritionFacts?.Sugar @((Model.NutritionFacts?.Sugar != "Not Present") ? "g" : "")</li>
+    <li>• Vitamin A: @Model.NutritionFacts?.Vitamin_A @((Model.NutritionFacts?.Vitamin_A != "Not Present") ? "IU" : "")</li>
+    <li>• Vitamin C: @Model.NutritionFacts?.Vitamin_C @((Model.NutritionFacts?.Vitamin_C != "Not Present") ? "mg" : "")</li>
+    <li>• Calcium: @Model.NutritionFacts?.Calcium @((Model.NutritionFacts?.Calcium != "Not Present") ? "mg" : "")</li>
+    <li>• Iron: @Model.NutritionFacts?.Iron @((Model.NutritionFacts?.Iron != "Not Present") ? "mg" : "")</li>
+</ul>
+
+                    </div>  
                 </div>
 
                 <div class="col-md-4">
                     <div class="card shadow-sm">
-                        <img src="@Model.RecipeImage" alt="@Model.RecipeName" class="card-img-top rounded" />
+                        <img src="@Model.Recipe.RecipeImage" alt="@Model.Recipe.RecipeName"
+                            class="card-img-top rounded" />
                     </div>
                 </div>
             </div>
@@ -121,11 +144,11 @@
             <div class="mt-5">
                 <h5 class="fs-3 fw-bold">Gallery</h5>
                 <div class="d-flex gap-3 flex-wrap">
-                    <img src="@Model.RecipeImage" alt="Gallery" class="img-thumbnail"
+                    <img src="@Model.Recipe.RecipeImage" alt="Gallery" class="img-thumbnail"
                         style="width: 120px; height: 120px; object-fit: cover;" />
-                    <img src="@Model.RecipeImage" alt="Gallery" class="img-thumbnail"
+                    <img src="@Model.Recipe.RecipeImage" alt="Gallery" class="img-thumbnail"
                         style="width: 120px; height: 120px; object-fit: cover;" />
-                    <img src="@Model.RecipeImage" alt="Gallery" class="img-thumbnail"
+                    <img src="@Model.Recipe.RecipeImage" alt="Gallery" class="img-thumbnail"
                         style="width: 120px; height: 120px; object-fit: cover;" />
                 </div>
             </div>
