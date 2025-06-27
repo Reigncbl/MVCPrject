@@ -3,13 +3,20 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/MealPlanner.css" />
+    <link rel="stylesheet" href="/css/MealPlanner/MealPlanner.css" />
+    <link rel="stylesheet" href="/css/MealPlanner/GenerateGrocery.css" />
+    <link rel="stylesheet" href="/css/MealPlanner/SetGoal.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 }
+
+@await Html.PartialAsync("Modals/GenerateGrocery")
+@await Html.PartialAsync("Modals/SetGoal")
 
 @section Scripts {
     <script src="https://unpkg.com/feather-icons"></script>
     <script src="~/js/MealPlanner.js" asp-append-version="true"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 }
 
 <div class="container-fluid p-0">
@@ -20,8 +27,19 @@
             <div class="d-flex justify-content-between align-items-center px-4 mb-3">
                 <!-- Left Side: Greeting -->
                 <h5 class="fw-bold user-greeting">Kumusta, User!</h5>
+
                 <!-- Right Side: Feather Calendar Icon -->
-                <i data-feather="calendar" class="calendar-icon"></i>
+                  <!-- Calendar Icon + Flatpickr Setup -->
+                <div class="position-relative d-inline-flex align-items-center" id="calendarWrapper">
+                    <!-- Input used by Flatpickr (not hidden, but tiny and offscreen) -->
+                    <input type="text" id="dateInput" data-input style="opacity:0; position:absolute; pointer-events:none;" />
+
+                    <!-- Trigger Icon -->
+                    <button type="button" class="btn p-2" data-toggle>
+                        <i data-feather="calendar"></i>
+                    </button>
+                </div>
+
             </div>
 
             <!-- Date Navigation -->
@@ -41,12 +59,12 @@
             </div>
 
             <!-- Date Cards -->
-            <div id="date-cards" class="d-flex justify-content-center gap-2 flex-wrap mb-3"></div>
+                <div id="date-cards" class="d-flex justify-content-center gap-2 flex-wrap mb-3"></div>
 
             <!-- Log Button -->
             <div class="row justify-content-center">
                 <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-                    <button class="btn btn-light rounded-pill shadow-sm w-100 text-nowrap log-btn">Log Meal</button>
+                    <button class="btn btn-light rounded-pill shadow-sm w-100 text-nowrap log-btn" onclick="openLogMealForm()">Log Meal</button>
                 </div>
             </div>
         </div>
@@ -71,6 +89,7 @@
         </div>
 
         <!-- NUTRITION SUMMARY SECTION -->
+
         <div class="container">
             <!-- Title, Set Date, Set Goal -->
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -88,7 +107,70 @@
                         </ul>
                     </div>
                     <!-- Set Goal BTN -->
-                    <button class="btn btn-goal px-3" onclick="setGoal()">Set Goal</button>
+                    <button id="setGoalBtn" class="btn btn-goal px-3" data-bs-toggle="modal" data-bs-target="#nutritionGoalModal">Set Goal</button>
+
+                </div>
+            </div>
+
+            <!-- Nutrition Cards Row -->
+            <div class="row g-3">
+                <!-- Calories Card -->
+                <div class="col-6 col-md-3">
+                    <div class="nutrition-card text-center">
+                        <div class="nutrition-value">1,809</div>
+                        <div class="nutrition-label">calories</div>
+                        <div class="progress-bar-custom">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Protein Card -->
+                <div class="col-6 col-md-3">
+                    <div class="nutrition-card text-center">
+                        <div class="nutrition-value">88 g</div>
+                        <div class="nutrition-label">protein</div>
+                        <div class="progress-bar-custom">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Carbs Card -->
+                <div class="col-6 col-md-3">
+                    <div class="nutrition-card text-center">
+                        <div class="nutrition-value">180 g</div>
+                        <div class="nutrition-label">carbs</div>
+                        <div class="progress-bar-custom">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Fat Card -->
+                <div class="col-6 col-md-3">
+                    <div class="nutrition-card text-center">
+                        <div class="nutrition-value">62 g</div>
+                        <div class="nutrition-label">fat</div>
+                        <div class="progress-bar-custom">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Nutrition Tip Alert -->
+            <div class="tip-alert">
+                <div class="d-flex align-items-start">
+                    <div class="m-4 tip-icon">
+                        <i data-feather="thumbs-up"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="tip-title">Your fiber intake is high today!</div>
+                        <p class="tip-description">
+                            Great job including fiber-rich foods! This helps with digestion and keeps you full longer. Try adding mango tomorrow for even more benefits!
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -96,7 +178,7 @@
 
 <!-- Plan Meal Modal -->
 <div class="modal fade" id="mealModal" tabindex="-1" aria-labelledby="mealModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog custom-wide modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="mealModalLabel"></h5>
@@ -121,11 +203,11 @@
             <div id="formContent">
               <!-- JS will load default form here -->
             </div>
-            <button type="button" class="btn btn-primary w-100 mt-3" id="submitBtn">
+            <button type="submit" class="btn btn-primary w-100 mt-3" id="submitBtn">
               <span id="submitText">Plan Meal</span>
             </button>
           </form>
         </div>
       </div>
     </div>
-  </div>
+</div>

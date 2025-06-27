@@ -1,0 +1,91 @@
+:root {
+  --light-pink: #FFDDDD;
+  --strong-pink: #F04A4F;
+  --strong-yellow: #FBAE1F;
+  --light-yellow: #FFEDC9;
+}
+
+.generate-btn {
+    background-color: var(--strong-pink);
+    border: none;
+    transition: all 0.2s;
+  }
+  
+  .generate-btn:hover {
+    background-color: var(--strong-pink);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  
+  /* Modal item styling */
+  .list-group-item {
+    padding: 12px 16px;
+    border-left: none;
+    border-right: none;
+  }
+  
+  /* Print styling */
+  @media print {
+    .modal-header, .modal-footer {
+      display: none;
+    }
+    
+    .modal {
+      position: absolute;
+      top: 0;
+      left: 0;
+      margin: 0;
+      padding: 20px;
+    }
+
+.modal-header {
+    background-color: var(--strong-pink);
+}
+    
+.list-group-item {
+      border: 1px solid #dee2e6 !important;
+    }
+  }
+
+  .print-btn {
+    background-color: var(--strong-pink);
+    color: white;
+  }
+
+.amt-badge {
+    background-color: var(--light-yellow);
+    color: black;
+    font-size: small;
+}
+
+.btn-close {
+        background: none;
+        border: none;
+        padding: 0;
+        opacity: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+    }
+    
+    .btn-close i {
+        color: white;
+        width: 18px;
+        height: 18px;
+    }
+    
+    /* Print styles to hide non-essential elements */
+    @media print {
+        .modal-footer, .btn-close {
+            display: none !important;
+        }
+        .modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            margin: 0;
+            padding: 20px;
+        }
+    }

@@ -1,0 +1,33 @@
+  <div class="modal fade" id="groceryListModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header text-white">
+          <h5 class="modal-title">Your Grocery List</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+            <i data-feather="x"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          
+          <div id="groceryItems" class="list-group list-group-flush">
+            <!-- Dynamically populated with grocery items -->
+            <!-- Example Content -->
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+              <span>Chicken Breast</span>
+              <span class="amt-badge py-1 px-2 rounded-pill">2 lbs</span>
+            </div>
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+              <span>Bell Peppers</span>
+              <span class="amt-badge py-1 px-2 rounded-pill">3 pcs</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn fw-bold print-btn" onclick="printGroceryList()">Print
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
