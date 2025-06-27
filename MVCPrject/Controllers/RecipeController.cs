@@ -1,23 +1,25 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MVCPrject.Data;
 using MVCPrject.Models;
-using Microsoft.AspNetCore.Identity;
-using System.Security.Claims;
+using MVCPrject.Services;
 
-namespace MVCPrject
+namespace MVCPrject.Controllers
 {
     [Route("Recipe")]
     public class RecipeController : Controller
     {
         private readonly RecipeManipulationService _repository;
         private readonly UserService _userService;
-        private readonly UserManager<User> _userManager;
+        private readonly IUserCacheService _userCacheService;
 
-        public RecipeController(RecipeManipulationService repository, UserService userService, UserManager<User> userManager)
+        public RecipeController(
+            RecipeManipulationService repository,
+            UserService userService,
+            IUserCacheService userCacheService)
         {
             _repository = repository;
             _userService = userService;
-            _userManager = userManager;
+            _userCacheService = userCacheService;
         }
 
         [HttpGet("All")]
@@ -49,12 +51,6 @@ namespace MVCPrject
             return recipeDetails == null ? NotFound() : View(recipeDetails);
         }
 
-        [HttpGet("Search")]
-        public IActionResult Search(string keywords)
-        {
-            return RedirectToAction("Recipe", new { keywords });
-        }
-
         [HttpPost("Like")]
         public async Task<IActionResult> LikeRecipe([FromBody] LikeRequest request)
         {
@@ -69,9 +65,12 @@ namespace MVCPrject
 
         private async Task SetUserViewBagAsync()
         {
-            var user = await GetCurrentUserAsync();
-            ViewBag.UserName = user?.Name ?? user?.UserName ?? "User";
-            ViewBag.UserEmail = user?.Email;
+            var userInfo = await _userCacheService.GetUserInfoAsync(User);
+            if (userInfo != null)
+            {
+                ViewBag.UserName = userInfo.DisplayName;
+                ViewBag.UserEmail = userInfo.Email;
+            }
         }
 
         private async Task<(List<Recipe> recipes, string pageTitle)> GetRecipesAsync(string? keywords)
@@ -91,26 +90,9 @@ namespace MVCPrject
             return likeCounts;
         }
 
-        private async Task<User?> GetCurrentUserAsync()
-        {
-            // Try UserManager first
-            var user = await _userManager.GetUserAsync(User);
-            if (user != null) return user;
-
-            // Fallback to claims-based lookup
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!string.IsNullOrEmpty(userId))
-            {
-                return await _userManager.FindByIdAsync(userId);
-            }
-
-            var email = User.FindFirst(ClaimTypes.Email)?.Value;
-            return !string.IsNullOrEmpty(email) ? await _userManager.FindByEmailAsync(email) : null;
-        }
-
         private async Task<IActionResult> HandleLikeAction(LikeRequest request, bool isLike)
         {
-            var user = await GetCurrentUserAsync();
+            var user = await _userCacheService.GetCurrentUserAsync(User);
             if (user == null)
             {
                 return Json(new { success = false });

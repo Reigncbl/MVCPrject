@@ -27,7 +27,7 @@
 <div class="p-4 d-flex justify-content-between align-items-center">
     <h1 class=" text-start fs-1 fw-normal">Explore Recipe</h1>
     <div class="d-flex align-items-center gap-5">
-        @if (User.Identity.IsAuthenticated)
+        @if (User.Identity?.IsAuthenticated == true)
         {
             <h2 class="fs-5">Welcome, @ViewBag.UserName!</h2>
         }
@@ -68,7 +68,7 @@
                     </button>
                 </div>
                 <div class="col-md-4">
-                    <form asp-controller="Recipe" asp-action="Search" method="get"
+                    <form asp-controller="Recipe" asp-action="Recipe" method="get"
                         class="input-group p-2 border rounded-4 bg-dark-subtle d-flex align-items-center gap-2">
                         <i data-feather="search"></i>
                         <input type="text" name="keywords"
@@ -127,12 +127,12 @@
 
                     if (!list.includes(keyword)) {
                         list.push(keyword);
-                        window.location.href = '/Recipe/Search?keywords=' + list.join(',');
+                        window.location.href = '/Recipe/All?keywords=' + list.join(',');
                     }
                 }
 
                 function clearFilters() {
-                    window.location.href = '/Recipe/Search';
+                    window.location.href = '/Recipe/All';
                 }
 
                 // Toggle like/unlike functionality

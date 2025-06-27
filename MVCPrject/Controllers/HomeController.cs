@@ -26,7 +26,7 @@ namespace MVCPrject.Controllers
 
         public async Task<IActionResult> Home()
         {
-            if (User.Identity.IsAuthenticated)
+            if (User.Identity?.IsAuthenticated == true)
             {
                 var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 var userName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
@@ -57,7 +57,7 @@ namespace MVCPrject.Controllers
         [HttpGet]
         public async Task<string> GetUserInfo()
         {
-            if (User.Identity.IsAuthenticated)
+            if (User.Identity?.IsAuthenticated == true)
             {
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null)
@@ -80,7 +80,7 @@ namespace MVCPrject.Controllers
         }
 
         // Reference to logout (redirect to Landing controller)
-        public async Task<IActionResult> Logout()
+        public IActionResult Logout()
         {
             return RedirectToAction("Login", "Landing");
         }

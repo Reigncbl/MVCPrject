@@ -480,7 +480,10 @@ public class RecipeRetrieverService
 
             foreach (var recipe in recipes)
             {
-                await ScrapeAndSaveRecipeNutritionAsync(recipe.RecipeID, recipe.RecipeURL);
+            if (!string.IsNullOrEmpty(recipe.RecipeURL))
+            {
+            await ScrapeAndSaveRecipeNutritionAsync(recipe.RecipeID, recipe.RecipeURL);
+            }
             }
 
             Console.WriteLine("Nutrition facts scraping completed for all recipes.");

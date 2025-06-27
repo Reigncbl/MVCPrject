@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using MVCPrject.Data;
 using MVCPrject.Models;
 using StackExchange.Redis;
+using MVCPrject.Services;
 
 
 namespace MVCPrject
@@ -65,7 +66,8 @@ namespace MVCPrject
                 options.LoginPath = "/Landing/Login";
                 options.AccessDeniedPath = "/Landing/AccessDenied";
             });
-
+            builder.Services.AddMemoryCache(); // If not already added
+            builder.Services.AddScoped<IUserCacheService, UserCacheService>();
             //Class Built
             builder.Services.AddScoped<RecipeRetrieverService>();
             builder.Services.AddScoped<RecipeManipulationService>();

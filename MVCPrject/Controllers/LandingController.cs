@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using MVCPrject.Models;
+using MVCPrject.Services;
 
 namespace MVCPrject.Controllers
 {
@@ -8,45 +9,34 @@ namespace MVCPrject.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+        private readonly IUserCacheService _userCacheService;
 
-        public LandingController(UserManager<User> userManager, SignInManager<User> signInManager)
+        public LandingController(
+            UserManager<User> userManager,
+            SignInManager<User> signInManager,
+            IUserCacheService userCacheService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _userCacheService = userCacheService;
         }
 
-        public async Task<string> Getinfo()
+        public async Task<string> GetInfo()
         {
-            if (User.Identity.IsAuthenticated)
-            {
-                // Debug: Show what's in the claims
-                var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                var userName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
-                var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
-
-                var user = await _userManager.GetUserAsync(User);
-                if (user == null)
-                {
-                    // Try to find user by the ID from claims
-                    if (!string.IsNullOrEmpty(userId))
-                    {
-                        var userById = await _userManager.FindByIdAsync(userId);
-                        if (userById != null)
-                        {
-                            return $"Found user by ID from claims. ID: '{userById.Id}', Name: '{userById.Name}', UserName: '{userById.UserName}', Email: '{userById.Email}'";
-                        }
-                    }
-
-                    return $"User is authenticated but user object is null. Claims - UserId: '{userId}', UserName: '{userName}', Email: '{email}'";
-                }
-
-                return $"User ID: '{user.Id ?? "NULL"}', User Name: '{user.Name ?? "NULL"}', UserName: '{user.UserName ?? "NULL"}', Email: '{user.Email ?? "NULL"}'";
-            }
-            else
+            if (!User.Identity?.IsAuthenticated == true)
             {
                 return "User not authenticated";
             }
+
+            var userInfo = await _userCacheService.GetUserInfoAsync(User);
+            if (userInfo == null)
+            {
+                return "User is authenticated but user data could not be retrieved";
+            }
+
+            return $"User ID: '{userInfo.Id}', Name: '{userInfo.Name ?? "NULL"}', UserName: '{userInfo.UserName ?? "NULL"}', Email: '{userInfo.Email ?? "NULL"}'";
         }
+
         public IActionResult Index()
         {
             return View();
@@ -63,7 +53,6 @@ namespace MVCPrject.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Check if user exists first
                 var user = await _userManager.FindByEmailAsync(model.Email);
                 if (user == null)
                 {
@@ -77,7 +66,6 @@ namespace MVCPrject.Controllers
                     return RedirectToAction("Home", "Home");
                 }
 
-                // Add more detailed error information
                 if (result.IsLockedOut)
                 {
                     ModelState.AddModelError(string.Empty, "Account is locked out.");
@@ -93,10 +81,6 @@ namespace MVCPrject.Controllers
             }
             return View(model);
         }
-
-
-
-
 
         [HttpGet]
         public IActionResult Register()
@@ -115,12 +99,14 @@ namespace MVCPrject.Controllers
                     Email = model.Email,
                     Name = model.Name
                 };
+
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     return RedirectToAction("Index", "Landing");
                 }
+
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
@@ -129,5 +115,18 @@ namespace MVCPrject.Controllers
             return View(model);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Logout()
+        {
+            // Clear user cache before signing out
+            var user = await _userCacheService.GetCurrentUserAsync(User);
+            if (user != null)
+            {
+                _userCacheService.ClearUserCache(user.Id);
+            }
+
+            await _signInManager.SignOutAsync();
+            return RedirectToAction("Index");
+        }
     }
 }
