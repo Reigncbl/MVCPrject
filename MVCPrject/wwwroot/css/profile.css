@@ -26,3 +26,83 @@ body {
   font-size: 20px;
   margin-bottom: 1.5rem;
 }
+
+.upload-overlay {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.position-relative:hover .upload-overlay {
+  opacity: 1;
+  visibility: visible;
+}
+
+.grid-5 {
+  display: grid;
+  grid-template-columns: repeat(5, 225px);
+  gap: 1.5rem;
+  justify-content: start;
+}
+
+.card-hover {
+  position: relative;
+  width: 225px;
+  height: 300px;
+  overflow: hidden;
+  border-radius: 1rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  border: none;
+  transition: transform 0.2s ease-in-out;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+}
+
+.card-hover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.card-hover .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 1rem;
+  color: white;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  background: 
+    linear-gradient(to top, rgba(0,0,0,0.4) 30%, rgba(0,0,0,0) 80%),
+    radial-gradient(ellipse at center, rgba(0,0,0,0) 20%, rgba(0,0,0,0.25) 70%, rgba(0,0,0,0.5) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.card-hover:hover .overlay {
+  opacity: 1;
+}
+
+.overlay h5 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Better text readability */
+}
+
+.overlay .details {
+  display: flex;
+  gap: 1rem;
+}
+
+.overlay .details span {
+  font-size: 0.85rem;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Better text readability */
+}
