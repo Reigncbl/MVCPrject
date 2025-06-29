@@ -1,0 +1,42 @@
+<!-- AddRecipeModal.cshtml -->
+<div class="modal" id="addRecipeModal" tabindex="-1" aria-labelledby="addRecipeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered custom-modal-width">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="overall-modal-title fw-bold" id="addRecipeModalLabel">Create Recipe</h5>
+        <!-- Clode BTN  -->
+        <button type="button" class="btn text-light ms-auto" data-bs-dismiss="modal" aria-label="Close">
+            <i data-feather="x"></i>
+        </button>
+      </div>
+        
+    <!-- Modal Content  -->
+      <div class="modal-body mt-2 mx-3">
+        <!-- Step Indicator-->
+            <div class="step-indicator">
+                <div class="step-circle step-active">1</div>
+                <div class="step-line" id="lineOne"></div>
+                <div class="step-circle step-inactive">2</div>
+                <div class="step-line" id="lineTwo"></div>
+                <div class="step-circle step-inactive">3</div>
+            </div>
+        
+        <h4 class="modal-page-title fw-bold mb-4" id="recipeModalLabel">Recipe Details</h4>
+
+        <div class="modal-content-area">
+            <!-- JS Handles Form Content Here  -->
+        </div>
+      </div>
+
+        <div class="modal-footer w-100" style="border-top: none;">
+            <div class="col text-start">
+                <button type="button" class="btn btn-secondary mx-3 mb-3" data-bs-dismiss="modal" id="closeBtn">Close</button>
+                <button type="button" class="btn btn-secondary mx-3 mb-3" id="backBtn" style="display: none;">Back</button>
+            </div>
+            <div class="col text-end">
+                <button type="button" class="btn mx-3 mb-3 next-btn" id="nextStepBtn">Next Step</button>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>

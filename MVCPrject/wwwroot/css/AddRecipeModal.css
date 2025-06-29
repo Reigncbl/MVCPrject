@@ -1,0 +1,267 @@
+:root {
+  --light-pink: #FFDDDD;
+  --strong-pink: #F04A4F;
+  --dark-pink: #dd4247;
+  --strong-yellow: #FBAE1F;
+  --light-yellow: #FFEDC9;
+  --grey: #8C8C8C;
+  --blue: #324089;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  background: #fff;
+  width: 100%;
+}
+
+#addRecipeModal .modal-content {
+    border-radius: 1rem;
+}
+
+.modal-dialog.custom-modal-width {
+  max-width: 1000px !important;
+  width: 80% !important;
+}
+
+
+.modal-header {
+    background-color: var(--strong-pink);
+    color: white;
+    border-bottom: none;
+}
+
+.overall-modal-title {
+    margin-left: 1rem;
+    margin-top: .5rem;
+}
+
+.btn svg:hover {
+    color: var(--light-pink);
+}
+
+/* STEP INDICATOR */
+
+.step-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 2rem;
+}
+
+.step-circle {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    flex-shrink: 0;
+}
+
+.step-active {
+    font-weight: bold;
+    background-color: var(--strong-pink);
+}
+
+.step-inactive {
+    background-color: var(--grey);
+}
+
+.step-line {
+    height: 2px;
+    background-color: var(--grey);
+    flex: 1;
+    margin: 0 1rem; /* Space between circles */
+    min-width: 10px; /* Ensures the line is visible even if the circles are small */
+    max-width: 30px;
+}
+
+.line-active {
+    height: 2px;
+    background-color: var(--strong-pink);
+    flex: 1;
+    margin: 0 1rem;
+    min-width: 10px; 
+    max-width: 30px;
+}
+
+.modal-page-title {
+    font-size: 1.5rem;
+}
+
+/* NUTIRTION */
+
+.nutrition-row {
+    display: flex;
+    gap: 1rem; /* Adds space between items */
+    margin-bottom: 1rem;
+}
+
+.nutrition-row > div {
+    flex: 1; /* Makes each child div take equal width */
+}
+
+/* Optional: Adjust input widths within nutrition row */
+.nutrition-row input {
+    width: 100%;
+}
+
+/* Footer BTNs */
+
+.next-btn {
+    background-color: var(--strong-pink);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+}
+
+.next-btn:hover {
+    background-color: var(--dark-pink);
+    color: white;
+}
+
+/* STEP 2 STYLES */
+
+.add-btn {
+    background-color: transparent;
+    color: var(--blue);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.add-btn:hover {
+    color: var(--strong-pink);
+}
+
+.remove-btn {
+    background-color: transparent;
+    border: none;
+    color: var(--blue);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.remove-btn svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.remove-btn:hover {
+    color: var(--strong-pink);
+}
+
+/* STEP 3 STYLES */
+
+
+.upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 3rem 2rem;
+            text-align: center;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .upload-area:hover {
+            border-color: #dc3545;
+            background-color: #fff5f5;
+        }
+        
+        .upload-area.dragover {
+            border-color: #dc3545;
+            background-color: #fff5f5;
+            transform: scale(1.02);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: #6c757d;
+            margin-bottom: 1rem;
+        }
+        
+        .tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            min-height: 38px;
+            align-items: center;
+        }
+        
+        .tag {
+            background-color: #e9ecef;
+            color: #495057;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .tag .remove-tag {
+            cursor: pointer;
+            color: #6c757d;
+            font-size: 0.75rem;
+        }
+        
+        .tag .remove-tag:hover {
+            color: #dc3545;
+        }
+        
+.add-tag-btn {
+    background: none;
+    border: none;
+    color: var(--blue);
+    font-size: 0.875rem;
+    cursor: pointer;
+    padding: 0.25rem 0;
+}
+        
+.add-tag-btn:hover {
+    color: var(--strong-pink)
+}
+        
+.form-control:focus {
+    border-color: var(--strong-pink);
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.uploaded-image {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+        
+.change-image-btn {
+    font-size: 0.875rem;
+}
+
+.browse-btn {
+    background-color: var(--blue);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+}
+
+.browse-btn:hover {
+    background-color: var(--strong-pink);
+    color: white;
+}
