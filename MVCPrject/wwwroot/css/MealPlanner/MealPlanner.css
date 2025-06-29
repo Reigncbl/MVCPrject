@@ -131,9 +131,10 @@ body {
 }
 
 /* Modal Styling */
-    .modal-dialog {
-      max-width: 520px;
-    }
+#mealModal .modal-dialog {
+  max-width: 520px;
+}
+
     
     .modal-content {
       border: none;
@@ -177,10 +178,11 @@ body {
       padding: 1.5rem;
     }
 
-.custom-wide {
-    max-width: 900px;
-    width: 80%; /* responsive width */
+.modal-dialog .custom-wide {
+  max-width: 900px !important;
+  width: 80%;
 }
+
     
     /* Mode Toggle */
     .mode-toggle {
