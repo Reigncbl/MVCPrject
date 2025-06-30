@@ -16,13 +16,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     @RenderSection("Styles", required: false)
 
-
-
-
 </head>
 
 <body class="d-flex flex-column min-vh-100 overflow-hidden">
     <div class="d-flex">
+
         <nav class="d-flex flex-column flex-shrink-0 p-4 text-black bg-light border-end"
             style="width: 15vw; height: 100vh;">
             <a class="navbar-brand" href="#"><img src="~/img/logo-colored.png" alt="Logo" class="w-100 mb-5"></a>
@@ -36,18 +34,45 @@
                 <li>
                     <a class="nav-link text-black" asp-area="" asp-controller="MealPlanner"
                         asp-action="MealPlanner">Meal Planner</a>
+
                 </li>
-                <li>
-                    <a class="nav-link text-black" asp-area="" asp-controller="Recipe" asp-action="Recipe">Community</a>
+
+                <li class="nav-item mb-4">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "Recipe" ? "active" : "")"
+                    asp-area="" asp-controller="Recipe" asp-action="Recipe">
+                        <i data-feather="search" class="me-2" style="width: 20px; height: 20px;"></i>
+                        Explore
+                    </a>
                 </li>
-                <li>
-                    <a class="nav-link text-black" asp-area="" asp-controller="Chat" asp-action="Chat">Chat</a>
+
+                <li class="nav-item mb-4">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "MealPlanner" ? "active" : "")"
+                    asp-area="" asp-controller="MealPlanner" asp-action="MealPlanner">
+                        <i data-feather="calendar" class="me-2" style="width: 20px; height: 20px;"></i>
+                        Meal Planner
+                    </a>
                 </li>
-                <li>
-                    <a class="nav-link text-black" asp-area="" asp-controller="Profile" asp-action="Profile">Profile</a>
+
+                <li class="nav-item mb-4">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "Profile" ? "active" : "")"
+                    asp-area="" asp-controller="Profile" asp-action="Profile">
+                        <i data-feather="user" class="me-2" style="width: 20px; height: 20px;"></i>
+                        Profile
+                    </a>
                 </li>
             </ul>
-            <div class="mt-auto text-muted small border-top pt-3" style="font-size: 0.75rem;">
+
+            <div class="nav-item mb-4">
+                <form asp-area="" asp-controller="Logout" asp-action="Logout" method="post" class="w-100">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="nav-link w-100 border-0 bg-transparent text-start d-flex align-items-center">
+                        <i data-feather="log-out" class="me-2" style="width: 20px; height: 20px;"></i>
+                        <span>Logout</span>
+                    </button>
+                </form>
+            </div>
+
+            <div class="text-muted small pt-2 mt-2 border-top" style="font-size: 0.70rem;">
                 <p class="mb-0">Rules | Privacy | User Agreement</p>
                 <p class="mb-0">Cooking Ina, Inc. © 2025. All rights reserved.</p>
             </div>
