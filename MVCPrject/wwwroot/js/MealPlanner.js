@@ -220,9 +220,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 <label class="form-label fw-normal">OR</label>
             </div>
 
-            <div class="mb-3">
+            <div class="mb-3 position-relative">
                 <label for="recipeSearch" class="form-label">Find a Recipe</label>
-                <input type="text" name="recipeSearch" id="recipeSearch" class="form-control" placeholder="Select a recipe from the list...">
+                <input type="text" name="recipeSearch" id="recipeSearch" class="form-control" placeholder="Search for a recipe..." autocomplete="off">
+                <div id="recipeDropdown" class="dropdown-menu w-100" style="max-height: 200px; overflow-y: auto; display: none;"></div>
             </div>
         `;
 
@@ -252,6 +253,9 @@ document.addEventListener("DOMContentLoaded", function () {
             uploadLabel.style.display = '';
           }
         });
+
+        // Set up recipe search functionality
+        setupRecipeSearch();
     }
     
     // Update submit button text based on mode
@@ -329,6 +333,217 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 });
+
+// Recipe search variables
+let searchTimeout;
+const SEARCH_DELAY = 300; // milliseconds
+
+// Recipe search functionality
+function setupRecipeSearch() {
+    const searchInput = document.getElementById('recipeSearch');
+    const dropdown = document.getElementById('recipeDropdown');
+    
+    if (!searchInput || !dropdown) return;
+
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        
+        // Clear previous timeout
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+        
+        if (query.length === 0) {
+            hideDropdown();
+            return;
+        }
+
+        // Add loading indicator
+        dropdown.innerHTML = '<div class="dropdown-item-text text-muted"><i class="spinner-border spinner-border-sm me-2"></i>Searching...</div>';
+        dropdown.style.display = 'block';
+
+        // Debounce the search to avoid too many API calls
+        searchTimeout = setTimeout(() => {
+            searchRecipesFromAPI(query);
+        }, SEARCH_DELAY);
+    });
+
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+            hideDropdown();
+        }
+    });
+
+    // Handle keyboard navigation
+    searchInput.addEventListener('keydown', function(e) {
+        const items = dropdown.querySelectorAll('.dropdown-item:not(.dropdown-item-text)');
+        const activeItem = dropdown.querySelector('.dropdown-item.active');
+        let currentIndex = Array.from(items).indexOf(activeItem);
+
+        switch(e.key) {
+            case 'ArrowDown':
+                e.preventDefault();
+                if (items.length > 0) {
+                    currentIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+                    setActiveItem(items, currentIndex);
+                }
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                if (items.length > 0) {
+                    currentIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+                    setActiveItem(items, currentIndex);
+                }
+                break;
+            case 'Enter':
+                e.preventDefault();
+                if (activeItem) {
+                    activeItem.click();
+                }
+                break;
+            case 'Escape':
+                hideDropdown();
+                break;
+        }
+    });
+}
+
+// Search recipes from API
+async function searchRecipesFromAPI(query) {
+    try {
+        const response = await fetch(`/Recipe/Search?query=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            displayRecipeResults(data.recipes);
+        } else {
+            showSearchError('Failed to search recipes');
+        }
+    } catch (error) {
+        console.error('Recipe search error:', error);
+        showSearchError('Error searching recipes');
+    }
+}
+
+function showSearchError(message) {
+    const dropdown = document.getElementById('recipeDropdown');
+    dropdown.innerHTML = `<div class="dropdown-item-text text-danger">${message}</div>`;
+    dropdown.style.display = 'block';
+}
+
+function displayRecipeResults(recipes) {
+    const dropdown = document.getElementById('recipeDropdown');
+    
+    if (recipes.length === 0) {
+        dropdown.innerHTML = '<div class="dropdown-item-text text-muted">No recipes found</div>';
+        dropdown.style.display = 'block';
+        return;
+    }
+
+    dropdown.innerHTML = recipes.map(recipe => {
+        const calories = recipe.calories || 'N/A';
+        const protein = recipe.protein || 'N/A';
+        const description = recipe.description || recipe.type || 'No description available';
+        const defaultImage = 'https://via.placeholder.com/40x40/e9ecef/6c757d?text=🍽️';
+        const recipeImage = recipe.image || defaultImage;
+        
+        return `
+            <div class="dropdown-item recipe-item" data-recipe='${JSON.stringify(recipe)}' style="cursor: pointer;">
+                <div class="d-flex align-items-start">
+                    <!-- Recipe Image -->
+                    <div class="me-3">
+                        <img src="${recipeImage}" 
+                             alt="${recipe.name}" 
+                             class="rounded" 
+                             style="width: 40px; height: 40px; object-fit: cover;"
+                             onerror="this.src='${defaultImage}'">
+                    </div>
+                    
+                    <!-- Recipe Details -->
+                    <div class="flex-grow-1">
+                        <div class="fw-bold">${recipe.name}</div>
+                        <small class="text-muted">${description}</small>
+                        ${recipe.author ? `<br><small class="text-muted">by ${recipe.author}</small>` : ''}
+                    </div>
+                    
+                    <!-- Nutrition Info -->
+                    <div class="text-end ms-2">
+                        <small class="text-primary">${calories} cal</small>
+                        <br>
+                        <small class="text-muted">${protein}g protein</small>
+                        ${recipe.cookTime ? `<br><small class="text-muted">${recipe.cookTime} min</small>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // Add click handlers to recipe items
+    dropdown.querySelectorAll('.recipe-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const recipe = JSON.parse(this.dataset.recipe);
+            selectRecipe(recipe);
+        });
+
+        // Add hover effect
+        item.addEventListener('mouseenter', function() {
+            dropdown.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+
+    dropdown.style.display = 'block';
+}
+
+function selectRecipe(recipe) {
+    // Fill in the form fields with recipe data
+    document.getElementById('mealName').value = recipe.name;
+    
+    // Handle nutrition values - convert strings to numbers if needed
+    const calories = recipe.calories ? (typeof recipe.calories === 'string' ? parseInt(recipe.calories) : recipe.calories) : '';
+    const protein = recipe.protein ? (typeof recipe.protein === 'string' ? parseInt(recipe.protein) : recipe.protein) : '';
+    const carbs = recipe.carbs ? (typeof recipe.carbs === 'string' ? parseInt(recipe.carbs) : recipe.carbs) : '';
+    const fat = recipe.fat ? (typeof recipe.fat === 'string' ? parseInt(recipe.fat) : recipe.fat) : '';
+    
+    document.getElementById('calories').value = calories;
+    document.getElementById('protein').value = protein;
+    document.getElementById('carbs').value = carbs;
+    document.getElementById('fat').value = fat;
+    
+    // Update search input to show selected recipe
+    document.getElementById('recipeSearch').value = recipe.name;
+    
+    // Hide dropdown
+    hideDropdown();
+    
+    // Optional: Show a success message or highlight the filled fields
+    showRecipeSelectedFeedback();
+}
+
+function hideDropdown() {
+    const dropdown = document.getElementById('recipeDropdown');
+    if (dropdown) {
+        dropdown.style.display = 'none';
+    }
+}
+
+function setActiveItem(items, index) {
+    items.forEach(item => item.classList.remove('active'));
+    if (items[index]) {
+        items[index].classList.add('active');
+    }
+}
+
+function showRecipeSelectedFeedback() {
+    const searchInput = document.getElementById('recipeSearch');
+    if (searchInput) {
+        searchInput.classList.add('is-valid');
+        setTimeout(() => {
+            searchInput.classList.remove('is-valid');
+        }, 2000);
+    }
+}
 
 // OUTSIDE the DOMContentLoaded event listener
 

@@ -135,19 +135,122 @@ namespace MVCPrject.Models
     }
     public class AddRecipeRequest
     {
-        public string? RecipeName { get; set; }
-        public string? Description { get; set; }
-        public string? RecipeAuthor { get; set; }
-        public int? Servings { get; set; }
-        public int? CookingTime { get; set; }
-        public int? Calories { get; set; }
-        public int? Protein { get; set; }
-        public int? Carbs { get; set; }
-        public int? Fat { get; set; }
-        public List<string>? Ingredients { get; set; }
-        public List<string>? Instructions { get; set; }
-        public string? ImageUrl { get; set; } // Base64 or file path
-        public string? RecipeType { get; set; }
+    public string? RecipeName { get; set; }
+    public string? Description { get; set; }
+    public string? RecipeAuthor { get; set; }
+    public int? Servings { get; set; }
+    public int? CookingTime { get; set; }
+    public int? Calories { get; set; }
+    public int? Protein { get; set; }
+    public int? Carbs { get; set; }
+    public int? Fat { get; set; }
+    public List<string>? Ingredients { get; set; }
+    public List<string>? Instructions { get; set; }
+    public string? ImageUrl { get; set; } // Base64 or file path
+    public string? RecipeType { get; set; }
     }
-
-}
+    
+    [Table("meal_log")]
+    public class MealLog
+    {
+    [Key]
+    [Column("LogID")]
+    public int MealLogID { get; set; }
+    
+    [Required]
+    [ForeignKey("User")]
+    public string? UserID { get; set; }
+    
+    [Required]
+    [StringLength(50)]
+    public string? MealType { get; set; } // "almusal", "tanghalian", "meryenda", "hapunan"
+    
+    [Required]
+    [StringLength(200)]
+    public string? MealName { get; set; }
+    
+    [Required]
+    [Column("date")]
+    public DateTime MealDate { get; set; }
+    
+    public TimeSpan? MealTime { get; set; }
+    
+    public string? Calories { get; set; } // Keep as string to match your RecipeNutritionFacts pattern
+    
+    public string? Protein { get; set; } // Keep as string to match your RecipeNutritionFacts pattern
+    
+    public string? Carbohydrates { get; set; } // Keep as string to match your RecipeNutritionFacts pattern
+    
+    public string? Fat { get; set; } // Keep as string to match your RecipeNutritionFacts pattern
+    
+    public string? MealPhoto { get; set; } // URL or file path
+    
+    [Required]
+    [StringLength(20)]
+    public string? Mode { get; set; } // "planned" or "logged"
+    
+    public int? RecipeID { get; set; } // Optional reference to recipe if selected from search
+    
+    [StringLength(500)]
+    public string? Notes { get; set; }
+    
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    
+    public DateTime? UpdatedAt { get; set; }
+    
+    // Navigation properties
+    public virtual User? User { get; set; }
+    
+    [ForeignKey("RecipeID")]
+    public virtual Recipe? Recipe { get; set; }
+    }
+    
+    // DTO for API requests
+    public class AddMealLogRequest
+    {
+    public string? MealType { get; set; }
+    public string? MealName { get; set; }
+    public DateTime MealDate { get; set; }
+    public TimeSpan? MealTime { get; set; }
+    public string? Calories { get; set; }
+    public string? Protein { get; set; }
+    public string? Carbohydrates { get; set; }
+    public string? Fat { get; set; }
+    public string? MealPhoto { get; set; }
+    public string? Mode { get; set; }
+    public int? RecipeID { get; set; }
+    public string? Notes { get; set; }
+    }
+    
+    // DTO for API responses
+    public class MealLogResponse
+    {
+    public int MealLogID { get; set; }
+    public string? MealType { get; set; }
+    public string? MealName { get; set; }
+    public DateTime MealDate { get; set; }
+    public string? MealTime { get; set; }
+    public string? Calories { get; set; }
+    public string? Protein { get; set; }
+    public string? Carbohydrates { get; set; }
+    public string? Fat { get; set; }
+    public string? MealPhoto { get; set; }
+    public string? Mode { get; set; }
+    public string? RecipeName { get; set; }
+    public string? Notes { get; set; }
+    public DateTime CreatedAt { get; set; }
+    }
+    
+    // DTO for daily summary
+    public class DailySummaryResponse
+    {
+    public DateTime Date { get; set; }
+    public int TotalCalories { get; set; }
+    public decimal TotalProtein { get; set; }
+    public decimal TotalCarbs { get; set; }
+    public decimal TotalFat { get; set; }
+    public int MealCount { get; set; }
+    public List<MealLogResponse> Meals { get; set; } = new List<MealLogResponse>();
+    }
+    
+    }
