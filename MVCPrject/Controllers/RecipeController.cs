@@ -85,14 +85,14 @@ namespace MVCPrject.Controllers
                 }
 
                 var recipes = await _repository.SearchRecipesByIngredientsAsync(query);
-                
+
                 var recipeResults = new List<object>();
-                
+
                 foreach (var recipe in recipes.Take(10)) // Limit to 10 results for performance
                 {
                     // Get nutrition facts for each recipe
                     var nutritionFacts = await GetRecipeNutritionAsync(recipe.RecipeID);
-                    
+
                     recipeResults.Add(new
                     {
                         id = recipe.RecipeID,

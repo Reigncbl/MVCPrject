@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="~/css/AddRecipeModal.css" asp-append-version="true" />
     <script src="~/js/AddRecipeModal.js" asp-append-version="true"></script>
     <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     @RenderSection("Styles", required: false)
 
 
@@ -33,7 +34,8 @@
                     <a class="nav-link text-black" asp-area="" asp-controller="Recipe" asp-action="Recipe">Explore</a>
                 </li>
                 <li>
-                    <a class="nav-link text-black" asp-area="" asp-controller="MealPlanner" asp-action="MealPlanner">Meal Planner</a>
+                    <a class="nav-link text-black" asp-area="" asp-controller="MealPlanner"
+                        asp-action="MealPlanner">Meal Planner</a>
                 </li>
                 <li>
                     <a class="nav-link text-black" asp-area="" asp-controller="Recipe" asp-action="Recipe">Community</a>
@@ -58,14 +60,21 @@
             </main>
         </div>
         <!-- Floating Buttons -->
-        <div class="position-fixed bottom-0 end-0 p-4 d-flex flex-column gap-3 align-items-end">
-            <button id="openAddRecipeModal" class="btn rounded-circle shadow" style="width: 56px; height: 56px; background-color: #EC433E;" data-bs-toggle="modal" data-bs-target="#addRecipeModal">
+        <div class="position-fixed bottom-0 end-0 p-4 d-flex flex-column gap-3 align-items-end" style="z-index: 999;">
+            <button id="openAddRecipeModal" class="btn rounded-circle shadow"
+                style="width: 56px; height: 56px; background-color: #EC433E;" data-bs-toggle="modal"
+                data-bs-target="#addRecipeModal">
                 <i data-feather="plus" class="text-white fw-bold"></i>
             </button>
-            <button class="btn rounded-circle shadow" style="width: 56px; height: 56px; background-color: #EC433E;">
+            <button id="openChatbotModal" class="btn rounded-circle shadow"
+                style="width: 56px; height: 56px; background-color: #EC433E;" data-bs-toggle="modal"
+                data-bs-target="#chatbotModal">
                 <img src="~/img/bot-btn.png" alt="chatbot" style="width: 24px;">
             </button>
         </div>
+
+        <!-- Chatbot Modal -->
+        @await Html.PartialAsync("~/Views/Chat/_ChatbotModal.cshtml", new MVCPrject.Models.Chat())
     </div>
 
     <script>feather.replace()</script>
