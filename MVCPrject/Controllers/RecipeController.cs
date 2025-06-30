@@ -2,7 +2,7 @@
 using MVCPrject.Data;
 using MVCPrject.Models;
 using MVCPrject.Services;
-
+using Azure.Storage.Blobs;
 namespace MVCPrject.Controllers
 {
     [Route("Recipe")]
@@ -12,14 +12,18 @@ namespace MVCPrject.Controllers
         private readonly UserService _userService;
         private readonly IUserCacheService _userCacheService;
 
+        private readonly BlobServiceClient _blobServiceClient;
+
         public RecipeController(
-            RecipeManipulationService repository,
-            UserService userService,
-            IUserCacheService userCacheService)
+       RecipeManipulationService repository,
+       UserService userService,
+       IUserCacheService userCacheService,
+       BlobServiceClient blobServiceClient)
         {
             _repository = repository;
             _userService = userService;
             _userCacheService = userCacheService;
+            _blobServiceClient = blobServiceClient;
         }
 
         [HttpGet("All")]
@@ -68,18 +72,32 @@ namespace MVCPrject.Controllers
         {
             try
             {
-                // Get the current authenticated user as the recipe author
                 string recipeAuthor = "Anonymous";
                 if (User.Identity?.IsAuthenticated == true)
                 {
                     var userInfo = await _userCacheService.GetUserInfoAsync(User);
-                    if (userInfo != null)
-                    {
-                        recipeAuthor = userInfo.DisplayName ?? userInfo.Email ?? "Anonymous";
-                    }
+                    recipeAuthor = userInfo?.DisplayName ?? userInfo?.Email ?? "Anonymous";
                 }
 
-                // Create recipe object from request
+                string? uploadedImageUrl = null;
+
+                // Upload image to Azure Blob Storage if provided
+                if (!string.IsNullOrEmpty(request.ImageUrl))
+                {
+                    var containerClient = _blobServiceClient.GetBlobContainerClient("recipes");
+                    await containerClient.CreateIfNotExistsAsync();
+
+                    var blobName = $"{Guid.NewGuid()}-{Path.GetFileName(request.ImageUrl)}";
+                    var blobClient = containerClient.GetBlobClient(blobName);
+
+                    using (var stream = new MemoryStream(Convert.FromBase64String(request.ImageUrl)))
+                    {
+                        await blobClient.UploadAsync(stream, overwrite: true);
+                    }
+
+                    uploadedImageUrl = blobClient.Uri.ToString();
+                }
+
                 var recipe = new Recipe
                 {
                     RecipeName = request.RecipeName,
@@ -87,33 +105,30 @@ namespace MVCPrject.Controllers
                     RecipeAuthor = recipeAuthor,
                     RecipeServings = request.Servings?.ToString(),
                     CookTimeMin = request.CookingTime,
-                    PrepTimeMin = 0, // Not captured in modal, set to 0
-                    RecipeType = request.RecipeType ?? "Main Course", // Use value from the request or fallback to default
-                    RecipeImage = request.ImageUrl,
+                    PrepTimeMin = 0,
+                    RecipeType = request.RecipeType ?? "Main Course",
+                    RecipeImage = uploadedImageUrl,
                     RecipeURL = null
                 };
 
                 var recipeId = await _repository.AddRecipeAsync(recipe);
 
-                // Add ingredients if provided
                 if (request.Ingredients?.Any() == true)
                 {
                     await _repository.AddRecipeIngredientsAsync(recipeId, request.Ingredients);
                 }
 
-                // Add instructions if provided
                 if (request.Instructions?.Any() == true)
                 {
                     await _repository.AddRecipeInstructionsAsync(recipeId, request.Instructions);
                 }
 
-                // Add nutrition facts if provided
                 if (request.Calories.HasValue || request.Protein.HasValue || request.Carbs.HasValue || request.Fat.HasValue)
                 {
                     await _repository.AddRecipeNutritionAsync(recipeId, request.Calories, request.Protein, request.Carbs, request.Fat);
                 }
 
-                return Json(new { success = true, recipeId = recipeId, message = "Recipe added successfully!" });
+                return Json(new { success = true, recipeId, message = "Recipe added successfully!" });
             }
             catch (Exception ex)
             {

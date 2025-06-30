@@ -22,12 +22,10 @@ namespace MVCPrject
 
             builder.Services.AddControllersWithViews();
             //Azure storage
-            //     builder.Services.AddSingleton(x =>
+            var azureBlobConnectionString = builder.Configuration.GetSection("AzureBlobStorage")["ConnectionString"];
 
-
-            //new BlobServiceClient(builder.Configuration.GetConnectionString("AzureBlobStorage:ConnectionString")));
-
-
+            // Register BlobServiceClient with the connection string from configuration
+            builder.Services.AddSingleton(x => new BlobServiceClient(azureBlobConnectionString));
             //Redis
             builder.Services.AddStackExchangeRedisCache(options =>
             {

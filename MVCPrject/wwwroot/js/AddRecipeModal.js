@@ -577,66 +577,93 @@ class WizardController {
             instructions.push(...recipeFormData.instructions);
         }
 
-        // Prepare the request payload
-        const requestData = {
-            recipeName: formData.recipeName || '',
-            description: formData.description || '',
-            recipeAuthor: formData.recipeAuthor || 'Anonymous',
-            recipeType: formData.recipeType || 'Main Course',
-            servings: parseInt(formData.servings) || null,
-            cookingTime: parseInt(formData.cookingTime) || null,
-            calories: parseInt(formData.calories) || null,
-            protein: parseInt(formData.protein) || null,
-            carbs: parseInt(formData.carbs) || null,
-            fat: parseInt(formData.fat) || null,
-            ingredients: ingredients,
-            instructions: instructions,
-            imageUrl: formData.imageUrl || null
-        };
-
-        try {
-            // Show loading state
-            this.uiManager.updateButtonText('Saving...');
-            this.uiManager.nextBtn.disabled = true;
-
-            // Submit to server
-            const response = await fetch('/Recipe/Add', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestData)
+        // Helper to convert file to base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result.split(',')[1]); // Remove data:image/*;base64,
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
             });
+        }
 
-            const result = await response.json();
+        // Prepare the request payload
+        const prepareAndSend = async (imageBase64) => {
+            const requestData = {
+                recipeName: formData.recipeName || '',
+                description: formData.description || '',
+                recipeAuthor: formData.recipeAuthor || 'Anonymous',
+                recipeType: formData.recipeType || 'Main Course',
+                servings: parseInt(formData.servings) || null,
+                cookingTime: parseInt(formData.cookingTime) || null,
+                calories: parseInt(formData.calories) || null,
+                protein: parseInt(formData.protein) || null,
+                carbs: parseInt(formData.carbs) || null,
+                fat: parseInt(formData.fat) || null,
+                ingredients: ingredients,
+                instructions: instructions,
+                imageUrl: imageBase64 || null
+            };
 
-            if (result.success) {
-                // Show success message
-                this.showToast('Recipe added successfully!', 'success');
-                
-                // Close modal and reset
-                this.uiManager.closeModal();
-                this.reset();
-                
-                // Optionally redirect to the new recipe or refresh the page
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-            } else {
-                // Show error message
-                this.showToast(result.message || 'Failed to add recipe. Please try again.', 'error');
+            try {
+                // Show loading state
+                this.uiManager.updateButtonText('Saving...');
+                this.uiManager.nextBtn.disabled = true;
+
+                // Submit to server
+                const response = await fetch('/Recipe/Add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Show success message
+                    this.showToast('Recipe added successfully!', 'success');
+                    
+                    // Close modal and reset
+                    this.uiManager.closeModal();
+                    this.reset();
+                    
+                    // Optionally redirect to the new recipe or refresh the page
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    // Show error message
+                    this.showToast(result.message || 'Failed to add recipe. Please try again.', 'error');
+                    
+                    // Reset button state
+                    this.uiManager.updateButtonText('Finish');
+                    this.uiManager.nextBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error submitting recipe:', error);
+                this.showToast('An error occurred while adding the recipe. Please try again.', 'error');
                 
                 // Reset button state
                 this.uiManager.updateButtonText('Finish');
                 this.uiManager.nextBtn.disabled = false;
             }
-        } catch (error) {
-            console.error('Error submitting recipe:', error);
-            this.showToast('An error occurred while adding the recipe. Please try again.', 'error');
-            
-            // Reset button state
-            this.uiManager.updateButtonText('Finish');
-            this.uiManager.nextBtn.disabled = false;
+        };
+
+        // Check if an image file is selected
+        const fileInput = document.getElementById('fileInput');
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+            const file = fileInput.files[0];
+            try {
+                const base64 = await fileToBase64(file);
+                await prepareAndSend.call(this, base64);
+            } catch (e) {
+                console.error('Image conversion failed', e);
+                await prepareAndSend.call(this, null);
+            }
+        } else {
+            await prepareAndSend.call(this, formData.imageUrl || null);
         }
     }
 
