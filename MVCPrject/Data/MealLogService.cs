@@ -1,194 +1,130 @@
-using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
+using MVCPrject.Data;
 using MVCPrject.Models;
+using Microsoft.EntityFrameworkCore;
 
-namespace MVCPrject.Data
+namespace MVCPrject.Services
 {
     public class MealLogService
     {
-        private readonly DBContext _dbContext;
+        private readonly DBContext _context;
 
-        public MealLogService(DBContext dbContext)
+        public MealLogService(DBContext context)
         {
-            _dbContext = dbContext;
+            _context = context;
         }
 
         // Add a new meal log
-        public async Task<int> AddMealLogAsync(MealLog mealLog)
+        public async Task<bool> AddMealLogAsync(MealLog mealLog)
         {
-            _dbContext.MealLogs.Add(mealLog);
-            await _dbContext.SaveChangesAsync();
-            return mealLog.MealLogID;
-        }
-
-        // Get meal logs for a specific user and date
-        public async Task<List<MealLogResponse>> GetMealLogsByDateAsync(string userId, DateTime date)
-        {
-            var startDate = date.Date;
-            var endDate = startDate.AddDays(1);
-
-            var mealLogs = await _dbContext.MealLogs
-                .Include(ml => ml.Recipe)
-                .Where(ml => ml.UserID == userId && ml.MealDate >= startDate && ml.MealDate < endDate)
-                .OrderBy(ml => ml.MealTime)
-                .ThenBy(ml => ml.CreatedAt)
-                .Select(ml => new MealLogResponse
-                {
-                    MealLogID = ml.MealLogID,
-                    MealType = ml.MealType,
-                    MealName = ml.MealName,
-                    MealDate = ml.MealDate,
-                    MealTime = ml.MealTime.HasValue ? ml.MealTime.Value.ToString(@"hh\:mm") : null,
-                    Calories = ml.Calories,
-                    Protein = ml.Protein,
-                    Carbohydrates = ml.Carbohydrates,
-                    Fat = ml.Fat,
-                    MealPhoto = ml.MealPhoto,
-                    Mode = ml.Mode,
-                    RecipeName = ml.Recipe != null ? ml.Recipe.RecipeName : null,
-                    Notes = ml.Notes,
-                    CreatedAt = ml.CreatedAt
-                })
-                .ToListAsync();
-
-            return mealLogs;
-        }
-
-        // Get meal logs by meal type for a specific user and date
-        public async Task<List<MealLogResponse>> GetMealLogsByTypeAsync(string userId, DateTime date, string mealType)
-        {
-            var startDate = date.Date;
-            var endDate = startDate.AddDays(1);
-
-            var mealLogs = await _dbContext.MealLogs
-                .Include(ml => ml.Recipe)
-                .Where(ml => ml.UserID == userId && 
-                           ml.MealDate >= startDate && 
-                           ml.MealDate < endDate && 
-                           ml.MealType == mealType)
-                .OrderBy(ml => ml.MealTime)
-                .ThenBy(ml => ml.CreatedAt)
-                .Select(ml => new MealLogResponse
-                {
-                    MealLogID = ml.MealLogID,
-                    MealType = ml.MealType,
-                    MealName = ml.MealName,
-                    MealDate = ml.MealDate,
-                    MealTime = ml.MealTime.HasValue ? ml.MealTime.Value.ToString(@"hh\:mm") : null,
-                    Calories = ml.Calories,
-                    Protein = ml.Protein,
-                    Carbohydrates = ml.Carbohydrates,
-                    Fat = ml.Fat,
-                    MealPhoto = ml.MealPhoto,
-                    Mode = ml.Mode,
-                    RecipeName = ml.Recipe != null ? ml.Recipe.RecipeName : null,
-                    Notes = ml.Notes,
-                    CreatedAt = ml.CreatedAt
-                })
-                .ToListAsync();
-
-            return mealLogs;
-        }
-
-        // Get daily summary for a user
-        public async Task<DailySummaryResponse> GetDailySummaryAsync(string userId, DateTime date)
-        {
-            var startDate = date.Date;
-            var endDate = startDate.AddDays(1);
-
-            var mealLogs = await GetMealLogsByDateAsync(userId, date);
-
-            var summary = new DailySummaryResponse
+            try
             {
-                Date = date,
-                TotalCalories = mealLogs.Sum(ml => int.TryParse(ml.Calories, out int cal) ? cal : 0),
-                TotalProtein = mealLogs.Sum(ml => decimal.TryParse(ml.Protein, out decimal prot) ? prot : 0),
-                TotalCarbs = mealLogs.Sum(ml => decimal.TryParse(ml.Carbohydrates, out decimal carb) ? carb : 0),
-                TotalFat = mealLogs.Sum(ml => decimal.TryParse(ml.Fat, out decimal fat) ? fat : 0),
-                MealCount = mealLogs.Count,
-                Meals = mealLogs
-            };
-
-            return summary;
+                await _context.MealLogs.AddAsync(mealLog);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                // Log exception (optional)
+                return false;
+            }
         }
 
-        // Update a meal log
-        public async Task<bool> UpdateMealLogAsync(int mealLogId, string userId, MealLog updatedMealLog)
+        // Get all meal logs for a specific user
+        public async Task<List<MealLog>> GetMealLogsByUserAsync(string userId)
         {
-            var existingMealLog = await _dbContext.MealLogs
-                .FirstOrDefaultAsync(ml => ml.MealLogID == mealLogId && ml.UserID == userId);
+            return await _context.MealLogs
+                .Where(m => m.UserID == userId)
+                .OrderByDescending(m => m.MealDate)
+                .ToListAsync();
+        }
 
-            if (existingMealLog == null)
+        // Get meal logs for a specific date
+        public async Task<List<MealLog>> GetMealLogsByDateAsync(DateTime date)
+        {
+            return await _context.MealLogs
+                .Include(m => m.Recipe)
+                .Where(m => m.MealDate.Date == date.Date)
+                .OrderBy(m => m.MealTime)
+                .ToListAsync();
+        }
+
+        // Get meal logs for a specific date and user
+        public async Task<List<MealLog>> GetMealLogsByDateAndUserAsync(DateTime date, string userId)
+        {
+            return await _context.MealLogs
+                .Include(m => m.Recipe)
+                .Where(m => m.MealDate.Date == date.Date && m.UserID == userId)
+                .OrderBy(m => m.MealTime)
+                .ToListAsync();
+        }
+
+        // Get all meal logs (Admin/Global Read)
+        public async Task<List<MealLog>> ReadMealLogsAsync()
+        {
+            return await _context.MealLogs
+                .Include(m => m.User) // Optional: Include navigation properties if needed
+                .Include(m => m.Recipe)
+                .OrderByDescending(m => m.MealDate)
+                .ToListAsync();
+        }
+
+        // Get a single meal log by ID
+        public async Task<MealLog?> GetMealLogByIdAsync(int logId)
+        {
+            return await _context.MealLogs
+                .Include(m => m.Recipe)
+                .FirstOrDefaultAsync(m => m.MealLogID == logId);
+        }
+
+        // Update an existing meal log
+        public async Task<bool> UpdateMealLogAsync(MealLog updatedMealLog)
+        {
+            try
+            {
+                var existingMealLog = await _context.MealLogs.FindAsync(updatedMealLog.MealLogID);
+                if (existingMealLog == null) return false;
+
+                // Update properties
+                existingMealLog.MealType = updatedMealLog.MealType;
+                existingMealLog.MealName = updatedMealLog.MealName;
+                existingMealLog.MealDate = updatedMealLog.MealDate;
+                existingMealLog.MealTime = updatedMealLog.MealTime;
+                existingMealLog.Calories = updatedMealLog.Calories;
+                existingMealLog.Protein = updatedMealLog.Protein;
+                existingMealLog.Carbohydrates = updatedMealLog.Carbohydrates;
+                existingMealLog.Fat = updatedMealLog.Fat;
+                existingMealLog.MealPhoto = updatedMealLog.MealPhoto;
+                existingMealLog.RecipeID = updatedMealLog.RecipeID;
+                existingMealLog.IsPlanned = updatedMealLog.IsPlanned;
+
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                // Log exception (optional)
                 return false;
-
-            // Update properties
-            existingMealLog.MealType = updatedMealLog.MealType;
-            existingMealLog.MealName = updatedMealLog.MealName;
-            existingMealLog.MealDate = updatedMealLog.MealDate;
-            existingMealLog.MealTime = updatedMealLog.MealTime;
-            existingMealLog.Calories = updatedMealLog.Calories;
-            existingMealLog.Protein = updatedMealLog.Protein;
-            existingMealLog.Carbohydrates = updatedMealLog.Carbohydrates;
-            existingMealLog.Fat = updatedMealLog.Fat;
-            existingMealLog.MealPhoto = updatedMealLog.MealPhoto;
-            existingMealLog.Mode = updatedMealLog.Mode;
-            existingMealLog.RecipeID = updatedMealLog.RecipeID;
-            existingMealLog.Notes = updatedMealLog.Notes;
-            existingMealLog.UpdatedAt = DateTime.UtcNow;
-
-            await _dbContext.SaveChangesAsync();
-            return true;
+            }
         }
 
         // Delete a meal log
-        public async Task<bool> DeleteMealLogAsync(int mealLogId, string userId)
+        public async Task<bool> DeleteMealLogAsync(int logId)
         {
-            var mealLog = await _dbContext.MealLogs
-                .FirstOrDefaultAsync(ml => ml.MealLogID == mealLogId && ml.UserID == userId);
-
-            if (mealLog == null)
-                return false;
-
-            _dbContext.MealLogs.Remove(mealLog);
-            await _dbContext.SaveChangesAsync();
-            return true;
-        }
-
-        // Get meal logs for a date range
-        public async Task<List<DailySummaryResponse>> GetMealLogsForDateRangeAsync(string userId, DateTime startDate, DateTime endDate)
-        {
-            var summaries = new List<DailySummaryResponse>();
-            
-            for (var date = startDate.Date; date <= endDate.Date; date = date.AddDays(1))
+            try
             {
-                var summary = await GetDailySummaryAsync(userId, date);
-                summaries.Add(summary);
+                var mealLog = await _context.MealLogs.FindAsync(logId);
+                if (mealLog == null) return false;
+
+                _context.MealLogs.Remove(mealLog);
+                await _context.SaveChangesAsync();
+                return true;
             }
-
-            return summaries;
-        }
-
-        // Get nutrition totals by meal type for a specific date
-        public async Task<Dictionary<string, object>> GetNutritionByMealTypeAsync(string userId, DateTime date)
-        {
-            var startDate = date.Date;
-            var endDate = startDate.AddDays(1);
-
-            var mealLogs = await _dbContext.MealLogs
-                .Where(ml => ml.UserID == userId && ml.MealDate >= startDate && ml.MealDate < endDate)
-                .ToListAsync();
-
-            var mealTypeNutrition = mealLogs
-                .GroupBy(ml => ml.MealType)
-                .ToDictionary(g => g.Key ?? "unknown", g => (object)new
-                {
-                    TotalCalories = g.Sum(ml => int.TryParse(ml.Calories, out int cal) ? cal : 0),
-                    TotalProtein = g.Sum(ml => decimal.TryParse(ml.Protein, out decimal prot) ? prot : 0),
-                    TotalCarbs = g.Sum(ml => decimal.TryParse(ml.Carbohydrates, out decimal carb) ? carb : 0),
-                    TotalFat = g.Sum(ml => decimal.TryParse(ml.Fat, out decimal fat) ? fat : 0),
-                    MealCount = g.Count()
-                });
-
-            return mealTypeNutrition;
+            catch
+            {
+                // Log exception (optional)
+                return false;
+            }
         }
     }
 }
