@@ -68,12 +68,23 @@ namespace MVCPrject.Controllers
         {
             try
             {
+                // Get the current authenticated user as the recipe author
+                string recipeAuthor = "Anonymous";
+                if (User.Identity?.IsAuthenticated == true)
+                {
+                    var userInfo = await _userCacheService.GetUserInfoAsync(User);
+                    if (userInfo != null)
+                    {
+                        recipeAuthor = userInfo.DisplayName ?? userInfo.Email ?? "Anonymous";
+                    }
+                }
+
                 // Create recipe object from request
                 var recipe = new Recipe
                 {
                     RecipeName = request.RecipeName,
                     RecipeDescription = request.Description,
-                    RecipeAuthor = request.RecipeAuthor ?? "Anonymous",
+                    RecipeAuthor = recipeAuthor,
                     RecipeServings = request.Servings?.ToString(),
                     CookTimeMin = request.CookingTime,
                     PrepTimeMin = 0, // Not captured in modal, set to 0
