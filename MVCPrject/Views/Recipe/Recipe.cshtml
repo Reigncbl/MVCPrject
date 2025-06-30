@@ -1,27 +1,11 @@
-﻿@model IEnumerable<MVCPrject.Models.Recipe>
+﻿@model PaginatedList<MVCPrject.Models.Recipe>
 
 @{
     ViewData["Title"] = "Recipes";
 }
 @section Styles {
     <link rel="stylesheet" href="~/css/recipe.css" />
-    <style>
-        .like-container:hover {
-            transform: scale(1.1);
-            transition: transform 0.2s ease;
-        }
-
-        .heart-icon {
-            transition: fill 0.3s ease;
-        }
-
-        .like-container:hover .heart-icon {
-            fill: #dc3545 !important;
-        }
-    </style>
 }
-
-
 
 <!-- Header Navigation -->
 <div class="p-4 d-flex justify-content-between align-items-center">
@@ -53,18 +37,16 @@
             <!-- Search Bar -->
             <div class="d-flex justify-content-between align-items-center mb-3 ">
                 <div class="col-md-4 d-flex justify-content-between gap-3">
-                    <a class="text-decoration-none text-reset fs-4 fw-medium p-3 border-bottom border-primary">All</a>
-                    <a class="text-decoration-none text-reset fs-4 fw-medium p-3">Trending</a>
-                    <a class="text-decoration-none text-reset fs-4 fw-medium p-3">Top-Rated</a>
+                    <a
+                        class="text-decoration-none text-reset fs-4 fw-medium p-3 border-bottom border-primary">Cookbook</a>
+                    <a class="text-decoration-none text-reset fs-4 fw-medium p-3">User's Recipes</a>
                 </div>
                 <div class="col-md-4 d-flex justify-content-end gap-3 px-3">
-                    <button class="btn border border-2 border-opacity-75 fw-medium text-secondary fs-6" data-bs-toggle="modal" data-bs-target="#addRecipeModal">
-                        Compose Recipe
-                    </button>
                     <button
-                        class="btn border border-2 border-opacity-75 fw-medium text-secondary fs-6 d-flex align-items-center gap-2">
+                        class="btn border border-2 border-opacity-75 fw-medium text-secondary fs-6 d-flex align-items-center justify-content-center gap-2"
+                        onclick="toggleFilters()">
                         <i data-feather="filter"></i>
-                        <a href="/" class="text-decoration-none text-reset">Filter</a>
+                        <span class="mb-0">Filter</span>
                     </button>
                 </div>
                 <div class="col-md-4">
@@ -81,7 +63,7 @@
             </div>
 
             <!-- Recipe Filter Navigation - Simple Version -->
-            <div class="mb-4">
+            <div class="mb-4" id="filterSection" style="display: none;">
                 <button onclick="addKeyword('Dinner')"
                     class="btn btn-warning rounded-3 text-white fw-medium fs-6 py-0 px-2">Dinner</button>
                 <button onclick="addKeyword('Main Course')"
@@ -121,18 +103,54 @@
             </div>
 
             <script>
+                // Toggle filter visibilityAdd commentMore actions
+                function toggleFilters() {
+                    const filterSection = document.getElementById('filterSection');
+                    const filterButton = document.querySelector('[onclick="toggleFilters()"]');
+
+                    if (filterSection.style.display === 'none' || filterSection.style.display === '') {
+                        // Show filters with smooth animation
+                        filterSection.style.display = 'block';
+                        filterSection.style.opacity = '0';
+                        filterSection.style.transform = 'translateY(-10px)';
+
+                        // Animate in
+                        setTimeout(() => {
+                            filterSection.style.transition = 'all 0.3s ease';
+                            filterSection.style.opacity = '1';
+                            filterSection.style.transform = 'translateY(0)';
+                        }, 10);
+
+                        // Update button appearance
+                        filterButton.classList.add('active-filter');
+                    } else {
+                        // Hide filters with animation
+                        filterSection.style.transition = 'all 0.3s ease';
+                        filterSection.style.opacity = '0';
+                        filterSection.style.transform = 'translateY(-10px)';
+
+                        setTimeout(() => {
+                            filterSection.style.display = 'none';
+                        }, 300);
+
+                        // Update button appearance
+                        filterButton.classList.remove('active-filter');
+                    }
+                }
+
+                // Add keyword to the URL and refresh the page
                 function addKeyword(keyword) {
                     var keywords = new URLSearchParams(window.location.search).get('keywords') || '';
                     var list = keywords ? keywords.split(',') : [];
 
                     if (!list.includes(keyword)) {
                         list.push(keyword);
-                        window.location.href = '/Recipe/All?keywords=' + list.join(',');
+                        window.location.href = '/Recipe/All?keywords=' + list.join(',') + '&pageNumber=1';
                     }
                 }
 
                 function clearFilters() {
-                    window.location.href = '/Recipe/All';
+                    window.location.href = '/Recipe/All?pageNumber=1';
                 }
 
                 // Toggle like/unlike functionality
@@ -262,6 +280,85 @@
                 </div>
                                 }
                 </div>
+                <!-- Pagination Controls -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav aria-label="Recipe pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            @if (Model.HasPreviousPage)
+                            {
+                                <li class="page-item custom-nav">
+                                    <a class="page-link"
+                                        href="@Url.Action("Recipe", new { pageNumber = Model.PageIndex - 1, keywords = ViewBag.CurrentKeywords })">
+                                        <i data-feather="chevron-left"></i> Previous
+                                    </a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="page-item disabled">
+                                    <span class="page-link bg-white"></span>
+                                </li>
+                            }
+                            @{
+                                int startPage = Math.Max(1, Model.PageIndex - 2);
+                                int endPage = Math.Min(Model.TotalPages, Model.PageIndex + 2);
+                            }
+
+                            @if (startPage > 1)
+                            {
+                                <li class="page-item border-0">
+                                    <a class="page-link"
+                                        href="@Url.Action("Recipe", new { pageNumber = 1, keywords = ViewBag.CurrentKeywords })">1</a>
+                                </li>
+                                @if (startPage > 2)
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                }
+                            }
+
+                            @for (int i = startPage; i <= endPage; i++)
+                            {
+                                <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                                    <a class="page-link"
+                                        href="@Url.Action("Recipe", new { pageNumber = i, keywords = ViewBag.CurrentKeywords })">@i</a>
+                                </li>
+                            }
+
+                            @if (endPage < Model.TotalPages)
+                            {
+                                @if (endPage < Model.TotalPages - 1)
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                }
+                                <li class="page-item">
+                                    <a class="page-link"
+                                        href="@Url.Action("Recipe", new { pageNumber = Model.TotalPages, keywords = ViewBag.CurrentKeywords })">@Model.TotalPages</a>
+                                </li>
+                            }
+
+                            @if (Model.HasNextPage)
+                            {
+                                <li class="page-item custom-nav">
+                                    <a class="page-link"
+                                        href="@Url.Action("Recipe", new { pageNumber = Model.PageIndex + 1, keywords = ViewBag.CurrentKeywords })">
+                                        Next <i data-feather="chevron-right"></i>
+                                    </a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="page-item disabled">
+                                    <span class="page-link">Next <i data-feather="chevron-right"></i></span>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
             }
         </div>
     </div>
