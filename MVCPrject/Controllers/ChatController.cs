@@ -15,20 +15,21 @@ namespace MVCPrject.Controllers
             _chatService = kernel.GetRequiredService<IChatCompletionService>();
         }
 
-        [HttpGet("Chat")]
-        public IActionResult Chat()
+        // GET: /Chat/ChatbotPartial
+        [HttpGet("ChatbotPartial")]
+        public IActionResult ChatbotPartial()
         {
-            return View(new Chat());
+            return PartialView("_ChatbotPartial", new Chat());
         }
 
-        [HttpPost("Chat")]
-        public async Task<IActionResult> Chat(Chat model)
+        // POST: /Chat/ChatbotPartial
+        [HttpPost("ChatbotPartial")]
+        public async Task<IActionResult> ChatbotPartial(Chat model)
         {
             if (ModelState.IsValid && !string.IsNullOrEmpty(model.UserInput))
             {
                 var chatHistory = new ChatHistory();
 
-                // Add previous history to the ChatHistory
                 if (model.History != null)
                 {
                     foreach (var line in model.History)
@@ -47,10 +48,9 @@ namespace MVCPrject.Controllers
                 model.History ??= new List<string>();
                 model.History.Add("User: " + model.UserInput);
                 model.History.Add("AI: " + model.AiResponse);
-                Console.WriteLine("AI: " + model.AiResponse);
             }
 
-            return View(model);
+            return PartialView("_ChatbotPartial", model);
         }
     }
 }

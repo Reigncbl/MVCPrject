@@ -8,10 +8,6 @@ html {
   }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
 html {
   position: relative;
   min-height: 100%;
@@ -19,14 +15,172 @@ html {
 
 body {
   margin-bottom: 60px;
-  overflow-x: hidden;
+  overflow: hidden !important;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+/* Floating Buttons & Panels Wrapper */
+.floating-buttons-wrapper {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 1rem;
+  z-index: 1055;
+  max-width: calc(100vw - 3rem);
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+/* Panels Container */
+.panels-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1rem;
+  order: 1; /* Panels appear on the left */
+}
+
+/* Floating Buttons Container */
+.floating-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  order: 2; /* Buttons appear on the right */
+}
+
+/* Individual Floating Button */
+.floating-btn {
+  width: 56px;
+  height: 56px;
+  background-color: #ec433e;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(236, 67, 62, 0.3);
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.floating-btn:hover {
+  background-color: #d63832;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(236, 67, 62, 0.4);
+}
+
+.floating-btn:focus {
+  box-shadow: 0 0 0 3px rgba(236, 67, 62, 0.25);
+}
+
+/* Icons inside buttons */
+.floating-btn img,
+.floating-btn i {
+  width: 24px;
+  height: 24px;
+  color: white;
+}
+
+/* Panel Styles */
+.panel {
+  display: none;
+  width: 340px;
+  max-width: calc(100vw - 8rem); /* Account for button width and gaps */
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  animation: slideInFromRight 0.3s ease-out;
+}
+
+.panel.show {
+  display: block;
+}
+
+/* Panel Animation - slide in from the right */
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Specific Panel Styles */
+#bot-panel {
+  height: auto;
+  max-height: 70vh;
+}
+
+#add-panel {
+  height: auto;
+  min-height: 200px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .floating-buttons-wrapper {
+    bottom: 1rem;
+    right: 1rem;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .panels-container {
+    order: 1;
+    align-items: flex-end;
+  }
+
+  .floating-buttons {
+    order: 2;
+    align-items: flex-end;
+  }
+
+  .panel {
+    width: 300px;
+    max-width: calc(100vw - 2rem);
+  }
+
+  .floating-btn {
+    width: 50px;
+    height: 50px;
+  }
+
+  .floating-btn img,
+  .floating-btn i {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .floating-buttons-wrapper {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .panels-container {
+    align-items: flex-end;
+  }
+
+  .panel {
+    width: 280px;
+  }
+
+  .floating-buttons-wrapper {
+    bottom: 0.75rem;
+    right: 0.75rem;
+  }
+}
+
+/* Ensure panels align properly with their corresponding buttons */
+#add-panel {
+  align-self: flex-end;
+}
+
+#bot-panel {
+  align-self: flex-end;
 }

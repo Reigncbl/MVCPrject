@@ -11,10 +11,6 @@
     <link rel="stylesheet" href="~/MVCPrject.styles.css" asp-append-version="true" />
     <script src="https://unpkg.com/feather-icons"></script>
     @RenderSection("Styles", required: false)
-
-
-
-
 </head>
 
 <body class="d-flex flex-column min-vh-100 overflow-hidden">
@@ -30,7 +26,8 @@
                     <a class="nav-link text-black" asp-area="" asp-controller="Recipe" asp-action="Recipe">Explore</a>
                 </li>
                 <li>
-                    <a class="nav-link text-black" asp-area="" asp-controller="MealPlanner" asp-action="MealPlanner">Meal Planner</a>
+                    <a class="nav-link text-black" asp-area="" asp-controller="MealPlanner"
+                        asp-action="MealPlanner">Meal Planner</a>
                 </li>
                 <li>
                     <a class="nav-link text-black" asp-area="" asp-controller="Recipe" asp-action="Recipe">Community</a>
@@ -53,23 +50,40 @@
                 @RenderBody()
             </main>
         </div>
-        <!-- Floating Buttons -->
-        <div class="position-fixed bottom-0 end-0 p-4 d-flex flex-column gap-3 align-items-end">
-            <button class="btn rounded-circle shadow" style="width: 56px; height: 56px; background-color: #EC433E;">
-                <i data-feather="plus" class="text-white fw-bold"></i>
-            </button>
-            <button class="btn rounded-circle shadow" style="width: 56px; height: 56px; background-color: #EC433E;">
-                <img src="~/img/bot-btn.png" alt="chatbot" style="width: 24px;">
-            </button>
+        <!-- Floating Buttons & Panels -->
+        <div class="floating-buttons-wrapper">
+            <!-- Panel Containers -->
+            <div class="panels-container">
+                <div id="bot-panel" class="panel">
+                    <div id="chatbot-container">
+                        @await Html.PartialAsync("_ChatbotPartial", new MVCPrject.Models.Chat())
+                    </div>
+                </div>
+
+                <div id="add-panel" class="panel">
+                    <div class="p-4">
+                        <h5 class="mb-3">Add New</h5>
+                        <p class="mb-4">Add Recipe</p>
+                        <button type="button" class="btn btn-secondary w-100" id="add-panel-close">Close</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buttons Container -->
+            <div class="floating-buttons">
+                <button id="add-panel-btn" class="btn floating-btn">
+                    <i data-feather="plus" class="text-white"></i>
+                </button>
+
+                <button id="chatbot-open-btn" class="btn floating-btn">
+                    <img src="~/img/bot-btn.png" alt="chatbot">
+                </button>
+            </div>
         </div>
     </div>
 
-    <script>feather.replace()</script>
-
-
-
-
     @await RenderSectionAsync("Scripts", required: false)
+    <script src="~/js/site.js"></script>
     <script>
         // Initialize feather icons after the DOM is fully loaded
         document.addEventListener('DOMContentLoaded', function () {

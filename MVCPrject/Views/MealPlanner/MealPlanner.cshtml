@@ -19,195 +19,201 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 }
 
-<div class="container-fluid p-0">
-        <!-- Curved Red Header Section -->
-        <div class="curved-header text-center text-dark py-4 px-3 full-expand-right">
-        
-            <!-- Top Bar: Greeting + Calendar Icon -->
-            <div class="d-flex justify-content-between align-items-center px-4 mb-3">
-                <!-- Left Side: Greeting -->
-                <h5 class="fw-bold user-greeting">Kumusta, User!</h5>
+<div class="container-fluid p-0 overflow-auto" style="height: calc(100vh - 36px);">
+    <!-- Curved Red Header Section -->
+    <div class="curved-header text-center text-dark py-4 px-3 full-expand-right">
 
-                <!-- Right Side: Feather Calendar Icon -->
-                  <!-- Calendar Icon + Flatpickr Setup -->
-                <div class="position-relative d-inline-flex align-items-center" id="calendarWrapper">
-                    <!-- Input used by Flatpickr (not hidden, but tiny and offscreen) -->
-                    <input type="text" id="dateInput" data-input style="opacity:0; position:absolute; pointer-events:none;" />
+        <!-- Top Bar: Greeting + Calendar Icon -->
+        <div class="d-flex justify-content-between align-items-center px-4 mb-3">
+            <!-- Left Side: Greeting -->
+            <h5 class="fw-bold user-greeting">Kumusta, User!</h5>
 
-                    <!-- Trigger Icon -->
-                    <button type="button" class="btn p-2" data-toggle>
-                        <i data-feather="calendar"></i>
-                    </button>
-                </div>
+            <!-- Right Side: Feather Calendar Icon -->
+            <!-- Calendar Icon + Flatpickr Setup -->
+            <div class="position-relative d-inline-flex align-items-center" id="calendarWrapper">
+                <!-- Input used by Flatpickr (not hidden, but tiny and offscreen) -->
+                <input type="text" id="dateInput" data-input
+                    style="opacity:0; position:absolute; pointer-events:none;" />
 
-            </div>
-
-            <!-- Date Navigation -->
-            <div class="d-flex justify-content-center align-items-center mb-3">
-                <!-- Centered arrows and date text -->
-                
-                <!-- Left arrow -->
-                <button class="btn p-2">
-                    <i data-feather="chevron-left"></i>
-                </button>
-                <!-- Inside Date Navigation -->
-                <h6 id="current-date" class="mb-0 mx-2 fw-semibold"></h6>
-                <!-- Right arrow -->
-                <button class="btn p-2">
-                    <i data-feather="chevron-right"></i>
+                <!-- Trigger Icon -->
+                <button type="button" class="btn p-2" data-toggle>
+                    <i data-feather="calendar"></i>
                 </button>
             </div>
 
-            <!-- Date Cards -->
-                <div id="date-cards" class="d-flex justify-content-center gap-2 flex-wrap mb-3"></div>
+        </div>
 
-            <!-- Log Button -->
-            <div class="row justify-content-center">
-                <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-                    <button class="btn btn-light rounded-pill shadow-sm w-100 text-nowrap log-btn" onclick="openLogMealForm()">Log Meal</button>
-                </div>
+        <!-- Date Navigation -->
+        <div class="d-flex justify-content-center align-items-center mb-3">
+            <!-- Centered arrows and date text -->
+
+            <!-- Left arrow -->
+            <button class="btn p-2">
+                <i data-feather="chevron-left"></i>
+            </button>
+            <!-- Inside Date Navigation -->
+            <h6 id="current-date" class="mb-0 mx-2 fw-semibold"></h6>
+            <!-- Right arrow -->
+            <button class="btn p-2">
+                <i data-feather="chevron-right"></i>
+            </button>
+        </div>
+
+        <!-- Date Cards -->
+        <div id="date-cards" class="d-flex justify-content-center gap-2 flex-wrap mb-3"></div>
+
+        <!-- Log Button -->
+        <div class="row justify-content-center">
+            <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                <button class="btn btn-light rounded-pill shadow-sm w-100 text-nowrap log-btn"
+                    onclick="openLogMealForm()">Log Meal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MEALS LOGGED SECTION -->
+
+    <div class="container py-4 ps-4">
+        <div class="container py-4 ps-4" id="meals-container">
+            <div class="row" id="meal-row">
+                <!-- Meal cards will be inserted here -->
             </div>
         </div>
 
-        <!-- MEALS LOGGED SECTION -->
-
-        <div class="container py-4 ps-4">
-            <div class="container py-4 ps-4" id="meals-container">
-                <div class="row" id="meal-row">
-                    <!-- Meal cards will be inserted here -->
-                </div>
+        <!-- Grocery List BTN aligned with meal cards -->
+        <div class="row">
+            <div class="col-md-6 offset-md-6 text-end"> <!-- Aligned to right of 2x2 grid -->
+                <button class="btn py-3 px-4 fw-bold generate-btn" onclick="generateGroceryList()">
+                    Generate Grocery List
+                </button>
             </div>
+        </div>
+    </div>
 
-            <!-- Grocery List BTN aligned with meal cards -->
-            <div class="row">
-                <div class="col-md-6 offset-md-6 text-end"> <!-- Aligned to right of 2x2 grid -->
-                    <button class="btn py-3 px-4 fw-bold generate-btn" onclick="generateGroceryList()">
-                        Generate Grocery List
+    <!-- NUTRITION SUMMARY SECTION -->
+
+    <div class="container">
+        <!-- Title, Set Date, Set Goal -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="fw-bold">Nutrition Summary</h4>
+            <div class="d-flex gap-2">
+                <!-- Set Date BTN -->
+                <div class="dropdown">
+                    <button class="btn btn-date dropdown-toggle px-3" type="button" id="dateDropdown"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        Today
                     </button>
+                    <ul class="dropdown-menu" aria-labelledby="dateDropdown">
+                        <li><a class="dropdown-item" href="#" onclick="updateDateButton('Today')">Today</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="updateDateButton('This Week')">This Week</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="updateDateButton('This Month')">This Month</a>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Set Goal BTN -->
+                <button id="setGoalBtn" class="btn btn-goal px-3" data-bs-toggle="modal"
+                    data-bs-target="#nutritionGoalModal">Set Goal</button>
+
+            </div>
+        </div>
+
+        <!-- Nutrition Cards Row -->
+        <div class="row g-3">
+            <!-- Calories Card -->
+            <div class="col-6 col-md-3">
+                <div class="nutrition-card text-center">
+                    <div class="nutrition-value">1,809</div>
+                    <div class="nutrition-label">calories</div>
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Protein Card -->
+            <div class="col-6 col-md-3">
+                <div class="nutrition-card text-center">
+                    <div class="nutrition-value">88 g</div>
+                    <div class="nutrition-label">protein</div>
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carbs Card -->
+            <div class="col-6 col-md-3">
+                <div class="nutrition-card text-center">
+                    <div class="nutrition-value">180 g</div>
+                    <div class="nutrition-label">carbs</div>
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fat Card -->
+            <div class="col-6 col-md-3">
+                <div class="nutrition-card text-center">
+                    <div class="nutrition-value">62 g</div>
+                    <div class="nutrition-label">fat</div>
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill"></div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- NUTRITION SUMMARY SECTION -->
-
-        <div class="container">
-            <!-- Title, Set Date, Set Goal -->
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 class="fw-bold">Nutrition Summary</h4>
-                <div class="d-flex gap-2">
-                    <!-- Set Date BTN -->
-                    <div class="dropdown">
-                        <button class="btn btn-date dropdown-toggle px-3" type="button" id="dateDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            Today
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="dateDropdown">
-                            <li><a class="dropdown-item" href="#" onclick="updateDateButton('Today')">Today</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="updateDateButton('This Week')">This Week</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="updateDateButton('This Month')">This Month</a></li>
-                        </ul>
-                    </div>
-                    <!-- Set Goal BTN -->
-                    <button id="setGoalBtn" class="btn btn-goal px-3" data-bs-toggle="modal" data-bs-target="#nutritionGoalModal">Set Goal</button>
-
+        <!-- Nutrition Tip Alert -->
+        <div class="tip-alert">
+            <div class="d-flex align-items-start">
+                <div class="m-4 tip-icon">
+                    <i data-feather="thumbs-up"></i>
                 </div>
-            </div>
-
-            <!-- Nutrition Cards Row -->
-            <div class="row g-3">
-                <!-- Calories Card -->
-                <div class="col-6 col-md-3">
-                    <div class="nutrition-card text-center">
-                        <div class="nutrition-value">1,809</div>
-                        <div class="nutrition-label">calories</div>
-                        <div class="progress-bar-custom">
-                            <div class="progress-fill"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Protein Card -->
-                <div class="col-6 col-md-3">
-                    <div class="nutrition-card text-center">
-                        <div class="nutrition-value">88 g</div>
-                        <div class="nutrition-label">protein</div>
-                        <div class="progress-bar-custom">
-                            <div class="progress-fill"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Carbs Card -->
-                <div class="col-6 col-md-3">
-                    <div class="nutrition-card text-center">
-                        <div class="nutrition-value">180 g</div>
-                        <div class="nutrition-label">carbs</div>
-                        <div class="progress-bar-custom">
-                            <div class="progress-fill"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Fat Card -->
-                <div class="col-6 col-md-3">
-                    <div class="nutrition-card text-center">
-                        <div class="nutrition-value">62 g</div>
-                        <div class="nutrition-label">fat</div>
-                        <div class="progress-bar-custom">
-                            <div class="progress-fill"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Nutrition Tip Alert -->
-            <div class="tip-alert">
-                <div class="d-flex align-items-start">
-                    <div class="m-4 tip-icon">
-                        <i data-feather="thumbs-up"></i>
-                    </div>
-                    <div class="flex-grow-1">
-                        <div class="tip-title">Your fiber intake is high today!</div>
-                        <p class="tip-description">
-                            Great job including fiber-rich foods! This helps with digestion and keeps you full longer. Try adding mango tomorrow for even more benefits!
-                        </p>
-                    </div>
+                <div class="flex-grow-1">
+                    <div class="tip-title">Your fiber intake is high today!</div>
+                    <p class="tip-description">
+                        Great job including fiber-rich foods! This helps with digestion and keeps you full longer. Try
+                        adding mango tomorrow for even more benefits!
+                    </p>
                 </div>
             </div>
         </div>
+    </div>
 </div>
 
 <!-- Plan Meal Modal -->
 <div class="modal fade" id="mealModal" tabindex="-1" aria-labelledby="mealModalLabel" aria-hidden="true">
     <div class="modal-dialog custom-wide modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="mealModalLabel"></h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-            <i data-feather="x"></i>
-          </button>
-        </div>
-        <div class="modal-body">
-          <!-- Mode Toggle -->
-          <div class="mode-toggle">
-            <button type="button" class="mode-btn active" data-mode="planned">
-              Plan Meal
-            </button>
-            <button type="button" class="mode-btn" data-mode="logged">
-              Log Meal
-            </button>
-          </div>
-          
-          <form id="mealForm">
-            <input type="hidden" id="mealType" name="mealType">
-            <!-- Dynamic Content Area -->
-            <div id="formContent">
-              <!-- JS will load default form here -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="mealModalLabel"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <i data-feather="x"></i>
+                </button>
             </div>
-            <button type="submit" class="btn btn-primary w-100 mt-3" id="submitBtn">
-              <span id="submitText">Plan Meal</span>
-            </button>
-          </form>
+            <div class="modal-body">
+                <!-- Mode Toggle -->
+                <div class="mode-toggle">
+                    <button type="button" class="mode-btn active" data-mode="planned">
+                        Plan Meal
+                    </button>
+                    <button type="button" class="mode-btn" data-mode="logged">
+                        Log Meal
+                    </button>
+                </div>
+
+                <form id="mealForm">
+                    <input type="hidden" id="mealType" name="mealType">
+                    <!-- Dynamic Content Area -->
+                    <div id="formContent">
+                        <!-- JS will load default form here -->
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 mt-3" id="submitBtn">
+                        <span id="submitText">Plan Meal</span>
+                    </button>
+                </form>
+            </div>
         </div>
-      </div>
     </div>
 </div>

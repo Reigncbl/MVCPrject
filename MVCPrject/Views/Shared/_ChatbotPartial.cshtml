@@ -1,0 +1,41 @@
+@model MVCPrject.Models.Chat
+
+<div id="chatbot-popup" class="card shadow-lg"
+    style="width: 340px; height: 480px; display: flex; flex-direction: column;">
+    <div class="card-header fw-semibold text-white d-flex justify-content-between align-items-center"
+        style="background-color: #EC433E;">
+        Chatbot
+        <button type="button" class="btn-close btn-close-white" id="chatbot-close-btn" aria-label="Close"></button>
+    </div>
+
+    <div class="card-body overflow-auto" id="chatbot-messages" style="flex: 1 1 auto;">
+        @if (Model?.History != null)
+        {
+            foreach (var line in Model.History)
+            {
+                <p class="mb-1">@line</p>
+            }
+        }
+        else
+        {
+            <div class="text-muted">Hello! How can I help you?</div>
+        }
+    </div>
+
+    <div class="card-footer">
+        <form id="chatbot-form" method="post" asp-action="ChatbotPartial" asp-controller="Chat" autocomplete="off"
+            class="d-flex">
+            <input asp-for="UserInput" id="chatbot-input" class="form-control me-2" placeholder="Type your message..."
+                required />
+            <button type="submit" class="btn fw-semibold text-white" style="background-color: #EC433E;">Send</button>
+
+            @if (Model?.History != null)
+            {
+                for (int i = 0; i < Model.History.Count; i++)
+                {
+                    <input type="hidden" name="History[@i]" value="@Model.History[i]" />
+                }
+            }
+        </form>
+    </div>
+</div>
