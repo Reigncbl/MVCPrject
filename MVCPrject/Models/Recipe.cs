@@ -33,14 +33,31 @@ namespace MVCPrject.Models
     {
         [Key]
         public int RecipeID { get; set; }
+        
+        [Required(ErrorMessage = "Recipe name is required")]
+        [StringLength(200, ErrorMessage = "Recipe name cannot exceed 200 characters")]
         public string? RecipeName { get; set; }
+        
+        [Url(ErrorMessage = "Please enter a valid URL for the image")]
         public string? RecipeImage { get; set; }
+        
+        [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters")]
         public string? RecipeDescription { get; set; }
+        
+        [Url(ErrorMessage = "Please enter a valid URL")]
         public string? RecipeURL { get; set; }
+        
         public string? RecipeType { get; set; }
+        
+        [StringLength(100, ErrorMessage = "Author name cannot exceed 100 characters")]
         public string? RecipeAuthor { get; set; }
+        
         public string? RecipeServings { get; set; }
+        
+        [Range(0, 1440, ErrorMessage = "Prep time must be between 0 and 1440 minutes")]
         public int? PrepTimeMin { get; set; }
+        
+        [Range(0, 1440, ErrorMessage = "Cook time must be between 0 and 1440 minutes")]
         public int? CookTimeMin { get; set; }
 
         // Computed property for total time

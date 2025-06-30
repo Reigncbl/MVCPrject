@@ -188,6 +188,80 @@ namespace MVCPrject.Data
             return allRecipes;
         }
 
+        // Add a new recipe to the database
+        public async Task<int> AddRecipeAsync(Recipe recipe)
+        {
+            _dbContext.Recipes.Add(recipe);
+            await _dbContext.SaveChangesAsync();
+            
+            // Clear relevant cache entries
+            await ClearRecipeCacheAsync();
+            
+            return recipe.RecipeID;
+        }
+
+        // Add ingredients to a recipe
+        public async Task AddRecipeIngredientsAsync(int recipeId, List<string> ingredients)
+        {
+            var recipeIngredients = ingredients.Select((ingredient, index) => new RecipeIngredients
+            {
+                RecipeID = recipeId,
+                IngredientName = ingredient,
+                Quantity = null, // Could be enhanced to parse quantity from ingredient string
+                Unit = null
+            }).ToList();
+
+            _dbContext.RecipeIngredients.AddRange(recipeIngredients);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        // Add instructions to a recipe
+        public async Task AddRecipeInstructionsAsync(int recipeId, List<string> instructions)
+        {
+            var recipeInstructions = instructions.Select((instruction, index) => new RecipeInstructions
+            {
+                RecipeID = recipeId,
+                StepNumber = index + 1,
+                Instruction = instruction
+            }).ToList();
+
+            _dbContext.RecipeInstructions.AddRange(recipeInstructions);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        // Add nutrition facts to a recipe
+        public async Task AddRecipeNutritionAsync(int recipeId, int? calories, int? protein, int? carbs, int? fat)
+        {
+            var nutrition = new RecipeNutritionFacts
+            {
+                RecipeID = recipeId,
+                Calories = calories?.ToString(),
+                Protein = protein?.ToString(),
+                Carbohydrates = carbs?.ToString(),
+                Fat = fat?.ToString()
+            };
+
+            _dbContext.RecipeNutritionFacts.Add(nutrition);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        // Clear recipe cache when data changes
+        private async Task ClearRecipeCacheAsync()
+        {
+            // Clear all recipes cache
+            await _cache.RemoveAsync("recipeAllRecipes_10");
+            
+            // Clear search caches for common filters
+            var filters = new[] { "Dinner", "Breakfast", "Lunch", "Snack", "Dessert",
+                "Main Course", "Appetizer", "Side Dish", "Soup", "Salad","Healthy","Vegetarian","Vegan","Comfort Food"};
+            
+            foreach (var filter in filters)
+            {
+                string filterKey = GetSearchRecipesCacheKey(filter);
+                await _cache.RemoveAsync(filterKey);
+            }
+        }
+
         // Prepopulate cache for all recipe type filters
         public async Task PrepopulateCacheAsync()
         {

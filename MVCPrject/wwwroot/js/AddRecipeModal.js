@@ -60,8 +60,8 @@ class StepOne extends Step {
                 <!-- Recipe Name, Cooking Time, Servings Row -->
                 <div class="row mb-3">
                     <div class="col-md-6 pe-md-2 my-2">
-                        <label for="recipeName" class="form-label">Recipe Name</label>
-                        <input type="text" class="form-control" id="recipeName" placeholder="">
+                        <label for="recipeName" class="form-label">Recipe Name *</label>
+                        <input type="text" class="form-control" id="recipeName" placeholder="" required>
                     </div>
                     <div class="col-md-4 pe-md-1 my-2">
                         <label for="cookingTime" class="form-label">Cooking Time (Minutes)</label>
@@ -100,6 +100,15 @@ class StepOne extends Step {
                 </div>
             </form>
         `);
+    }
+
+    validate() {
+        const recipeName = document.getElementById('recipeName');
+        if (!recipeName || !recipeName.value.trim()) {
+            alert('Please enter a recipe name.');
+            return false;
+        }
+        return true;
     }
 }
 
@@ -546,15 +555,100 @@ class WizardController {
         return false;
     }
             
-    finish() {
+    async finish() {
         // Save final form data
         this.dataManager.saveFormData();
-                
+        
+        const formData = this.dataManager.getData();
         console.log('Recipe completed!');
-        console.log('Final data:', this.dataManager.getData());
+        console.log('Final data:', formData);
 
-        this.uiManager.closeModal();
-        this.reset();
+        // Collect ingredients and instructions from Step 2
+        const ingredients = [];
+        const instructions = [];
+        
+        if (window.recipeForm) {
+            const recipeFormData = window.recipeForm.getFormData();
+            ingredients.push(...recipeFormData.ingredients);
+            instructions.push(...recipeFormData.instructions);
+        }
+
+        // Prepare the request payload
+        const requestData = {
+            recipeName: formData.recipeName || '',
+            description: formData.description || '',
+            recipeAuthor: formData.recipeAuthor || 'Anonymous',
+            servings: parseInt(formData.servings) || null,
+            cookingTime: parseInt(formData.cookingTime) || null,
+            calories: parseInt(formData.calories) || null,
+            protein: parseInt(formData.protein) || null,
+            carbs: parseInt(formData.carbs) || null,
+            fat: parseInt(formData.fat) || null,
+            ingredients: ingredients,
+            instructions: instructions,
+            imageUrl: formData.imageUrl || null
+        };
+
+        try {
+            // Show loading state
+            this.uiManager.updateButtonText('Saving...');
+            this.uiManager.nextBtn.disabled = true;
+
+            // Submit to server
+            const response = await fetch('/Recipe/Add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Show success message
+                this.showToast('Recipe added successfully!', 'success');
+                
+                // Close modal and reset
+                this.uiManager.closeModal();
+                this.reset();
+                
+                // Optionally redirect to the new recipe or refresh the page
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                // Show error message
+                this.showToast(result.message || 'Failed to add recipe. Please try again.', 'error');
+                
+                // Reset button state
+                this.uiManager.updateButtonText('Finish');
+                this.uiManager.nextBtn.disabled = false;
+            }
+        } catch (error) {
+            console.error('Error submitting recipe:', error);
+            this.showToast('An error occurred while adding the recipe. Please try again.', 'error');
+            
+            // Reset button state
+            this.uiManager.updateButtonText('Finish');
+            this.uiManager.nextBtn.disabled = false;
+        }
+    }
+
+    showToast(message, type) {
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'danger'} position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.textContent = message;
+
+        // Add to page
+        document.body.appendChild(toast);
+
+        // Remove after 3 seconds
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
     }
             
     reset() {

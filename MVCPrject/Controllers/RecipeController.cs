@@ -63,6 +63,53 @@ namespace MVCPrject.Controllers
             return await HandleLikeAction(request, isLike: false);
         }
 
+        [HttpPost("Add")]
+        public async Task<IActionResult> Add([FromBody] AddRecipeRequest request)
+        {
+            try
+            {
+                // Create recipe object from request
+                var recipe = new Recipe
+                {
+                    RecipeName = request.RecipeName,
+                    RecipeDescription = request.Description,
+                    RecipeAuthor = request.RecipeAuthor ?? "Anonymous",
+                    RecipeServings = request.Servings?.ToString(),
+                    CookTimeMin = request.CookingTime,
+                    PrepTimeMin = 0, // Not captured in modal, set to 0
+                    RecipeType = "Main Course", // Default type, could be enhanced later
+                    RecipeImage = request.ImageUrl,
+                    RecipeURL = null
+                };
+
+                var recipeId = await _repository.AddRecipeAsync(recipe);
+
+                // Add ingredients if provided
+                if (request.Ingredients?.Any() == true)
+                {
+                    await _repository.AddRecipeIngredientsAsync(recipeId, request.Ingredients);
+                }
+
+                // Add instructions if provided
+                if (request.Instructions?.Any() == true)
+                {
+                    await _repository.AddRecipeInstructionsAsync(recipeId, request.Instructions);
+                }
+
+                // Add nutrition facts if provided
+                if (request.Calories.HasValue || request.Protein.HasValue || request.Carbs.HasValue || request.Fat.HasValue)
+                {
+                    await _repository.AddRecipeNutritionAsync(recipeId, request.Calories, request.Protein, request.Carbs, request.Fat);
+                }
+
+                return Json(new { success = true, recipeId = recipeId, message = "Recipe added successfully!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "An error occurred while adding the recipe. Please try again." });
+            }
+        }
+
         private async Task SetUserViewBagAsync()
         {
             var userInfo = await _userCacheService.GetUserInfoAsync(User);
@@ -110,5 +157,21 @@ namespace MVCPrject.Controllers
 
             return Json(new { success = false });
         }
+    }
+
+    public class AddRecipeRequest
+    {
+        public string? RecipeName { get; set; }
+        public string? Description { get; set; }
+        public string? RecipeAuthor { get; set; }
+        public int? Servings { get; set; }
+        public int? CookingTime { get; set; }
+        public int? Calories { get; set; }
+        public int? Protein { get; set; }
+        public int? Carbs { get; set; }
+        public int? Fat { get; set; }
+        public List<string>? Ingredients { get; set; }
+        public List<string>? Instructions { get; set; }
+        public string? ImageUrl { get; set; }
     }
 }
