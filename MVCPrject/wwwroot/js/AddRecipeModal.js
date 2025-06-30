@@ -6,7 +6,7 @@ class DataManager {
             
     saveFormData() {
         // Save all form inputs from current step
-        const inputs = document.querySelectorAll('.modal-content-area input, .modal-content-area textarea');
+        const inputs = document.querySelectorAll('.modal-content-area input, .modal-content-area textarea, .modal-content-area select');
         inputs.forEach(input => {
             this.data[input.id] = input.value;
         });
@@ -14,7 +14,7 @@ class DataManager {
             
     loadFormData() {
         // Load saved data into form inputs
-        const inputs = document.querySelectorAll('.modal-content-area input, .modal-content-area textarea');
+        const inputs = document.querySelectorAll('.modal-content-area input, .modal-content-area textarea, .modal-content-area select');
         inputs.forEach(input => {
             if (this.data[input.id] !== undefined) {
                         input.value = this.data[input.id];
@@ -362,16 +362,20 @@ class StepThree extends Step {
                             </div>
                             
                             <div class="col-md-5">
-                                <h6 class="mb-3">Add Tags</h6>
-                                
+                                <h6 class="mb-3">Recipe Type</h6>
                                 <div class="mb-3">
-                                    <input type="text" class="form-control" id="tagInput" placeholder="Enter tag..." onkeypress="handleTagInput(event)">
-                                </div>
-                                
-                                <div class="tag-container" id="tagContainer">
-                                    <button type="button" class="add-tag-btn" onclick="focusTagInput()">
-                                        <i data-feather="plus"></i> Add Tag
-                                    </button>
+                                    <select class="form-select" id="recipeType">
+                                        <option value="Main Course">Main Course</option>
+                                        <option value="Breakfast">Breakfast</option>
+                                        <option value="Lunch">Lunch</option>
+                                        <option value="Dinner">Dinner</option>
+                                        <option value="Snack">Snack</option>
+                                        <option value="Dessert">Dessert</option>
+                                        <option value="Appetizer">Appetizer</option>
+                                        <option value="Side Dish">Side Dish</option>
+                                        <option value="Soup">Soup</option>
+                                        <option value="Salad">Salad</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -578,6 +582,7 @@ class WizardController {
             recipeName: formData.recipeName || '',
             description: formData.description || '',
             recipeAuthor: formData.recipeAuthor || 'Anonymous',
+            recipeType: formData.recipeType || 'Main Course',
             servings: parseInt(formData.servings) || null,
             cookingTime: parseInt(formData.cookingTime) || null,
             calories: parseInt(formData.calories) || null,
@@ -650,11 +655,13 @@ class WizardController {
             toast.remove();
         }, 3000);
     }
-            
+
+                
     reset() {
         this.currentStep = 1;
         this.dataManager.clearData();
         this.updateUI();
+        
     }
             
     bindEvents() {

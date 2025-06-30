@@ -88,7 +88,7 @@ namespace MVCPrject.Controllers
                     RecipeServings = request.Servings?.ToString(),
                     CookTimeMin = request.CookingTime,
                     PrepTimeMin = 0, // Not captured in modal, set to 0
-                    RecipeType = "Main Course", // Default type, could be enhanced later
+                    RecipeType = request.RecipeType ?? "Main Course", // Use value from the request or fallback to default
                     RecipeImage = request.ImageUrl,
                     RecipeURL = null
                 };
@@ -170,19 +170,6 @@ namespace MVCPrject.Controllers
         }
     }
 
-    public class AddRecipeRequest
-    {
-        public string? RecipeName { get; set; }
-        public string? Description { get; set; }
-        public string? RecipeAuthor { get; set; }
-        public int? Servings { get; set; }
-        public int? CookingTime { get; set; }
-        public int? Calories { get; set; }
-        public int? Protein { get; set; }
-        public int? Carbs { get; set; }
-        public int? Fat { get; set; }
-        public List<string>? Ingredients { get; set; }
-        public List<string>? Instructions { get; set; }
-        public string? ImageUrl { get; set; }
-    }
+
+
 }

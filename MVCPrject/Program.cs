@@ -7,6 +7,7 @@ using MVCPrject.Data;
 using MVCPrject.Models;
 using StackExchange.Redis;
 using MVCPrject.Services;
+using Azure.Storage.Blobs;
 
 
 namespace MVCPrject
@@ -20,6 +21,12 @@ namespace MVCPrject
 
 
             builder.Services.AddControllersWithViews();
+            //Azure storage
+            //     builder.Services.AddSingleton(x =>
+
+
+            //new BlobServiceClient(builder.Configuration.GetConnectionString("AzureBlobStorage:ConnectionString")));
+
 
             //Redis
             builder.Services.AddStackExchangeRedisCache(options =>
