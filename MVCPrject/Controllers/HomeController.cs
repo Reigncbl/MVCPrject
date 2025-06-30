@@ -4,8 +4,10 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.AspNetCore.Identity;
 using MVCPrject.Data;
 using MVCPrject.Models;
+using MVCPrject.Services;
 using System;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace MVCPrject.Controllers
 {
@@ -15,42 +17,53 @@ namespace MVCPrject.Controllers
         private readonly DBContext _context;
         private readonly IDistributedCache _cache;
         private readonly UserManager<User> _userManager;
+        private readonly SuggestionService _suggestionService;
 
-        public HomeController(ILogger<HomeController> logger, DBContext context, IDistributedCache cache, UserManager<User> userManager)
+        public HomeController(ILogger<HomeController> logger, DBContext context, IDistributedCache cache, UserManager<User> userManager, SuggestionService suggestionService)
         {
             _logger = logger;
             _context = context;
             _cache = cache;
             _userManager = userManager;
+            _suggestionService = suggestionService;
         }
 
         public async Task<IActionResult> Home()
         {
+            List<Suggestion> suggestions = new List<Suggestion>();
+            
             if (User.Identity?.IsAuthenticated == true)
             {
                 var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 var userName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
                 var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
-                
+
                 var user = await _userManager.GetUserAsync(User);
-                
+
                 // If user is null, try to find by ID from claims
                 if (user == null && !string.IsNullOrEmpty(userId))
                 {
                     user = await _userManager.FindByIdAsync(userId);
                 }
-                
+
                 // If still null, try to find by email
                 if (user == null && !string.IsNullOrEmpty(email))
                 {
                     user = await _userManager.FindByEmailAsync(email);
                 }
-                
+
                 ViewBag.UserName = user?.Name ?? userName ?? email ?? "User";
                 ViewBag.Name = user?.Name ?? userName ?? email ?? "User";
                 ViewBag.id = user?.Id ?? userId;
+
+                // Get user's liked recipes
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    suggestions = await _suggestionService.GetUserSuggestionsAsync(userId);
+                }
             }
-            return View();
+            
+            return View(suggestions);
         }
 
         // Reference Landing controller's Getinfo functionality
@@ -107,6 +120,33 @@ namespace MVCPrject.Controllers
             return RedirectToAction("Recipe");
         }
 
+
+        [HttpGet("/suggestion")]
+        public async Task<IActionResult> Suggestion()
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var userLikes = await _context.RecipeLikes
+                .Where(rl => rl.UserID == userId).Take(5)
+                .ToListAsync();
+
+            var suggestions = new List<Suggestion>();
+            foreach (var like in userLikes)
+            {
+                var recipe = await _context.Recipes.FindAsync(like.RecipeID);
+                suggestions.Add(new Suggestion
+                {
+                    recipeLikes = like,
+                    recipe = recipe
+                });
+            }
+
+            return Json(suggestions);
+        }
 
         [HttpGet("/inspect-cache")]
         public async Task<IActionResult> InspectCache([FromQuery] string key)

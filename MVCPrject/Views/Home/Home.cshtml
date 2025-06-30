@@ -7,15 +7,12 @@
 @section Scripts {
     <script src="~/js/dashboardCards.js"></script>
 }
-
+@model List<MVCPrject.Models.Suggestion>
 
 <div class="container-fluid p-0">
     <div class="border-bottom shadow-sm d-flex flex-row align-items-center justify-content-end gap-4 p-2">
         <i data-feather="search" class="border p-2 rounded-pill fs-1"
             style="background-color: #D9D9D980; width: 36px; height: 36px;"></i>
-
-
-
 
         @if (User.Identity?.IsAuthenticated == true)
         {
@@ -25,7 +22,6 @@
         {
             <a href="/Landing/Login" class="btn btn-primary">Please log in</a>
         }
-
 
         <img src="~/img/image.png" alt="/" class="border rounded-pill " style="width: 48px; margin-right: 36px;">
     </div>
@@ -41,7 +37,6 @@
                     </div>
                     <!-- Dashboard Cards -->
                     <div class="row g-3" id="dashboard-cards"></div>
-
                 </div>
             </div>
             <div class="w-100 gradient-border p-1 rounded-4">
@@ -52,14 +47,55 @@
                     <div class="log-button text-center">Log Meal</div>
                 </div>
             </div>
-
         </div>
 
-        <!-- Suggested for You -->
+        <!-- Suggested for You (Your Liked Recipes) -->
         <div class="mb-4 px-5">
             <h5 class="fw-bold mb-3">Suggested for You</h5>
-            <div class="row g-3" id="suggested-cards"></div>
+            @if (Model != null && Model.Count > 0)
+            {
+                <div class="row g-3">
+                    @foreach (var suggestion in Model)
+                    {
+                        var recipe = suggestion.recipe;
+                        <div class="col-sm-6 col-md-3 col-lg-3">
+                            <div class="card recipe-card h-100 shadow-sm border-0 rounded-4 position-relative">
+                                <!-- AI-Curated label -->
+                                <span class="badge bg-danger position-absolute top-0 start-0 m-3 rounded-pill px-3 py-2 fs-6"
+                                    style="z-index:2;">AI-Curated</span>
+
+                                <!-- Image -->
+                                <img class="card-img-top rounded-top-4" src="@recipe.RecipeImage" alt="@recipe.RecipeName"
+                                    style="height: 200px; object-fit: cover;">
+
+                                <div class="card-body d-flex flex-column">
+                                    <!-- Title -->
+                                    <h5 class="card-title fw-bold mb-2">@recipe.RecipeName</h5>
+                                    <p class="card-text text-muted mb-2">
+                                        @((recipe.RecipeDescription != null && recipe.RecipeDescription.Length > 80) ?
+                                                                        recipe.RecipeDescription.Substring(0, 80) + "..." : recipe.RecipeDescription)
+                            </p>
+                            <div class="d-flex align-items-center mt-auto justify-content-end">
+                                <a asp-controller="Recipe" asp-action="Details" asp-route-id="@recipe.RecipeID"
+                                    class="btn btn-danger rounded-pill px-4 py-1 fw-medium">View</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                                }
+                </div>
+            }
+            else
+            {
+                <div class="row g-3">
+                    <div class="col-12">
+                        <p class="text-muted">You have not liked any recipes yet. <a href="/Recipe/Recipe">Browse
+                                recipes</a> to start building your favorites!</p>
+                    </div>
+                </div>
+            }
         </div>
+
         <!-- Cooking Tips by Ina -->
         <div class="mb-4 px-5">
             <h5 class="fw-bold mb-3">Cooking Tips by Ina</h5>

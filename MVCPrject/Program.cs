@@ -78,6 +78,8 @@ namespace MVCPrject
             builder.Services.AddScoped<RecipeManipulationService>();
             builder.Services.AddScoped<RecipeLabelingService>();
             builder.Services.AddScoped<UserService>();
+            builder.Services.AddScoped<MealLogService>();
+            builder.Services.AddScoped<SuggestionService>();
 
             var app = builder.Build();
 

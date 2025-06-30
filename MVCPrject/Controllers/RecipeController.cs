@@ -13,6 +13,7 @@ namespace MVCPrject.Controllers
         private readonly IUserCacheService _userCacheService;
 
         private readonly BlobServiceClient _blobServiceClient;
+        private const int PageSize = 20;
 
         public RecipeController(
        RecipeManipulationService repository,
@@ -27,22 +28,28 @@ namespace MVCPrject.Controllers
         }
 
         [HttpGet("All")]
-        public async Task<IActionResult> Recipe(string? keywords = null)
+        public async Task<IActionResult> Recipe(string? keywords = null, int pageNumber = 1)
         {
             if (User.Identity?.IsAuthenticated == true)
             {
                 await SetUserViewBagAsync();
             }
 
-            var (recipes, pageTitle) = await GetRecipesAsync(keywords);
+            // Ensure pageNumber is at least 1
+            if (pageNumber < 1) pageNumber = 1;
+
+            var (allRecipes, pageTitle) = await GetRecipesAsync(keywords);
+
+            // Create paginated list
+            var paginatedRecipes = PaginatedList<Recipe>.Create(allRecipes, pageNumber, PageSize);
 
             ViewBag.PageTitle = pageTitle;
             ViewBag.SearchKeywords = keywords;
-            ViewBag.LikeCounts = await GetLikeCountsAsync(recipes);
+            ViewBag.CurrentKeywords = keywords; // For pagination links
+            ViewBag.LikeCounts = await GetLikeCountsAsync(paginatedRecipes.ToList());
 
-            return View(recipes);
+            return View(paginatedRecipes);
         }
-
         [HttpGet("View/{id:int}")]
         public async Task<IActionResult> Details(int id)
         {
@@ -65,6 +72,52 @@ namespace MVCPrject.Controllers
         public async Task<IActionResult> UnlikeRecipe([FromBody] LikeRequest request)
         {
             return await HandleLikeAction(request, isLike: false);
+        }
+
+        [HttpGet("Search")]
+        public async Task<IActionResult> SearchRecipes(string query = "")
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(query))
+                {
+                    return Json(new { success = true, recipes = new List<object>() });
+                }
+
+                var recipes = await _repository.SearchRecipesByIngredientsAsync(query);
+                
+                var recipeResults = new List<object>();
+                
+                foreach (var recipe in recipes.Take(10)) // Limit to 10 results for performance
+                {
+                    // Get nutrition facts for each recipe
+                    var nutritionFacts = await GetRecipeNutritionAsync(recipe.RecipeID);
+                    
+                    recipeResults.Add(new
+                    {
+                        id = recipe.RecipeID,
+                        name = recipe.RecipeName,
+                        description = recipe.RecipeDescription,
+                        author = recipe.RecipeAuthor,
+                        type = recipe.RecipeType,
+                        servings = recipe.RecipeServings,
+                        cookTime = recipe.CookTimeMin,
+                        prepTime = recipe.PrepTimeMin,
+                        totalTime = recipe.TotalTimeMin,
+                        image = recipe.RecipeImage,
+                        calories = nutritionFacts?.Calories,
+                        protein = nutritionFacts?.Protein,
+                        carbs = nutritionFacts?.Carbohydrates,
+                        fat = nutritionFacts?.Fat
+                    });
+                }
+
+                return Json(new { success = true, recipes = recipeResults });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error searching recipes" });
+            }
         }
 
         [HttpPost("Add")]
@@ -182,6 +235,12 @@ namespace MVCPrject.Controllers
             }
 
             return Json(new { success = false });
+        }
+
+        private async Task<RecipeNutritionFacts?> GetRecipeNutritionAsync(int recipeId)
+        {
+            var recipeDetails = await _repository.GetRecipeDetailsWithNutritionAsync(recipeId);
+            return recipeDetails?.NutritionFacts;
         }
     }
 
