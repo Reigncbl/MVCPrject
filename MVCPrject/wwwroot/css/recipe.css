@@ -25,3 +25,46 @@
 .recipe-card .btn-danger:hover {
   background-color: #d12f2d;
 }
+.like-container:hover {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+.heart-icon {
+  transition: fill 0.3s ease;
+}
+
+.like-container:hover .heart-icon {
+  fill: #dc3545 !important;
+}
+/* Purple theme */
+.pagination .page-link {
+  color: #ec433e;
+  border: 0px;
+}
+
+.pagination .page-link:hover {
+  color: #fff;
+  background-color: #ec433e;
+  border-color: #ec433e;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #ec433e;
+  border-color: #ec433e;
+  color: #fff;
+}
+
+.page-item.custom-nav .page-link {
+  background-color: #e9ecef;
+  color: #6c757d; /* muted text */
+  border-color: #dee2e6;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.page-item.custom-nav .page-link:hover {
+  background-color: #ec433e;
+  color: #fff;
+}

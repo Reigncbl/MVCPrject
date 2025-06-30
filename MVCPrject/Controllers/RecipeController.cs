@@ -13,6 +13,7 @@ namespace MVCPrject.Controllers
         private readonly IUserCacheService _userCacheService;
 
         private readonly BlobServiceClient _blobServiceClient;
+        private const int PageSize = 20;
 
         public RecipeController(
        RecipeManipulationService repository,
@@ -27,22 +28,28 @@ namespace MVCPrject.Controllers
         }
 
         [HttpGet("All")]
-        public async Task<IActionResult> Recipe(string? keywords = null)
+        public async Task<IActionResult> Recipe(string? keywords = null, int pageNumber = 1)
         {
             if (User.Identity?.IsAuthenticated == true)
             {
                 await SetUserViewBagAsync();
             }
 
-            var (recipes, pageTitle) = await GetRecipesAsync(keywords);
+            // Ensure pageNumber is at least 1
+            if (pageNumber < 1) pageNumber = 1;
+
+            var (allRecipes, pageTitle) = await GetRecipesAsync(keywords);
+
+            // Create paginated list
+            var paginatedRecipes = PaginatedList<Recipe>.Create(allRecipes, pageNumber, PageSize);
 
             ViewBag.PageTitle = pageTitle;
             ViewBag.SearchKeywords = keywords;
-            ViewBag.LikeCounts = await GetLikeCountsAsync(recipes);
+            ViewBag.CurrentKeywords = keywords; // For pagination links
+            ViewBag.LikeCounts = await GetLikeCountsAsync(paginatedRecipes.ToList());
 
-            return View(recipes);
+            return View(paginatedRecipes);
         }
-
         [HttpGet("View/{id:int}")]
         public async Task<IActionResult> Details(int id)
         {
