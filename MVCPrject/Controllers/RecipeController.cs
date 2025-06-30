@@ -74,6 +74,52 @@ namespace MVCPrject.Controllers
             return await HandleLikeAction(request, isLike: false);
         }
 
+        [HttpGet("Search")]
+        public async Task<IActionResult> SearchRecipes(string query = "")
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(query))
+                {
+                    return Json(new { success = true, recipes = new List<object>() });
+                }
+
+                var recipes = await _repository.SearchRecipesByIngredientsAsync(query);
+                
+                var recipeResults = new List<object>();
+                
+                foreach (var recipe in recipes.Take(10)) // Limit to 10 results for performance
+                {
+                    // Get nutrition facts for each recipe
+                    var nutritionFacts = await GetRecipeNutritionAsync(recipe.RecipeID);
+                    
+                    recipeResults.Add(new
+                    {
+                        id = recipe.RecipeID,
+                        name = recipe.RecipeName,
+                        description = recipe.RecipeDescription,
+                        author = recipe.RecipeAuthor,
+                        type = recipe.RecipeType,
+                        servings = recipe.RecipeServings,
+                        cookTime = recipe.CookTimeMin,
+                        prepTime = recipe.PrepTimeMin,
+                        totalTime = recipe.TotalTimeMin,
+                        image = recipe.RecipeImage,
+                        calories = nutritionFacts?.Calories,
+                        protein = nutritionFacts?.Protein,
+                        carbs = nutritionFacts?.Carbohydrates,
+                        fat = nutritionFacts?.Fat
+                    });
+                }
+
+                return Json(new { success = true, recipes = recipeResults });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error searching recipes" });
+            }
+        }
+
         [HttpPost("Add")]
         public async Task<IActionResult> Add([FromBody] AddRecipeRequest request)
         {
@@ -189,6 +235,12 @@ namespace MVCPrject.Controllers
             }
 
             return Json(new { success = false });
+        }
+
+        private async Task<RecipeNutritionFacts?> GetRecipeNutritionAsync(int recipeId)
+        {
+            var recipeDetails = await _repository.GetRecipeDetailsWithNutritionAsync(recipeId);
+            return recipeDetails?.NutritionFacts;
         }
     }
 
