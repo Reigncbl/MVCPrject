@@ -1,0 +1,19 @@
+@model MVCPrject.Models.Chat
+
+@if (!string.IsNullOrEmpty(Model.AiResponse))
+{
+    <div class="message ai-message mb-3">
+        <div class="message-content">
+            <i class="fas fa-robot me-2"></i>@Model.AiResponse
+        </div>
+    </div>
+}
+
+@* Hidden inputs to maintain history *@
+@if (Model.History != null)
+{
+    for (int i = 0; i < Model.History.Count; i++)
+    {
+        <input type="hidden" name="History[@i]" value="@Model.History[i]" />
+    }
+}

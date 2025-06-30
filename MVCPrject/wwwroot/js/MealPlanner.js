@@ -7,30 +7,30 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     const renderDateSection = () => {
-    const today = new Date();
-    const currentDateEl = document.getElementById("current-date");
-    const dateCardsContainer = document.getElementById("date-cards");
+        const today = new Date();
+        const currentDateEl = document.getElementById("current-date");
+        const dateCardsContainer = document.getElementById("date-cards");
 
-    currentDateEl.textContent = today.toLocaleDateString('en-US', {
-        month: 'long',
-        day: 'numeric'
-    });
+        currentDateEl.textContent = today.toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric'
+        });
 
-    // Clear existing cards
-    dateCardsContainer.innerHTML = '';
+        // Clear existing cards
+        dateCardsContainer.innerHTML = '';
 
-    // Determine how many cards to show based on available width
-    const getCardRange = () => {
-        const containerWidth = dateCardsContainer.offsetWidth || window.innerWidth;
-        
-        // Adjust these breakpoints based on your card width + margins
-        if (containerWidth < 400) return { start: 0, end: 0 };     // Show only today
-        if (containerWidth < 600) return { start: -1, end: 1 };   // Show 3 cards (yesterday, today, tomorrow)
-        if (containerWidth < 800) return { start: -2, end: 2 };   // Show 5 cards
-        return { start: -3, end: 3 };                             // Show all 7 cards
-    };
+        // Determine how many cards to show based on available width
+        const getCardRange = () => {
+            const containerWidth = dateCardsContainer.offsetWidth || window.innerWidth;
 
-    const { start, end } = getCardRange();
+            // Adjust these breakpoints based on your card width + margins
+            if (containerWidth < 400) return { start: 0, end: 0 };     // Show only today
+            if (containerWidth < 600) return { start: -1, end: 1 };   // Show 3 cards (yesterday, today, tomorrow)
+            if (containerWidth < 800) return { start: -2, end: 2 };   // Show 5 cards
+            return { start: -3, end: 3 };                             // Show all 7 cards
+        };
+
+        const { start, end } = getCardRange();
 
         for (let i = start; i <= end; i++) {
             const date = new Date();
@@ -52,19 +52,19 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
 
             // Add click event to load meals for selected date
-            card.addEventListener('click', function() {
+            card.addEventListener('click', function () {
                 // Remove previous selection
                 document.querySelectorAll('.day-card').forEach(c => {
                     c.classList.remove('today-card', 'border', 'border-warning');
                 });
-                
+
                 // Add selection to clicked card
                 this.classList.add('today-card', 'border', 'border-warning');
-                
+
                 // Load meals for selected date
                 console.log('🍽️ MealPlanner.js: Date card clicked, loading meals for:', date.toISOString().split('T')[0]);
                 loadMealLogsForDate(date);
-                
+
                 // Update current date display
                 document.getElementById("current-date").textContent = date.toLocaleDateString('en-US', {
                     month: 'long',
@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
         wrap: true,
         allowInput: true,
         position: "left", // or just "auto"
-        onChange: function(selectedDates, dateStr) {
+        onChange: function (selectedDates, dateStr) {
             console.log("Picked:", dateStr);
         }
     });
@@ -92,11 +92,11 @@ document.addEventListener("DOMContentLoaded", function () {
     // MEAL LOGS
 
     const meals = [
-    { id: 'almusal', label: 'Almusal (Breakfast)' },
-    { id: 'tanghalian', label: 'Tanghalian (Lunch)' },
-    { id: 'meryenda', label: 'Meryenda (Snack)' },
-    { id: 'hapunan', label: 'Hapunan (Dinner)' }
-  ];
+        { id: 'almusal', label: 'Almusal (Breakfast)' },
+        { id: 'tanghalian', label: 'Tanghalian (Lunch)' },
+        { id: 'meryenda', label: 'Meryenda (Snack)' },
+        { id: 'hapunan', label: 'Hapunan (Dinner)' }
+    ];
 
     const row = document.getElementById('meal-row');
 
@@ -132,31 +132,31 @@ document.addEventListener("DOMContentLoaded", function () {
 
     console.log('🍽️ MealPlanner.js: Rendering date section and loading today\'s meals');
     renderDateSection();
-    
+
     // Load meal logs for today
     const today = new Date();
     console.log('🍽️ MealPlanner.js: Loading meal logs for today:', today.toISOString().split('T')[0]);
     loadMealLogsForDate(today);
 
     // Define globally so inline onclick works
-    window.openMealModal = function(mealId) {
+    window.openMealModal = function (mealId) {
         console.log('🍽️ MealPlanner.js: Opening meal modal for meal type:', mealId);
-        
+
         const modal = new bootstrap.Modal(document.getElementById('mealModal'));
-        
+
         // Set the mealType based on the onclick parameter, default to meryenda if not provided
         const selectedMealType = mealId || 'meryenda';
         document.getElementById('mealType').value = selectedMealType;
         console.log('🍽️ MealPlanner.js: Set mealType to:', selectedMealType);
 
         const meal = meals.find(m => m.id === selectedMealType);
-        
+
         if (meal) {
             // Split label into main text and parenthesis part
             const match = meal.label.match(/^(.*?)(\s*\(.*\))?$/);
             const mainLabel = match ? match[1].trim() : meal.label;
             const parenthesisPart = match ? match[2] : '';
-            
+
             // Set modal title with styled HTML
             document.getElementById('mealModalLabel').innerHTML = `Add ${mainLabel}<span class="fw-normal small">${parenthesisPart}</span>`;
             console.log('🍽️ MealPlanner.js: Modal opened for:', mainLabel);
@@ -202,9 +202,9 @@ document.addEventListener("DOMContentLoaded", function () {
     // MODAL FUNCTIONALITY
     const submitText = document.getElementById("submitText");
     const modeButtons = document.querySelectorAll('.mode-btn');
-    
+
     let currentMode = "planned";
-    
+
     // Load the single form (same content for both modes)
     function loadForm() {
         const formContent = document.getElementById("formContent");
@@ -289,51 +289,51 @@ document.addEventListener("DOMContentLoaded", function () {
         const uploadLabel = document.getElementById('uploadLabel');
 
         fileInput.addEventListener('change', function (event) {
-          const file = event.target.files[0];
+            const file = event.target.files[0];
 
-          if (file) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-              preview.src = e.target.result;
-              preview.classList.remove('d-none');
-              
-              // Hide the upload label
-              uploadLabel.style.display = 'none';
-            };
-            reader.readAsDataURL(file);
-          } else {
-            preview.src = '';
-            preview.classList.add('d-none');
-            
-            // Show the label again if user clears file
-            uploadLabel.style.display = '';
-          }
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('d-none');
+
+                    // Hide the upload label
+                    uploadLabel.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = '';
+                preview.classList.add('d-none');
+
+                // Show the label again if user clears file
+                uploadLabel.style.display = '';
+            }
         });
 
         // Set up recipe search functionality
         setupRecipeSearch();
     }
-    
+
     // Update submit button text based on mode
     function updateSubmitButton() {
         submitText.textContent = currentMode === "planned" ? "Plan Meal" : "Log Meal";
     }
-    
+
     // Load the form initially
     loadForm();
     updateSubmitButton();
-    
+
     // Mode toggle functionality (just changes the button states and submit text)
     modeButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             const mode = btn.dataset.mode;
             if (mode !== currentMode) {
                 currentMode = mode;
-                
+
                 // Update button states
                 modeButtons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                
+
                 // Only update submit button text, form content stays the same
                 updateSubmitButton();
             }
@@ -342,172 +342,172 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Handle form submission
     document.getElementById('mealForm').addEventListener('submit', async function (e) {
-      e.preventDefault();
-      console.log('🍽️ MealPlanner.js: Form submission started');
+        e.preventDefault();
+        console.log('🍽️ MealPlanner.js: Form submission started');
 
-      const form = e.target;
-      const formData = new FormData(form);
+        const form = e.target;
+        const formData = new FormData(form);
 
-      const mealId = formData.get('mealType');
-      const mealName = formData.get('mealName');
-      const calories = parseInt(formData.get('calories'), 10) || 0;
-      const protein = parseInt(formData.get('protein'), 10) || 0;
-      const carbs = parseInt(formData.get('carbs'), 10) || 0;
-      const fat = parseInt(formData.get('fat'), 10) || 0;
-      const mealTime = formData.get('mealTime') || '';
-      const formattedTime = formatTimeTo12Hour(mealTime);
-      const mealDate = formData.get('mealDate') || '';
-      const recipeID = formData.get('recipeID') || null;
-      const photoInput = document.getElementById('mealPhoto');
-      const photoFile = photoInput.files[0];
-      const photoURL = photoFile ? URL.createObjectURL(photoFile) : '';
+        const mealId = formData.get('mealType');
+        const mealName = formData.get('mealName');
+        const calories = parseInt(formData.get('calories'), 10) || 0;
+        const protein = parseInt(formData.get('protein'), 10) || 0;
+        const carbs = parseInt(formData.get('carbs'), 10) || 0;
+        const fat = parseInt(formData.get('fat'), 10) || 0;
+        const mealTime = formData.get('mealTime') || '';
+        const formattedTime = formatTimeTo12Hour(mealTime);
+        const mealDate = formData.get('mealDate') || '';
+        const recipeID = formData.get('recipeID') || null;
+        const photoInput = document.getElementById('mealPhoto');
+        const photoFile = photoInput.files[0];
+        const photoURL = photoFile ? URL.createObjectURL(photoFile) : '';
 
-      const mode = currentMode; // "planned" or "logged"
+        const mode = currentMode; // "planned" or "logged"
 
-      console.log('🍽️ MealPlanner.js: Form data collected:', {
-          mealId, mealName, calories, protein, carbs, fat, mealTime, mealDate, recipeID, mode
-      });
+        console.log('🍽️ MealPlanner.js: Form data collected:', {
+            mealId, mealName, calories, protein, carbs, fat, mealTime, mealDate, recipeID, mode
+        });
 
-      // Additional validation and logging for mealType
-      if (!mealId || mealId.trim() === '') {
-          console.error('🍽️ MealPlanner.js: No meal type specified! mealId:', mealId);
-          
-          // Try to get from the input directly as fallback
-          const mealTypeInput = document.getElementById('mealType');
-          const fallbackMealId = mealTypeInput?.value || 'meryenda';
-          console.log('🍽️ MealPlanner.js: Using fallback mealType:', fallbackMealId);
-          
-          if (!fallbackMealId || fallbackMealId.trim() === '') {
-              showNotification('Please select a meal type', 'error');
-              return;
-          }
-          
-          // Use the fallback value
-          const correctedMealId = fallbackMealId;
-          console.log('🍽️ MealPlanner.js: Corrected mealId to:', correctedMealId);
-      }
+        // Additional validation and logging for mealType
+        if (!mealId || mealId.trim() === '') {
+            console.error('🍽️ MealPlanner.js: No meal type specified! mealId:', mealId);
 
-      const finalMealId = mealId || 'meryenda';
-      console.log('🍽️ MealPlanner.js: Final mealId for API:', finalMealId);
+            // Try to get from the input directly as fallback
+            const mealTypeInput = document.getElementById('mealType');
+            const fallbackMealId = mealTypeInput?.value || 'meryenda';
+            console.log('🍽️ MealPlanner.js: Using fallback mealType:', fallbackMealId);
 
-      // Create meal log object for API
-      const mealLogData = {
-          mealType: finalMealId,
-          mealName: mealName,
-          mealDate: mealDate,
-          mealTime: mealTime,
-          calories: calories.toString(),
-          protein: protein.toString(),
-          carbohydrates: carbs.toString(),
-          fat: fat.toString(),
-          isPlanned: mode === "planned",
-          recipeID: recipeID ? parseInt(recipeID) : null
-      };
+            if (!fallbackMealId || fallbackMealId.trim() === '') {
+                showNotification('Please select a meal type', 'error');
+                return;
+            }
 
-      console.log('🍽️ MealPlanner.js: Sending meal log data to API:', mealLogData);
+            // Use the fallback value
+            const correctedMealId = fallbackMealId;
+            console.log('🍽️ MealPlanner.js: Corrected mealId to:', correctedMealId);
+        }
 
-      try {
-          let response;
-          let result;
+        const finalMealId = mealId || 'meryenda';
+        console.log('🍽️ MealPlanner.js: Final mealId for API:', finalMealId);
 
-          // Check if there's a photo file to upload
-          if (photoFile) {
-              console.log('🍽️ MealPlanner.js: Photo detected, using file upload endpoint');
-              console.log('🍽️ MealPlanner.js: Photo file details:', {
-                  name: photoFile.name,
-                  size: photoFile.size,
-                  type: photoFile.type
-              });
-              
-              // Create FormData for file upload
-              const formData = new FormData();
-              formData.append('mealType', finalMealId);
-              formData.append('mealName', mealName);
-              formData.append('mealDate', mealDate);
-              formData.append('mealTime', mealTime);
-              formData.append('calories', calories.toString());
-              formData.append('protein', protein.toString());
-              formData.append('carbohydrates', carbs.toString());
-              formData.append('fat', fat.toString());
-              formData.append('isPlanned', mode === "planned");
-              if (recipeID) formData.append('recipeID', recipeID);
-              formData.append('mealPhoto', photoFile);
+        // Create meal log object for API
+        const mealLogData = {
+            mealType: finalMealId,
+            mealName: mealName,
+            mealDate: mealDate,
+            mealTime: mealTime,
+            calories: calories.toString(),
+            protein: protein.toString(),
+            carbohydrates: carbs.toString(),
+            fat: fat.toString(),
+            isPlanned: mode === "planned",
+            recipeID: recipeID ? parseInt(recipeID) : null
+        };
 
-              // Send to file upload endpoint
-              response = await fetch('/MealPlanner/CreateMealLogWithPhoto', {
-                  method: 'POST',
-                  body: formData // No Content-Type header for FormData
-              });
-          } else {
-              console.log('🍽️ MealPlanner.js: No photo, using JSON endpoint');
-              
-              // Send to regular JSON endpoint
-              response = await fetch('/MealPlanner/CreateMealLog', {
-                  method: 'POST',
-                  headers: {
-                      'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify(mealLogData)
-              });
-          }
+        console.log('🍽️ MealPlanner.js: Sending meal log data to API:', mealLogData);
 
-          console.log('🍽️ MealPlanner.js: API response status:', response.status);
+        try {
+            let response;
+            let result;
 
-          result = await response.json();
-          console.log('🍽️ MealPlanner.js: API response data:', result);
+            // Check if there's a photo file to upload
+            if (photoFile) {
+                console.log('🍽️ MealPlanner.js: Photo detected, using file upload endpoint');
+                console.log('🍽️ MealPlanner.js: Photo file details:', {
+                    name: photoFile.name,
+                    size: photoFile.size,
+                    type: photoFile.type
+                });
 
-          if (result.success) {
-              console.log('🍽️ MealPlanner.js: Meal logged successfully, updating UI');
-              
-              // Use the photo URL from the server response if available
-              const finalPhotoURL = result.photoUrl || photoURL;
-              
-              // Update UI with local data for immediate feedback
-              logMeal(finalMealId, {
-                  name: mealName,
-                  calories,
-                  protein,
-                  time: formattedTime,
-                  date: mealDate,
-                  photo: finalPhotoURL,
-                  mode
-              });
+                // Create FormData for file upload
+                const formData = new FormData();
+                formData.append('mealType', finalMealId);
+                formData.append('mealName', mealName);
+                formData.append('mealDate', mealDate);
+                formData.append('mealTime', mealTime);
+                formData.append('calories', calories.toString());
+                formData.append('protein', protein.toString());
+                formData.append('carbohydrates', carbs.toString());
+                formData.append('fat', fat.toString());
+                formData.append('isPlanned', mode === "planned");
+                if (recipeID) formData.append('recipeID', recipeID);
+                formData.append('mealPhoto', photoFile);
 
-              // Show success message
-              showNotification('Meal logged successfully!', 'success');
-          } else {
-              console.error('🍽️ MealPlanner.js: API returned error:', result.message);
-              showNotification(result.message || 'Failed to log meal', 'error');
-          }
-      } catch (error) {
-          console.error('🍽️ MealPlanner.js: Error logging meal:', error);
-          showNotification('Error logging meal. Please try again.', 'error');
-      }
+                // Send to file upload endpoint
+                response = await fetch('/MealPlanner/CreateMealLogWithPhoto', {
+                    method: 'POST',
+                    body: formData // No Content-Type header for FormData
+                });
+            } else {
+                console.log('🍽️ MealPlanner.js: No photo, using JSON endpoint');
 
-      form.reset();
+                // Send to regular JSON endpoint
+                response = await fetch('/MealPlanner/CreateMealLog', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(mealLogData)
+                });
+            }
 
-      // Clear hidden fields explicitly
-      document.getElementById('mealType').value = 'meryenda';
-      document.getElementById('recipeID').value = '';
+            console.log('🍽️ MealPlanner.js: API response status:', response.status);
 
-      const preview = document.getElementById('mealPhotoPreview');
-      if (preview) {
-          preview.src = '';
-          preview.classList.add('d-none');
-          preview.style.border = '';
-          preview.title = '';
-      }
+            result = await response.json();
+            console.log('🍽️ MealPlanner.js: API response data:', result);
 
-      const uploadLabel = document.getElementById('uploadLabel');
-      if (uploadLabel) {
-          uploadLabel.style.display = '';
-      }
+            if (result.success) {
+                console.log('🍽️ MealPlanner.js: Meal logged successfully, updating UI');
 
-      console.log('🍽️ MealPlanner.js: Form submitted and reset, recipe ID cleared');
+                // Use the photo URL from the server response if available
+                const finalPhotoURL = result.photoUrl || photoURL;
 
-      const modal = bootstrap.Modal.getInstance(document.getElementById('mealModal'));
-      if (modal) modal.hide();
-  });
+                // Update UI with local data for immediate feedback
+                logMeal(finalMealId, {
+                    name: mealName,
+                    calories,
+                    protein,
+                    time: formattedTime,
+                    date: mealDate,
+                    photo: finalPhotoURL,
+                    mode
+                });
+
+                // Show success message
+                showNotification('Meal logged successfully!', 'success');
+            } else {
+                console.error('🍽️ MealPlanner.js: API returned error:', result.message);
+                showNotification(result.message || 'Failed to log meal', 'error');
+            }
+        } catch (error) {
+            console.error('🍽️ MealPlanner.js: Error logging meal:', error);
+            showNotification('Error logging meal. Please try again.', 'error');
+        }
+
+        form.reset();
+
+        // Clear hidden fields explicitly
+        document.getElementById('mealType').value = 'meryenda';
+        document.getElementById('recipeID').value = '';
+
+        const preview = document.getElementById('mealPhotoPreview');
+        if (preview) {
+            preview.src = '';
+            preview.classList.add('d-none');
+            preview.style.border = '';
+            preview.title = '';
+        }
+
+        const uploadLabel = document.getElementById('uploadLabel');
+        if (uploadLabel) {
+            uploadLabel.style.display = '';
+        }
+
+        console.log('🍽️ MealPlanner.js: Form submitted and reset, recipe ID cleared');
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('mealModal'));
+        if (modal) modal.hide();
+    });
 
 
 });
@@ -520,17 +520,17 @@ const SEARCH_DELAY = 300; // milliseconds
 function setupRecipeSearch() {
     const searchInput = document.getElementById('recipeSearch');
     const dropdown = document.getElementById('recipeDropdown');
-    
+
     if (!searchInput || !dropdown) return;
 
-    searchInput.addEventListener('input', function() {
+    searchInput.addEventListener('input', function () {
         const query = this.value.trim();
-        
+
         // Clear previous timeout
         if (searchTimeout) {
             clearTimeout(searchTimeout);
         }
-        
+
         if (query.length === 0) {
             hideDropdown();
             return;
@@ -547,19 +547,19 @@ function setupRecipeSearch() {
     });
 
     // Hide dropdown when clicking outside
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
             hideDropdown();
         }
     });
 
     // Handle keyboard navigation
-    searchInput.addEventListener('keydown', function(e) {
+    searchInput.addEventListener('keydown', function (e) {
         const items = dropdown.querySelectorAll('.dropdown-item:not(.dropdown-item-text)');
         const activeItem = dropdown.querySelector('.dropdown-item.active');
         let currentIndex = Array.from(items).indexOf(activeItem);
 
-        switch(e.key) {
+        switch (e.key) {
             case 'ArrowDown':
                 e.preventDefault();
                 if (items.length > 0) {
@@ -593,10 +593,10 @@ async function searchRecipesFromAPI(query) {
         console.log('🍽️ MealPlanner.js: Searching recipes for query:', query);
         const response = await fetch(`/Recipe/Search?query=${encodeURIComponent(query)}`);
         console.log('🍽️ MealPlanner.js: Recipe search API response status:', response.status);
-        
+
         const data = await response.json();
         console.log('🍽️ MealPlanner.js: Recipe search API response data:', data);
-        
+
         if (data.success) {
             console.log('��️ MealPlanner.js: Found', data.recipes?.length || 0, 'recipes');
             displayRecipeResults(data.recipes);
@@ -618,7 +618,7 @@ function showSearchError(message) {
 
 function displayRecipeResults(recipes) {
     const dropdown = document.getElementById('recipeDropdown');
-    
+
     if (recipes.length === 0) {
         dropdown.innerHTML = '<div class="dropdown-item-text text-muted">No recipes found</div>';
         dropdown.style.display = 'block';
@@ -631,7 +631,7 @@ function displayRecipeResults(recipes) {
         const description = recipe.description || recipe.type || 'No description available';
         const defaultImage = 'https://via.placeholder.com/40x40/e9ecef/6c757d?text=🍽️';
         const recipeImage = recipe.image || defaultImage;
-        
+
         return `
             <div class="dropdown-item recipe-item" data-recipe='${JSON.stringify(recipe)}' style="cursor: pointer;">
                 <div class="d-flex align-items-start">
@@ -665,13 +665,13 @@ function displayRecipeResults(recipes) {
 
     // Add click handlers to recipe items
     dropdown.querySelectorAll('.recipe-item').forEach(item => {
-        item.addEventListener('click', function() {
+        item.addEventListener('click', function () {
             const recipe = JSON.parse(this.dataset.recipe);
             selectRecipe(recipe);
         });
 
         // Add hover effect
-        item.addEventListener('mouseenter', function() {
+        item.addEventListener('mouseenter', function () {
             dropdown.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('active'));
             this.classList.add('active');
         });
@@ -682,10 +682,10 @@ function displayRecipeResults(recipes) {
 
 function selectRecipe(recipe) {
     console.log('🍽️ MealPlanner.js: Recipe selected:', recipe);
-    
+
     // Fill in the form fields with recipe data
     document.getElementById('mealName').value = recipe.name;
-    
+
     // Store the recipe ID in the hidden field
     const recipeIdField = document.getElementById('recipeID');
     if (recipeIdField && recipe.recipeID) {
@@ -697,42 +697,42 @@ function selectRecipe(recipe) {
     } else {
         console.log('🍽️ MealPlanner.js: No recipe ID found in recipe object:', recipe);
     }
-    
+
     // Handle nutrition values - convert strings to numbers if needed
     const calories = recipe.calories ? (typeof recipe.calories === 'string' ? parseInt(recipe.calories) : recipe.calories) : '';
     const protein = recipe.protein ? (typeof recipe.protein === 'string' ? parseInt(recipe.protein) : recipe.protein) : '';
     const carbs = recipe.carbs ? (typeof recipe.carbs === 'string' ? parseInt(recipe.carbs) : recipe.carbs) : '';
     const fat = recipe.fat ? (typeof recipe.fat === 'string' ? parseInt(recipe.fat) : recipe.fat) : '';
-    
+
     document.getElementById('calories').value = calories;
     document.getElementById('protein').value = protein;
     document.getElementById('carbs').value = carbs;
     document.getElementById('fat').value = fat;
-    
+
     // Show recipe image preview if available
     if (recipe.image) {
         const preview = document.getElementById('mealPhotoPreview');
         const uploadLabel = document.getElementById('uploadLabel');
-        
+
         if (preview && uploadLabel) {
             preview.src = recipe.image;
             preview.classList.remove('d-none');
             uploadLabel.style.display = 'none';
-            
+
             console.log('🍽️ MealPlanner.js: Showing recipe image preview:', recipe.image);
-            
+
             // Add a visual indicator that this is from a recipe
             preview.style.border = '2px solid #007bff';
             preview.title = 'Recipe Image - will be used automatically';
         }
     }
-    
+
     // Update search input to show selected recipe
     document.getElementById('recipeSearch').value = recipe.name;
-    
+
     // Hide dropdown
     hideDropdown();
-    
+
     // Optional: Show a success message or highlight the filled fields
     showRecipeSelectedFeedback();
 }
@@ -813,23 +813,23 @@ function closeGroceryModal() {
 }
 
 function printGroceryList() {
-  // Clone the modal content
-  const printContent = document.getElementById('groceryListModal').cloneNode(true);
-  
-  // Create a hidden iframe for printing
-  const printFrame = document.createElement('iframe');
-  printFrame.style.position = 'absolute';
-  printFrame.style.width = '0';
-  printFrame.style.height = '0';
-  printFrame.style.border = 'none';
-  
-  // When iframe loads, print its content
-  printFrame.onload = function() {
-    const printDocument = printFrame.contentWindow.document;
-    
-    // Add print-specific styles
-    const style = printDocument.createElement('style');
-    style.innerHTML = `
+    // Clone the modal content
+    const printContent = document.getElementById('groceryListModal').cloneNode(true);
+
+    // Create a hidden iframe for printing
+    const printFrame = document.createElement('iframe');
+    printFrame.style.position = 'absolute';
+    printFrame.style.width = '0';
+    printFrame.style.height = '0';
+    printFrame.style.border = 'none';
+
+    // When iframe loads, print its content
+    printFrame.onload = function () {
+        const printDocument = printFrame.contentWindow.document;
+
+        // Add print-specific styles
+        const style = printDocument.createElement('style');
+        style.innerHTML = `
       @page { size: auto; margin: 5mm; }
       body { padding: 10px; font-family: Arial, sans-serif; }
       .list-group-item {
@@ -851,25 +851,25 @@ function printGroceryList() {
         margin-bottom: 15px;
       }
     `;
-    
-    printDocument.head.appendChild(style);
-    printDocument.body.appendChild(printContent.querySelector('.modal-content'));
-    
-    // Remove unnecessary elements for printing
-    const modalFooter = printDocument.querySelector('.modal-footer');
-    const modalHeader = printDocument.querySelector('.modal-header button');
-    if (modalFooter) modalFooter.remove();
-    if (modalHeader) modalHeader.remove();
-    
-    // Focus and print
-    printFrame.contentWindow.focus();
-    printFrame.contentWindow.print();
-    
-    // Clean up
-    setTimeout(() => document.body.removeChild(printFrame), 1000);
-  };
-  
-  document.body.appendChild(printFrame);
+
+        printDocument.head.appendChild(style);
+        printDocument.body.appendChild(printContent.querySelector('.modal-content'));
+
+        // Remove unnecessary elements for printing
+        const modalFooter = printDocument.querySelector('.modal-footer');
+        const modalHeader = printDocument.querySelector('.modal-header button');
+        if (modalFooter) modalFooter.remove();
+        if (modalHeader) modalHeader.remove();
+
+        // Focus and print
+        printFrame.contentWindow.focus();
+        printFrame.contentWindow.print();
+
+        // Clean up
+        setTimeout(() => document.body.removeChild(printFrame), 1000);
+    };
+
+    document.body.appendChild(printFrame);
 }
 
 
@@ -880,7 +880,7 @@ function updateDateButton(selectedOption) {
 }
 
 // For set goal btn
-document.getElementById('setGoalBtn').addEventListener('click', function() {
+document.getElementById('setGoalBtn').addEventListener('click', function () {
     // Show the modal
     var modal = new bootstrap.Modal(document.getElementById('nutritionGoalModal'));
     modal.show();
@@ -890,7 +890,7 @@ document.getElementById('setGoalBtn').addEventListener('click', function() {
 
 function openLogMealForm() {
     const modal = new bootstrap.Modal(document.getElementById('mealModal'));
-    
+
     // Set mealType to default (meryenda/snack)
     document.getElementById('mealType').value = 'meryenda';
     console.log('🍽️ MealPlanner.js: openLogMealForm - Set mealType to default: meryenda');
@@ -918,9 +918,6 @@ function openLogMealForm() {
     if (uploadLabel) {
         uploadLabel.style.display = '';
     }
-
-    // Optionally hide the toggle buttons (if still shown)
-    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.add('d-none'));
 
     // Set submit button text to "Log Meal"
     const submitText = document.getElementById("submitText");
@@ -961,7 +958,7 @@ function updateMealSummary(mealId) {
     listEl.innerHTML = mealLogs.map(log => {
         const defaultImage = 'https://via.placeholder.com/50?text=🍽️';
         const imageUrl = log.photo || defaultImage;
-        
+
         return `
         <div class="card shadow-sm mb-2">
             <div class="card-body log-entry position-relative">
@@ -1012,16 +1009,16 @@ async function loadMealLogsForDate(date) {
     try {
         const dateString = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
         console.log('🍽️ MealPlanner.js: Loading meal logs for date:', dateString);
-        
+
         const response = await fetch(`/MealPlanner/GetMealLogsByDate?date=${dateString}`);
         console.log('🍽️ MealPlanner.js: API response status for date load:', response.status);
-        
+
         const result = await response.json();
         console.log('🍽️ MealPlanner.js: API response data for date load:', result);
 
         if (result.success && result.mealLogs) {
             console.log('🍽️ MealPlanner.js: Processing', result.mealLogs.length, 'meal logs');
-            
+
             // Clear existing logged meals
             Object.keys(loggedMeals).forEach(key => {
                 loggedMeals[key] = [];
@@ -1031,7 +1028,7 @@ async function loadMealLogsForDate(date) {
             result.mealLogs.forEach(mealLog => {
                 const mealType = mealLog.mealType || 'almusal'; // Default to breakfast if not specified
                 console.log('🍽️ MealPlanner.js: Processing meal log:', mealLog.mealName, 'for type:', mealType);
-                
+
                 if (!loggedMeals[mealType]) {
                     loggedMeals[mealType] = [];
                 }
@@ -1072,7 +1069,7 @@ async function editMealLog(mealLogId) {
 // Delete meal log
 async function deleteMealLog(mealLogId, mealType) {
     console.log('🍽️ MealPlanner.js: Delete meal log requested for ID:', mealLogId, 'Type:', mealType);
-    
+
     if (!confirm('Are you sure you want to delete this meal log?')) {
         console.log('🍽️ MealPlanner.js: Delete cancelled by user');
         return;
@@ -1090,7 +1087,7 @@ async function deleteMealLog(mealLogId, mealType) {
 
         if (result.success) {
             console.log('🍽️ MealPlanner.js: Meal deleted successfully, updating UI');
-            
+
             // Remove from local storage
             if (loggedMeals[mealType]) {
                 const beforeCount = loggedMeals[mealType].length;
@@ -1135,7 +1132,7 @@ function showNotification(message, type = 'info') {
 // Show meal photo in modal
 function showMealPhotoModal(imageUrl, mealName) {
     console.log('🍽️ MealPlanner.js: Showing photo modal for:', mealName, 'URL:', imageUrl);
-    
+
     // Check if it's a placeholder image
     if (imageUrl.includes('placeholder')) {
         showNotification('No photo available for this meal', 'info');
