@@ -49,8 +49,12 @@ namespace MVCPrject.Models
 
         public string? RecipeType { get; set; }
 
-        [StringLength(100, ErrorMessage = "Author name cannot exceed 100 characters")]
-        public string? RecipeAuthor { get; set; }
+        // Foreign key to User table
+        [ForeignKey("Author")]
+        public string? AuthorId { get; set; }
+
+        // Navigation property
+        public virtual User? Author { get; set; }
 
         public string? RecipeServings { get; set; }
 
@@ -137,7 +141,7 @@ namespace MVCPrject.Models
     {
         public string? RecipeName { get; set; }
         public string? Description { get; set; }
-        public string? RecipeAuthor { get; set; }
+        public string? AuthorId { get; set; }
         public int? Servings { get; set; }
         public int? CookingTime { get; set; }
         public int? Calories { get; set; }

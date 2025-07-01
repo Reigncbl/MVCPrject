@@ -13,6 +13,8 @@ namespace MVCPrject.Data
         public DbSet<RecipeInstructions> RecipeInstructions { get; set; } = null!;
         public DbSet<RecipeNutritionFacts> RecipeNutritionFacts { get; set; } = null!;
         public DbSet<RecipeLikes> RecipeLikes { get; set; } = null!;
+        public DbSet<Follows> Follows { get; set; } = null!;
+
         public DbSet<MealLog> MealLogs { get; set; } = null!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -46,6 +48,14 @@ namespace MVCPrject.Data
             .WithMany()
             .HasForeignKey(ml => ml.RecipeID)
             .OnDelete(DeleteBehavior.SetNull);
+
+            // Recipe-User relationship
+            modelBuilder.Entity<Recipe>()
+            .HasOne(r => r.Author)
+            .WithMany()
+            .HasForeignKey(r => r.AuthorId)
+            .OnDelete(DeleteBehavior.SetNull)
+            .IsRequired(false);
         }
     }
 }

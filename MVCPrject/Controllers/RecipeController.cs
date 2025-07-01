@@ -98,7 +98,7 @@ namespace MVCPrject.Controllers
                         id = recipe.RecipeID,
                         name = recipe.RecipeName,
                         description = recipe.RecipeDescription,
-                        author = recipe.RecipeAuthor,
+                        author = recipe.Author?.Name ?? "Unknown Author",
                         type = recipe.RecipeType,
                         servings = recipe.RecipeServings,
                         cookTime = recipe.CookTimeMin,
@@ -125,12 +125,18 @@ namespace MVCPrject.Controllers
         {
             try
             {
-                string recipeAuthor = "Anonymous";
+                string? authorId = null;
                 if (User.Identity?.IsAuthenticated == true)
                 {
-                    var userInfo = await _userCacheService.GetUserInfoAsync(User);
-                    recipeAuthor = userInfo?.DisplayName ?? userInfo?.Email ?? "Anonymous";
+                    var userInfo = await _userCacheService.GetCurrentUserAsync(User);
+                    authorId = userInfo?.Id;
                 }
+
+                // Allow recipes without authors for backward compatibility
+                // if (string.IsNullOrEmpty(authorId))
+                // {
+                //     return Json(new { success = false, message = "User must be logged in to add recipes." });
+                // }
 
                 string? uploadedImageUrl = null;
 
@@ -155,7 +161,7 @@ namespace MVCPrject.Controllers
                 {
                     RecipeName = request.RecipeName,
                     RecipeDescription = request.Description,
-                    RecipeAuthor = recipeAuthor,
+                    AuthorId = authorId,
                     RecipeServings = request.Servings?.ToString(),
                     CookTimeMin = request.CookingTime,
                     PrepTimeMin = 0,

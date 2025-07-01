@@ -19,7 +19,7 @@ namespace MVCPrject.Services
         {
             return await _context.RecipeLikes
                 .Where(rl => rl.UserID == userId)
-                .Join(_context.Recipes,
+                .Join(_context.Recipes.Include(r => r.Author),
                       like => like.RecipeID,
                       recipe => recipe.RecipeID,
                       (like, recipe) => new Suggestion

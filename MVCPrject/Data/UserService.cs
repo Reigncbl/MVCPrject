@@ -70,5 +70,33 @@ namespace MVCPrject.Data
             return 1;
         }
 
+    public async Task<bool> FollowUserAsync(string followerId, string followeeId)
+        {
+            if (followerId == followeeId) return false; // Prevent self-follow
+
+            var exists = await _dbContext.Set<Models.Follows>()
+                .AnyAsync(f => f.FollowerId == followerId && f.FolloweeId == followeeId);
+            if (exists) return false;
+
+            var follow = new Models.Follows
+            {
+                FollowerId = followerId,
+                FolloweeId = followeeId,
+                CreatedAt = DateTime.UtcNow
+            };
+            _dbContext.Set<Models.Follows>().Add(follow);
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> UnfollowUserAsync(string followerId, string followeeId)
+        {
+            var follow = await _dbContext.Set<Models.Follows>()
+                .FirstOrDefaultAsync(f => f.FollowerId == followerId && f.FolloweeId == followeeId);
+            if (follow == null) return false;
+            _dbContext.Set<Models.Follows>().Remove(follow);
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
     }
 }

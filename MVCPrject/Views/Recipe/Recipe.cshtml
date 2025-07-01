@@ -249,7 +249,7 @@
                                     <div class="d-flex align-items-center mb-2">
                                         <span class="rounded-circle bg-secondary me-2"
                                             style="display:inline-block; width:32px; height:32px;"></span>
-                                        <span class="fw-semibold">@recipe.RecipeAuthor</span>
+                                        <span class="fw-semibold">@(recipe.Author?.Name ?? "Unknown Author")</span>
                                     </div>
                                     <!-- Calendar and time -->
                                     <div class="d-flex align-items-center mb-2 text-secondary" style="font-size: 0.95rem;">

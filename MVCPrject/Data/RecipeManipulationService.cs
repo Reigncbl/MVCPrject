@@ -38,6 +38,7 @@ namespace MVCPrject.Data
                 recipe = await _dbContext.Recipes
                     .Include(r => r.Ingredients)
                     .Include(r => r.Instructions)
+                    .Include(r => r.Author)
                     .FirstOrDefaultAsync(r => r.RecipeID == id);
 
                 if (recipe == null)
@@ -84,6 +85,7 @@ namespace MVCPrject.Data
             }
 
             var recipes = await _dbContext.Recipes
+                .Include(r => r.Author)
                 .OrderBy(r => r.RecipeID)
                 .Take(count)
                 .ToListAsync();
@@ -133,7 +135,7 @@ namespace MVCPrject.Data
                     predicate = predicate.Or(r =>
                         r.Ingredients.Any(i => EF.Functions.Like(i.IngredientName, $"%{k}%")) ||
                         EF.Functions.Like(r.RecipeName, $"%{k}%") ||
-                        EF.Functions.Like(r.RecipeAuthor, $"%{k}%") ||
+                        EF.Functions.Like(r.Author.Name, $"%{k}%") ||
                         EF.Functions.Like(r.RecipeType, $"%{k}%"));
                 }
                 query = query.Where(predicate);
@@ -142,6 +144,7 @@ namespace MVCPrject.Data
             var recipes = await query
                 .Include(r => r.Ingredients)
                 .Include(r => r.Instructions)
+                .Include(r => r.Author)
                 .OrderBy(r => r.RecipeID)
                 .AsSplitQuery()
                 .Take(300)

@@ -40,7 +40,9 @@
                     <div class="d-flex align-items-center mb-3">
                         <span class="rounded-circle bg-secondary me-2"
                             style="display:inline-block; width:32px; height:32px;"></span>
-                   <span class="fw-semibold">@(Model.Recipe?.RecipeAuthor ?? "Unknown Author")</span>
+                   <a href="/Profile/ProfileOthers?id=@Model.Recipe?.AuthorId" class="fw-semibold">
+                       @(Model.Recipe?.Author?.Name ?? "Unknown Author")
+                   </a>
                     </div>
 
                     <div class="d-flex bg-white shadow-lg rounded-4 p-4 justify-content-between text-center align-items-center mb-4"

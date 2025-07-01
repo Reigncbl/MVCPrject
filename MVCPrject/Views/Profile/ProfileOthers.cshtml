@@ -1,55 +1,54 @@
-  @{
-      ViewData["Title"] = "OtherProfile";
-  }
-  @section Scripts {
-    <script src="https://unpkg.com/feather-icons"></script>
-    <script src="~/js/mealPlanner.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-  }
+@{
+  ViewData["Title"] = "OtherProfile";
+}
+@section Scripts {
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script src="~/js/mealPlanner.js" asp-append-version="true"></script>
+  <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+}
 
-  <!-- Profile Above -->
-  <div class="container-fluid py-4 justify-content-center">
-    <div class="row align-items-center">
-      
-      <div class="col-auto" style="padding-left: 3vh;">
-        <img src="~/img/image.png" class="rounded-circle" alt="Profile image" width="180" height="180">
+<!-- Profile Above -->
+<div class="container-fluid py-4 justify-content-center">
+  <div class="row align-items-center">
+
+    <div class="col-auto" style="padding-left: 3vh;">
+      <img src="~/img/image.png" class="rounded-circle" alt="Profile image" width="180" height="180">
+    </div>
+
+    <div class="col-md-8">
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
+        <div>
+          <h5 class="fw-bold mb-0 d-inline me-2">Rain Cabiella</h5>
+          <small class="text-muted">@@rain.cbl</small>
+        </div>
+        <div class="d-flex align-items-center gap-4">
+          <i data-feather="search" class="fs-5"></i>
+          <button class="btn btn-custom-red">Follow</button>
+        </div>
       </div>
 
-      <div class="col-md-8">
-        <div class="d-flex justify-content-between align-items-center flex-wrap">
-          <div>
-            <h5 class="fw-bold mb-0 d-inline me-2">Rain Cabiella</h5>
-            <small class="text-muted">@@rain.cbl</small>
-          </div>
-          <div class="d-flex align-items-center gap-4">
-            <i data-feather="search" class="fs-5"></i>
-            <button class="btn btn-custom-red">Follow</button>
-          </div>
+      <p class="mt-2 mb-1" style="padding-top: 2vh">
+        OTHER PROFILE
+      </p>
+
+      <div class="d-flex justify-content-between align-items-center" style="padding-top: 5vh">
+        <div class="d-flex gap-3">
+          <span><strong>4</strong> Recipes</span>
+          <span><strong>0</strong> Following</span>
+          <span><strong>0</strong> Followers</span>
         </div>
-
-        <p class="mt-2 mb-1"style="padding-top: 2vh">
-          Hi! I'm a Filipino living in Antipolo. I love to cook and share recipes passed down from my lola.
-          I'm here to spread the joy of lutong bahay. Tara, kain tayo!
-        </p>
-
-        <div class="d-flex justify-content-between align-items-center"style="padding-top: 5vh">
-          <div class="d-flex gap-3">
-            <span><strong>4</strong> Recipes</span>
-            <span><strong>0</strong> Following</span>
-            <span><strong>0</strong> Followers</span>
-          </div>
-          <div class="d-flex gap-4">
-            <a href="#" class="text-dark"><i data-feather="link-2" class="fs-5"></i></a>
-            <a href="#" class="text-dark"><i data-feather="youtube" class="fs-5"></i></a>
-          </div>
+        <div class="d-flex gap-4">
+          <a href="#" class="text-dark"><i data-feather="link-2" class="fs-5"></i></a>
+          <a href="#" class="text-dark"><i data-feather="youtube" class="fs-5"></i></a>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Recipe tab -->
+<!-- Recipe tab -->
 <div class="container-fluid border-top mt-1 pt-2">
   <h4 class="fw-bold fs-2" style="padding-left: 4vh; color: #EC433E; font: Poppins">Recipes</h4>
-  
+
 
 </div>

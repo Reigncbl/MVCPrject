@@ -13,33 +13,30 @@
     <link rel="stylesheet" href="~/css/AddRecipeModal.css" asp-append-version="true" />
     <script src="~/js/AddRecipeModal.js" asp-append-version="true"></script>
     <script src="https://unpkg.com/feather-icons"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     @RenderSection("Styles", required: false)
 
 </head>
 
 <body class="d-flex flex-column min-vh-100 overflow-hidden">
     <div class="d-flex">
-
         <nav class="d-flex flex-column flex-shrink-0 p-4 text-black bg-light border-end"
             style="width: 15vw; height: 100vh;">
-            <a class="navbar-brand" href="#"><img src="~/img/logo-colored.png" alt="Logo" class="w-100 mb-5"></a>
-            <ul class="nav nav-pills flex-column mb-auto">
-                <li class="nav-item">
-                    <a class="nav-link text-black" asp-area="" asp-controller="Home" asp-action="Home">Home</a>
-                </li>
-                <li>
-                    <a class="nav-link text-black" asp-area="" asp-controller="Recipe" asp-action="Recipe">Explore</a>
-                </li>
-                <li>
-                    <a class="nav-link text-black" asp-area="" asp-controller="MealPlanner"
-                        asp-action="MealPlanner">Meal Planner</a>
+            <a class="navbar-brand" href="#">
+                <img src="~/img/logo-colored.png" alt="Logo" class="w-100 mb-5">
+            </a>
 
+            <ul class="nav flex-column mb-auto">
+                <li class="nav-item mb-4">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "Home" ? "active" : "")"
+                        asp-area="" asp-controller="Home" asp-action="Home">
+                        <i data-feather="home" class="me-2" style="width: 20px; height: 20px;"></i>
+                        Home
+                    </a>
                 </li>
 
                 <li class="nav-item mb-4">
                     <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "Recipe" ? "active" : "")"
-                    asp-area="" asp-controller="Recipe" asp-action="Recipe">
+                        asp-area="" asp-controller="Recipe" asp-action="Recipe">
                         <i data-feather="search" class="me-2" style="width: 20px; height: 20px;"></i>
                         Explore
                     </a>
@@ -47,7 +44,7 @@
 
                 <li class="nav-item mb-4">
                     <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "MealPlanner" ? "active" : "")"
-                    asp-area="" asp-controller="MealPlanner" asp-action="MealPlanner">
+                        asp-area="" asp-controller="MealPlanner" asp-action="MealPlanner">
                         <i data-feather="calendar" class="me-2" style="width: 20px; height: 20px;"></i>
                         Meal Planner
                     </a>
@@ -55,7 +52,7 @@
 
                 <li class="nav-item mb-4">
                     <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "Profile" ? "active" : "")"
-                    asp-area="" asp-controller="Profile" asp-action="Profile">
+                        asp-area="" asp-controller="Profile" asp-action="Profile">
                         <i data-feather="user" class="me-2" style="width: 20px; height: 20px;"></i>
                         Profile
                     </a>
@@ -65,7 +62,8 @@
             <div class="nav-item mb-4">
                 <form asp-area="" asp-controller="Logout" asp-action="Logout" method="post" class="w-100">
                     @Html.AntiForgeryToken()
-                    <button type="submit" class="nav-link w-100 border-0 bg-transparent text-start d-flex align-items-center">
+                    <button type="submit"
+                        class="nav-link w-100 border-0 bg-transparent text-start d-flex align-items-center">
                         <i data-feather="log-out" class="me-2" style="width: 20px; height: 20px;"></i>
                         <span>Logout</span>
                     </button>
@@ -85,21 +83,16 @@
             </main>
         </div>
         <!-- Floating Buttons -->
-        <div class="position-fixed bottom-0 end-0 p-4 d-flex flex-column gap-3 align-items-end" style="z-index: 999;">
+        <div class="position-fixed bottom-0 end-0 p-4 d-flex flex-column gap-3 align-items-end">
             <button id="openAddRecipeModal" class="btn rounded-circle shadow"
                 style="width: 56px; height: 56px; background-color: #EC433E;" data-bs-toggle="modal"
                 data-bs-target="#addRecipeModal">
                 <i data-feather="plus" class="text-white fw-bold"></i>
             </button>
-            <button id="openChatbotModal" class="btn rounded-circle shadow"
-                style="width: 56px; height: 56px; background-color: #EC433E;" data-bs-toggle="modal"
-                data-bs-target="#chatbotModal">
+            <button class="btn rounded-circle shadow" style="width: 56px; height: 56px; background-color: #EC433E;">
                 <img src="~/img/bot-btn.png" alt="chatbot" style="width: 24px;">
             </button>
         </div>
-
-        <!-- Chatbot Modal -->
-        @await Html.PartialAsync("~/Views/Chat/_ChatbotModal.cshtml", new MVCPrject.Models.Chat())
     </div>
 
     <script>feather.replace()</script>
