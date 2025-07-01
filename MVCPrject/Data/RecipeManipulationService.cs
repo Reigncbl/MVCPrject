@@ -135,7 +135,7 @@ namespace MVCPrject.Data
                     predicate = predicate.Or(r =>
                         r.Ingredients.Any(i => EF.Functions.Like(i.IngredientName, $"%{k}%")) ||
                         EF.Functions.Like(r.RecipeName, $"%{k}%") ||
-                        EF.Functions.Like(r.Author.Name, $"%{k}%") ||
+                        (r.Author != null && EF.Functions.Like(r.Author.Name, $"%{k}%")) ||
                         EF.Functions.Like(r.RecipeType, $"%{k}%"));
                 }
                 query = query.Where(predicate);

@@ -1,153 +1,203 @@
-  @{
-      ViewData["Title"] = "Profile";
-  }
-  @section Styles {
+@model MVCPrject.Models.ProfileViewModel
+
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<meta name="user-email" content="@(User.Identity?.Name ?? "")" />
+
+@section Styles {
     <link rel="stylesheet" href="~/css/profile.css" />
-  }
-  @section Scripts {
+}
+
+@section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/EditModal.js"></script>
-  }
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="~/js/profile.js"></script>
+}
 
-  <!-- Profile Above -->
-  <div class="container-fluid py-4 justify-content-center">
+<!-- Profile Above -->
+<div class="container-fluid py-4 justify-content-center">
     <div class="row align-items-center">
-      
-      <div class="col-auto" style="padding-left: 3vh;">
-        <img src="~/img/image.png" class="rounded-circle" alt="Profile image" width="180" height="180">
-      </div>
-
-      <div class="col-md-8">
-        <div class="d-flex justify-content-between align-items-center flex-wrap">
-          <div>
-            <h5 class="fw-bold mb-0 d-inline me-2">Rain Cabiella</h5>
-            <small class="text-muted">@@rain.cbl</small>
-          </div>
-          <div class="d-flex align-items-right gap-4">
-            <button class="btn btn-custom-red" data-bs-toggle="modal" data-bs-target="#editProfileModal">Edit Profile</button>
-          </div>
+        <div class="col-auto" style="padding-left: 3vh;">
+            <img src="~/img/image.png" class="rounded-circle" alt="Profile image" width="180" height="180">
         </div>
+        <div class="col-md-8">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h5 class="fw-bold mb-0 d-inline me-2" id="currentUserName">@(Model?.User?.Name ?? "User")</h5>
+                    <small class="text-muted">@@@(Model?.User?.UserName ?? "user@email.com")</small>
+                </div>
+                <div class="d-flex align-items-right gap-4">
+                    <button class="btn btn-custom-red" data-bs-toggle="modal" data-bs-target="#editProfileModal">Edit
+                        Profile</button>
+                </div>
+            </div>
+            <p class="mt-2 mb-1" style="padding-top: 2vh">
+                Hi! I'm a Filipino living in Antipolo. I love to cook and share recipes passed down from my lola. I'm here to spread the joy of lutong bahay. Tara, kain tayo!
+            </p>
+            <div class="d-flex justify-content-between align-items-center" style="padding-top: 5vh">
+                <div class="d-flex gap-3">
+                    <span><strong id="myRecipeCount">@(Model?.RecipeCount ?? 0)</strong> Recipes</span>
+                    <span class="stats-clickable" style="cursor: pointer;" onclick="showFollowingModal()">
+                        <strong id="myFollowingCount">@(Model?.FollowingCount ?? 0)</strong> Following
+                    </span>
+                    <span class="stats-clickable" style="cursor: pointer;" onclick="showFollowersModal()">
+                        <strong id="myFollowerCount">@(Model?.FollowerCount ?? 0)</strong> Followers
+                    </span>
+                </div>
+                <div class="d-flex gap-4">
+                    <a href="#" class="text-dark"><i data-feather="link-2" class="fs-5"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-        <p class="mt-2 mb-1"style="padding-top: 2vh">
-          Hi! I'm a Filipino living in Antipolo. I love to cook and share recipes passed down from my lola.
-          I'm here to spread the joy of lutong bahay. Tara, kain tayo!
-        </p>
-
-        <div class="d-flex justify-content-between align-items-center"style="padding-top: 5vh">
-          <div class="d-flex gap-3">
-            <span><strong>4</strong> Recipes</span>
-            <span><strong>0</strong> Following</span>
-            <span><strong>0</strong> Followers</span>
-          </div>
-          <div class="d-flex gap-4">
-            <a href="#" class="text-dark"><i data-feather="link-2" class="fs-5"></i></a>
+<!-- Followers Modal -->
+<div class="modal fade" id="followersModal" tabindex="-1" aria-labelledby="followersModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content rounded-4">
+      <div class="modal-header bg-success text-white rounded-top-4">
+        <h5 class="modal-title fw-semibold" id="followersModalLabel">
+          <i data-feather="users" class="me-2" style="width: 20px; height: 20px;"></i>
+          My Followers
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div id="followersContainer">
+          <div class="text-center py-5">
+            <div class="spinner-border text-success" role="status">
+              <span class="visually-hidden">Loading followers...</span>
+            </div>
+            <p class="text-muted mt-3">Loading followers...</p>
           </div>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-    <!-- Edit Profile Modal -->
-  <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content rounded-4">
-        <!-- Modal Header -->
-        <div class="modal-header bg-danger text-white rounded-top-4">
-          <h6 class="modal-title fw-semibold" id="editProfileModalLabel">Edit Profile</h6>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-
-        <!-- Modal Body -->
-        <div class="modal-body text-center px-4">
-           <!-- Profile Image Placeholder -->
-          <div class="mb-3 position-relative" style="width: 100px; height: 100px; margin: 0 auto;">
-            
-            <!-- Profile Image -->
-            <div class="rounded-circle bg-secondary-subtle w-100 h-100"
-                id="profileImagePreview"
-                style="object-fit: cover;"></div>
-
-            <!-- Overlay (appears on hover) -->
-            <div class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center rounded-circle upload-overlay">
-              <i data-feather="camera" class="text-white"></i>
+<!-- Following Modal -->
+<div class="modal fade" id="followingModal" tabindex="-1" aria-labelledby="followingModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content rounded-4">
+      <div class="modal-header bg-info text-white rounded-top-4">
+        <h5 class="modal-title fw-semibold" id="followingModalLabel">
+          <i data-feather="user-plus" class="me-2" style="width: 20px; height: 20px;"></i>
+          Following
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div id="followingContainer">
+          <div class="text-center py-5">
+            <div class="spinner-border text-info" role="status">
+              <span class="visually-hidden">Loading following...</span>
             </div>
-
-            <!-- Hidden File Input -->
-            <input type="file" id="profileImageInput" accept="image/*" class="d-none" />
-
+            <p class="text-muted mt-3">Loading following...</p>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-          <!-- Form -->
-          <form>
-            <div class="mb-3 text-start">
-              <label for="displayName" class="form-label small">Display Name</label>
-              <input type="text" class="form-control rounded-3" id="displayName">
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <!-- Modal Header -->
+            <div class="modal-header bg-danger text-white rounded-top-4">
+                <h6 class="modal-title fw-semibold" id="editProfileModalLabel">Edit Profile</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
             </div>
 
-            <div class="mb-3 text-start">
-              <label for="username" class="form-label small">Username</label>
-              <input type="text" class="form-control rounded-3" id="username">
-            </div>
+            <!-- Modal Body -->
+            <div class="modal-body text-center px-4">
+                <!-- Profile Image Placeholder -->
+                <div class="mb-3 position-relative" style="width: 100px; height: 100px; margin: 0 auto;">
 
-            <div class="mb-3 text-start">
-              <label for="bio" class="form-label small">Bio</label>
-              <textarea class="form-control rounded-3" id="bio" rows="3"></textarea>
-            </div>
+                    <!-- Profile Image -->
+                    <div class="rounded-circle bg-secondary-subtle w-100 h-100" id="profileImagePreview"
+                        style="object-fit: cover;"></div>
 
-            <div class="mb-3 text-start">
-              <label class="form-label small">Social Media Links</label>
-                <div id="social-links">
-                  <div class="input-group mb-2">
-                    <input type="url" class="form-control rounded-start-3" placeholder="https://...">
-                    <button type="button" class="btn btn-outline-danger rounded-end-3 remove-link-btn">
-                    <i data-feather="x-circle" class="fs-5"></i>
-                    </button>
-                  </div>
+                    <!-- Overlay (appears on hover) -->
+                    <div
+                        class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center rounded-circle upload-overlay">
+                        <i data-feather="camera" class="text-white"></i>
+                    </div>
+
+                    <!-- Hidden File Input -->
+                    <input type="file" id="profileImageInput" accept="image/*" class="d-none" />
+
                 </div>
 
-              <button type="button" class="btn btn-outline-secondary btn-sm mt-2" id="add-link-btn">
-                <i data-feather="plus-circle" class="fs-5"></i> Add Link
-              </button>
-            </div>
-            <!-- Save Button -->
-            <div class="d-grid">
-              <button type="submit" class="btn btn-danger fw-semibold rounded-3">Save</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
+                <!-- Form -->
+                <form>
+                    <div class="mb-3 text-start">
+                        <label for="displayName" class="form-label small">Display Name</label>
+                        <input type="text" class="form-control rounded-3" id="displayName">
+                    </div>
 
-  <!---- Recipe tab -->
-<div class="container-fluid border-top mt-1 pt-2">
-  <h4 class="fw-bold fs-2" style="padding-left: 1.5vh; color: #EC433E;">Recipes</h4>
-    @*  <!-- If no Post YET -->
-  <div class="d-flex flex-column align-items-center justify-content-center mt-5" style="min-height: 400px; padding: 2rem;">
-    <!-- Grid Icon -->
-    <div class="mb-4">
-      <i data-feather="grid" style="width: 80px; height: 80px; color: #9CA3AF;"></i>
-    </div>
-    
-    <!-- Upload Text -->
-    <h5 class="text-muted upload-title">Upload your first recipe</h5>
-    <p class="text-muted upload-subtitle">Your recipes will appear here</p>
-  *@
-  <!---- Picture of the recipe card -->
-  <div class="container-fluid">
-    <div class="grid-5">
-      <!-- Recipe Card -->
-      <div class="d-flex flex-wrap gap-4 justify-content-start" style="padding-left: 1vh;">
-        <div class="card-hover">
-            <img src="~/img/sampleimg.jpg" class="img-fluid" alt="Recipe Image">
-          <div class="overlay">
-              <h5>Pocherong Manok</h5>
-              <div class="details gap-5">
-                <span>420 cal</span>
-                <span>45 mins</span>
+                    <div class="mb-3 text-start">
+                        <label for="username" class="form-label small">Username</label>
+                        <input type="text" class="form-control rounded-3" id="username">
+                    </div>
+
+                    <div class="mb-3 text-start">
+                        <label for="bio" class="form-label small">Bio</label>
+                        <textarea class="form-control rounded-3" id="bio" rows="3"></textarea>
+                    </div>
+
+                    <div class="mb-3 text-start">
+                        <label class="form-label small">Social Media Links</label>
+                        <div id="social-links">
+                            <div class="input-group mb-2">
+                                <input type="url" class="form-control rounded-start-3" placeholder="https://...">
+                                <button type="button" class="btn btn-outline-danger rounded-end-3 remove-link-btn">
+                                    <i data-feather="x-circle" class="fs-5"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-secondary btn-sm mt-2" id="add-link-btn">
+                            <i data-feather="plus-circle" class="fs-5"></i> Add Link
+                        </button>
+                    </div>
+                    <!-- Save Button -->
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-danger fw-semibold rounded-3">Save</button>
+                    </div>
+                </form>
             </div>
         </div>
-      </div>
     </div>
-  </div>
+</div>
+
+<!---- Recipe tab -->
+<div class="container-fluid border-top mt-1 pt-2">
+    <h4 class="fw-bold fs-2" style="padding-left: 1.5vh; color: #EC433E;">Recipes</h4>
+    
+    <!---- Picture of the recipe card -->
+    <div class="container-fluid">
+        <div class="grid-5">
+            <!-- Recipe Card -->
+            <div class="d-flex flex-wrap gap-4 justify-content-start" style="padding-left: 1vh;" id="recipesContainer">
+                <div class="card-hover">
+                    <img src="~/img/sampleimg.jpg" class="img-fluid" alt="Recipe Image">
+                    <div class="overlay">
+                        <h5>Pocherong Manok</h5>
+                        <div class="details gap-5">
+                            <span>420 cal</span>
+                            <span>45 mins</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
