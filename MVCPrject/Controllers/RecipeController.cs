@@ -27,28 +27,33 @@ namespace MVCPrject.Controllers
             _blobServiceClient = blobServiceClient;
         }
 
-        [HttpGet("All")]
-        public async Task<IActionResult> Recipe(string? keywords = null, int pageNumber = 1)
+        [HttpGet("Recipe")]
+        public async Task<IActionResult> RecipeAction(string? keywords = null, int pageNumber = 1, string? source = null)
         {
+            Console.WriteLine($"[DEBUG] RecipeAction called with keywords: '{keywords}', pageNumber: {pageNumber}, source: '{source}'");
+            
             if (User.Identity?.IsAuthenticated == true)
             {
                 await SetUserViewBagAsync();
             }
 
-            // Ensure pageNumber is at least 1
             if (pageNumber < 1) pageNumber = 1;
 
-            var (allRecipes, pageTitle) = await GetRecipesAsync(keywords);
+            var (allRecipes, pageTitle) = await GetRecipesAsync(keywords, source);
 
-            // Create paginated list
+            Console.WriteLine($"[DEBUG] GetRecipesAsync returned {allRecipes.Count} recipes with title: '{pageTitle}'");
+
             var paginatedRecipes = PaginatedList<Recipe>.Create(allRecipes, pageNumber, PageSize);
+
+            Console.WriteLine($"[DEBUG] Paginated to {paginatedRecipes.Count} recipes on page {pageNumber}");
 
             ViewBag.PageTitle = pageTitle;
             ViewBag.SearchKeywords = keywords;
-            ViewBag.CurrentKeywords = keywords; // For pagination links
+            ViewBag.CurrentKeywords = keywords;
+            ViewBag.Source = source;
             ViewBag.LikeCounts = await GetLikeCountsAsync(paginatedRecipes.ToList());
 
-            return View(paginatedRecipes);
+            return View("Recipe", paginatedRecipes);
         }
         [HttpGet("View/{id:int}")]
         public async Task<IActionResult> Details(int id)
@@ -205,11 +210,30 @@ namespace MVCPrject.Controllers
             }
         }
 
-        private async Task<(List<Recipe> recipes, string pageTitle)> GetRecipesAsync(string? keywords)
+        private async Task<(List<Recipe> recipes, string pageTitle)> GetRecipesAsync(string? keywords, string? source)
         {
-            return string.IsNullOrEmpty(keywords)
-                ? (await _repository.GetAllRecipesAsync(), "All Recipes")
-                : (await _repository.SearchRecipesByIngredientsAsync(keywords), "Search Results");
+            Console.WriteLine($"[DEBUG] GetRecipesAsync called with keywords: '{keywords}', source: '{source}'");
+            
+            if (string.IsNullOrEmpty(keywords) && string.IsNullOrEmpty(source))
+            {
+                Console.WriteLine("[DEBUG] No keywords or source, getting all recipes");
+                var allRecipes = await _repository.GetAllRecipesAsync();
+                Console.WriteLine($"[DEBUG] GetAllRecipesAsync returned {allRecipes.Count} recipes");
+                return (allRecipes, "All Recipes");
+            }
+
+            if (!string.IsNullOrEmpty(source))
+            {
+                Console.WriteLine($"[DEBUG] Source filter detected: '{source}', calling SearchRecipesByModeAndKeywordsAsync");
+                var sourceRecipes = await _repository.SearchRecipesByModeAndKeywordsAsync(keywords ?? "", source);
+                Console.WriteLine($"[DEBUG] SearchRecipesByModeAndKeywordsAsync returned {sourceRecipes.Count} recipes");
+                return (sourceRecipes, $"{source} Recipes");
+            }
+
+            Console.WriteLine($"[DEBUG] Keywords only: '{keywords}', calling SearchRecipesByIngredientsAsync");
+            var keywordRecipes = await _repository.SearchRecipesByIngredientsAsync(keywords ?? "");
+            Console.WriteLine($"[DEBUG] SearchRecipesByIngredientsAsync returned {keywordRecipes.Count} recipes");
+            return (keywordRecipes, "Search Results");
         }
 
         private async Task<Dictionary<int, int>> GetLikeCountsAsync(List<Recipe> recipes)
@@ -248,8 +272,39 @@ namespace MVCPrject.Controllers
             var recipeDetails = await _repository.GetRecipeDetailsWithNutritionAsync(recipeId);
             return recipeDetails?.NutritionFacts;
         }
+
+        [HttpGet("SearchByModeAndKeywords")]
+        public async Task<IActionResult> SearchRecipesByModeAndKeywords(string? keywords = "", string? mode = null)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(keywords) && string.IsNullOrWhiteSpace(mode))
+                {
+                    return Json(new { success = true, recipes = new List<object>() });
+                }
+
+                var recipes = await _repository.SearchRecipesByModeAndKeywordsAsync(keywords ?? "", mode);
+
+                var recipeResults = recipes.Select(recipe => new
+                {
+                    id = recipe.RecipeID,
+                    name = recipe.RecipeName,
+                    description = recipe.RecipeDescription,
+                    author = recipe.Author?.Name ?? "Unknown Author",
+                    type = recipe.RecipeType,
+                    servings = recipe.RecipeServings,
+                    cookTime = recipe.CookTimeMin,
+                    prepTime = recipe.PrepTimeMin,
+                    totalTime = recipe.TotalTimeMin,
+                    image = recipe.RecipeImage
+                }).ToList();
+
+                return Json(new { success = true, recipes = recipeResults });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Error searching recipes: {ex.Message}" });
+            }
+        }
     }
-
-
-
 }

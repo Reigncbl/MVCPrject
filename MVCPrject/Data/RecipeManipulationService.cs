@@ -74,9 +74,9 @@ namespace MVCPrject.Data
 
 
         // Fetch all recipes with caching
-        public async Task<List<Recipe>> GetAllRecipesAsync(int count = 10)
+        public async Task<List<Recipe>> GetAllRecipesAsync()
         {
-            string cacheKey = $"recipeAllRecipes_{count}";
+            string cacheKey = "recipeAllRecipes";
 
             var cachedData = await _cache.GetStringAsync(cacheKey);
             if (!string.IsNullOrEmpty(cachedData))
@@ -87,7 +87,6 @@ namespace MVCPrject.Data
             var recipes = await _dbContext.Recipes
                 .Include(r => r.Author)
                 .OrderBy(r => r.RecipeID)
-                .Take(count)
                 .ToListAsync();
 
             var serializedData = JsonSerializer.Serialize(recipes);
@@ -147,7 +146,6 @@ namespace MVCPrject.Data
                 .Include(r => r.Author)
                 .OrderBy(r => r.RecipeID)
                 .AsSplitQuery()
-                .Take(300)
                 .ToListAsync();
 
             var jsonOptions = new JsonSerializerOptions
@@ -196,10 +194,10 @@ namespace MVCPrject.Data
         {
             _dbContext.Recipes.Add(recipe);
             await _dbContext.SaveChangesAsync();
-            
+
             // Clear relevant cache entries
             await ClearRecipeCacheAsync();
-            
+
             return recipe.RecipeID;
         }
 
@@ -253,11 +251,11 @@ namespace MVCPrject.Data
         {
             // Clear all recipes cache
             await _cache.RemoveAsync("recipeAllRecipes_10");
-            
+
             // Clear search caches for common filters
             var filters = new[] { "Dinner", "Breakfast", "Lunch", "Snack", "Dessert",
                 "Main Course", "Appetizer", "Side Dish", "Soup", "Salad","Healthy","Vegetarian","Vegan","Comfort Food"};
-            
+
             foreach (var filter in filters)
             {
                 string filterKey = GetSearchRecipesCacheKey(filter);
@@ -288,5 +286,112 @@ namespace MVCPrject.Data
                 }
             }
         }
+        public async Task<List<Recipe>> SearchRecipesByModeAndKeywordsAsync(string keywords, string? mode = null)
+        {
+            Console.WriteLine($"[DEBUG] SearchRecipesByModeAndKeywordsAsync called with keywords: '{keywords}', mode: '{mode}'");
+            
+            // Normalize cache key
+            string cacheKey = $"recipeSearch_{mode}_{keywords}";
+            var cachedData = await _cache.GetStringAsync(cacheKey);
+
+            if (!string.IsNullOrEmpty(cachedData))
+            {
+                var cachedRecipes = JsonSerializer.Deserialize<List<Recipe>>(cachedData) ?? new List<Recipe>();
+                Console.WriteLine($"[DEBUG] Returning {cachedRecipes.Count} recipes from cache");
+                return cachedRecipes;
+            }
+
+            Console.WriteLine("[DEBUG] No cached data found, querying database");
+
+            // Split and normalize keywords
+            var keywordList = keywords.Split(',')
+                .Select(k => k.Trim())
+                .Where(k => !string.IsNullOrEmpty(k))
+                .ToArray();
+
+            Console.WriteLine($"[DEBUG] Keywords parsed: [{string.Join(", ", keywordList)}]");
+
+            var query = _dbContext.Recipes.AsQueryable();
+
+            // Filter by source type if provided
+            if (!string.IsNullOrEmpty(mode))
+            {
+                Console.WriteLine($"[DEBUG] Applying mode filter: {mode}");
+                if (mode.ToLower() == "user")
+                {
+                    Console.WriteLine("[DEBUG] Filtering for user recipes (RecipeMode = 'user')");
+                    query = query.Where(r => r.RecipeMode != null && r.RecipeMode.ToLower() == "user");
+                }
+                else if (mode.ToLower() == "cookbook")
+                {
+                    Console.WriteLine("[DEBUG] Filtering for cookbook recipes (RecipeMode = 'cookbook' or null)");
+                    query = query.Where(r => r.RecipeMode == null || r.RecipeMode.ToLower() == "cookbook");
+                }
+            }
+            else
+            {
+                Console.WriteLine("[DEBUG] No mode filter applied, showing all recipes");
+            }
+
+            // Apply keyword search
+            if (keywordList.Any())
+            {
+                Console.WriteLine($"[DEBUG] Applying keyword search for: {string.Join(", ", keywordList)}");
+                var predicate = PredicateBuilder.New<Recipe>();
+                foreach (var keyword in keywordList)
+                {
+                    var k = keyword;
+                    predicate = predicate.Or(r =>
+                        r.Ingredients.Any(i => EF.Functions.Like(i.IngredientName, $"%{k}%")) ||
+                        EF.Functions.Like(r.RecipeName, $"%{k}%") ||
+                        (r.Author != null && EF.Functions.Like(r.Author.Name, $"%{k}%")) ||
+                        EF.Functions.Like(r.RecipeType, $"%{k}%"));
+                }
+                query = query.Where(predicate);
+            }
+            else
+            {
+                Console.WriteLine("[DEBUG] No keyword search applied");
+            }
+
+            Console.WriteLine("[DEBUG] Executing database query...");
+
+            // Execute the query
+            var recipes = await query
+                .Include(r => r.Ingredients)
+                .Include(r => r.Instructions)
+                .Include(r => r.Author)
+                .OrderBy(r => r.RecipeID)
+                .AsSplitQuery()
+                .ToListAsync();
+
+            Console.WriteLine($"[DEBUG] Query returned {recipes.Count} recipes");
+            
+            // Log some sample recipe modes for debugging
+            if (recipes.Any())
+            {
+                var sampleRecipes = recipes.Take(5);
+                foreach (var recipe in sampleRecipes)
+                {
+                    Console.WriteLine($"[DEBUG] Recipe ID: {recipe.RecipeID}, Name: '{recipe.RecipeName}', RecipeMode: '{recipe.RecipeMode}', AuthorId: '{recipe.AuthorId}'");
+                }
+            }
+
+            // Cache the result
+            var jsonOptions = new JsonSerializerOptions
+            {
+                ReferenceHandler = ReferenceHandler.IgnoreCycles
+            };
+
+            var serializedData = JsonSerializer.Serialize(recipes, jsonOptions);
+            await _cache.SetStringAsync(cacheKey, serializedData, new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24)
+            });
+
+            Console.WriteLine($"[DEBUG] Cached {recipes.Count} recipes and returning result");
+            return recipes;
+        }
+
     }
 }

@@ -38,10 +38,16 @@
             <!-- Search Bar -->
             <div class="d-flex justify-content-between align-items-center mb-3 ">
                 <div class="col-md-4 d-flex justify-content-between gap-3">
-                    <a
-                        class="text-decoration-none text-reset fs-4 fw-medium p-3 border-bottom border-primary">Cookbook</a>
-                    <a class="text-decoration-none text-reset fs-4 fw-medium p-3">User's Recipes</a>
+                    <a asp-controller="Recipe" asp-action="RecipeAction" asp-route-source="cookbook"
+                        class="text-decoration-none text-reset fs-4 fw-medium p-3 @(ViewBag.Source == "cookbook" ? "border-bottom border-primary" : "")">
+                        Cookbook
+                    </a>
+                    <a asp-controller="Recipe" asp-action="RecipeAction" asp-route-source="user"
+                        class="text-decoration-none text-reset fs-4 fw-medium p-3 @(ViewBag.Source == "user" ? "border-bottom border-primary" : "")">
+                        User's Recipes
+                    </a>
                 </div>
+
                 <div class="col-md-4 d-flex justify-content-end gap-3 px-3">
                     <button
                         class="btn border border-2 border-opacity-75 fw-medium text-secondary fs-6 d-flex align-items-center justify-content-center gap-2"
@@ -142,12 +148,12 @@
 
                     if (!list.includes(keyword)) {
                         list.push(keyword);
-                        window.location.href = '/Recipe/All?keywords=' + list.join(',') + '&pageNumber=1';
+                        window.location.href = '/Recipe/Recipe?keywords=' + list.join(',') + '&pageNumber=1';
                     }
                 }
 
                 function clearFilters() {
-                    window.location.href = '/Recipe/All?pageNumber=1';
+                    window.location.href = '/Recipe/Recipe?pageNumber=1';
                 }
 
                 // Toggle like/unlike functionality
@@ -286,7 +292,7 @@
                             {
                                 <li class="page-item custom-nav">
                                     <a class="page-link"
-                                        href="@Url.Action("Recipe", new { pageNumber = Model.PageIndex - 1, keywords = ViewBag.CurrentKeywords })">
+                                        href="@Url.Action("RecipeAction", new { pageNumber = Model.PageIndex - 1, keywords = ViewBag.CurrentKeywords, source = ViewBag.Source })">
                                         <i data-feather="chevron-left"></i> Previous
                                     </a>
                                 </li>
@@ -306,7 +312,7 @@
                             {
                                 <li class="page-item border-0">
                                     <a class="page-link"
-                                        href="@Url.Action("Recipe", new { pageNumber = 1, keywords = ViewBag.CurrentKeywords })">1</a>
+                                        href="@Url.Action("RecipeAction", new { pageNumber = 1, keywords = ViewBag.CurrentKeywords, source = ViewBag.Source })">1</a>
                                 </li>
                                 @if (startPage > 2)
                                 {
@@ -320,7 +326,7 @@
                             {
                                 <li class="page-item @(i == Model.PageIndex ? "active" : "")">
                                     <a class="page-link"
-                                        href="@Url.Action("Recipe", new { pageNumber = i, keywords = ViewBag.CurrentKeywords })">@i</a>
+                                        href="@Url.Action("RecipeAction", new { pageNumber = i, keywords = ViewBag.CurrentKeywords, source = ViewBag.Source })">@i</a>
                                 </li>
                             }
 
@@ -334,7 +340,7 @@
                                 }
                                 <li class="page-item">
                                     <a class="page-link"
-                                        href="@Url.Action("Recipe", new { pageNumber = Model.TotalPages, keywords = ViewBag.CurrentKeywords })">@Model.TotalPages</a>
+                                        href="@Url.Action("RecipeAction", new { pageNumber = Model.TotalPages, keywords = ViewBag.CurrentKeywords, source = ViewBag.Source })">@Model.TotalPages</a>
                                 </li>
                             }
 
@@ -342,7 +348,7 @@
                             {
                                 <li class="page-item custom-nav">
                                     <a class="page-link"
-                                        href="@Url.Action("Recipe", new { pageNumber = Model.PageIndex + 1, keywords = ViewBag.CurrentKeywords })">
+                                        href="@Url.Action("RecipeAction", new { pageNumber = Model.PageIndex + 1, keywords = ViewBag.CurrentKeywords, source = ViewBag.Source })">
                                         Next <i data-feather="chevron-right"></i>
                                     </a>
                                 </li>
