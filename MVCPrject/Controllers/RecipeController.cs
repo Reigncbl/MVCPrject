@@ -114,7 +114,7 @@ namespace MVCPrject.Controllers
 
                 return Json(new { success = true, recipes = recipeResults });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return Json(new { success = false, message = "Error searching recipes" });
             }
@@ -189,7 +189,7 @@ namespace MVCPrject.Controllers
 
                 return Json(new { success = true, recipeId, message = "Recipe added successfully!" });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return Json(new { success = false, message = "An error occurred while adding the recipe. Please try again." });
             }

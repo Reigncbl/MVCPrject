@@ -27,7 +27,7 @@
 
             <ul class="nav flex-column mb-auto">
                 <li class="nav-item mb-4">
-                    <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "Home" ? "active" : "")"
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")"
                         asp-area="" asp-controller="Home" asp-action="Home">
                         <i data-feather="home" class="me-2" style="width: 20px; height: 20px;"></i>
                         Home
@@ -35,7 +35,7 @@
                 </li>
 
                 <li class="nav-item mb-4">
-                    <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "Recipe" ? "active" : "")"
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Recipe" ? "active" : "")"
                         asp-area="" asp-controller="Recipe" asp-action="Recipe">
                         <i data-feather="search" class="me-2" style="width: 20px; height: 20px;"></i>
                         Explore
@@ -43,7 +43,7 @@
                 </li>
 
                 <li class="nav-item mb-4">
-                    <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "MealPlanner" ? "active" : "")"
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "MealPlanner" ? "active" : "")"
                         asp-area="" asp-controller="MealPlanner" asp-action="MealPlanner">
                         <i data-feather="calendar" class="me-2" style="width: 20px; height: 20px;"></i>
                         Meal Planner
@@ -51,7 +51,7 @@
                 </li>
 
                 <li class="nav-item mb-4">
-                    <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "Profile" ? "active" : "")"
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Profile" ? "active" : "")"
                         asp-area="" asp-controller="Profile" asp-action="Profile">
                         <i data-feather="user" class="me-2" style="width: 20px; height: 20px;"></i>
                         Profile
@@ -89,16 +89,20 @@
                 data-bs-target="#addRecipeModal">
                 <i data-feather="plus" class="text-white fw-bold"></i>
             </button>
-            <button class="btn rounded-circle shadow" style="width: 56px; height: 56px; background-color: #EC433E;">
+            <button id="openChatbotModal" class="btn rounded-circle shadow"
+                style="width: 56px; height: 56px; background-color: #EC433E;" data-bs-toggle="modal" Add commentMore
+                actions data-bs-target="#chatbotModal">
                 <img src="~/img/bot-btn.png" alt="chatbot" style="width: 24px;">
             </button>
         </div>
-    </div>
-
-    <script>feather.replace()</script>
 
     <script src="~/js/AddRecipeModal.js" asp-append-version="true"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+ 
+        <!-- Chatbot Modal -->
+        @await Html.PartialAsync("~/Views/Chat/_ChatbotModal.cshtml", new MVCPrject.Models.Chat())
+    </div>
+
 
     @await RenderSectionAsync("Scripts", required: false)
     <script>
@@ -107,6 +111,8 @@
             feather.replace();
         });
     </script>
+
+
 
 </body>
 

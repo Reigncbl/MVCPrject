@@ -5,104 +5,211 @@ body {
   overflow-x: hidden;
 }
 
+/* Custom Button Styles */
 .btn-custom-red {
-  background-color: #EC433E;
-  color: white;
+    background-color: #EC433E;
+    border-color: #EC433E;
+    color: white;
+    transition: all 0.3s ease;
 }
 
 .btn-custom-red:hover {
-  background-color: #c3322e; /* slightly darker on hover */
-  color: white;
+    background-color: #d73527;
+    border-color: #d73527;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(236, 67, 62, 0.3);
 }
 
-
-.upload-title {
-  font-weight: 800;
-  font-size: 32px;
-  margin-bottom: 0.5rem;
-}
-
-.upload-subtitle {
-  font-size: 20px;
-  margin-bottom: 1.5rem;
-}
-
-.upload-overlay {
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-  background: rgba(0, 0, 0, 0.5);
-}
-
-.position-relative:hover .upload-overlay {
-  opacity: 1;
-  visibility: visible;
-}
-
-.grid-5 {
-  display: grid;
-  grid-template-columns: repeat(5, 225px);
-  gap: 1.5rem;
-  justify-content: start;
-}
-
+/* Recipe Card Hover Effects */
 .card-hover {
-  position: relative;
-  width: 225px;
-  height: 300px;
-  overflow: hidden;
-  border-radius: 1rem;
-  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-  border: none;
-  transition: transform 0.2s ease-in-out;
+    position: relative;
+    overflow: hidden;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    width: 300px;
+    height: 200px;
 }
 
 .card-hover:hover {
-  transform: translateY(-4px);
+    transform: scale(1.05);
 }
 
 .card-hover img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 15px;
 }
 
 .card-hover .overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 1rem;
-  color: white;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  background: 
-    linear-gradient(to top, rgba(0,0,0,0.4) 30%, rgba(0,0,0,0) 80%),
-    radial-gradient(ellipse at center, rgba(0,0,0,0) 20%, rgba(0,0,0,0.25) 70%, rgba(0,0,0,0.5) 100%);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    color: white;
+    padding: 20px;
+    border-radius: 0 0 15px 15px;
 }
 
-.card-hover:hover .overlay {
-  opacity: 1;
+.card-hover .overlay h5 {
+    margin: 0 0 10px 0;
+    font-weight: bold;
+    font-size: 1.2rem;
 }
 
-.overlay h5 {
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
-  font-weight: bold;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Better text readability */
+.card-hover .overlay .details {
+    display: flex;
+    gap: 20px;
+    font-size: 0.9rem;
 }
 
-.overlay .details {
-  display: flex;
-  gap: 1rem;
+.card-hover .overlay .details span {
+    background: rgba(255,255,255,0.2);
+    padding: 4px 8px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
 }
 
-.overlay .details span {
-  font-size: 0.85rem;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Better text readability */
+/* Grid Layout */
+.grid-5 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: flex-start;
+}
+
+/* Upload Modal Styles */
+.upload-overlay {
+    background: rgba(0,0,0,0.5);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.upload-overlay:hover {
+    opacity: 1;
+}
+
+/* Profile Image */
+.rounded-circle {
+    border: 3px solid #fff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Stats styling */
+.d-flex.gap-3 span {
+    font-size: 1rem;
+}
+
+.d-flex.gap-3 span strong {
+    color: #EC433E;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .card-hover {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .grid-5 {
+        justify-content: center;
+    }
+}
+
+/* Modal Enhancements */
+.modal-content {
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+    border-bottom: none;
+}
+
+.form-control:focus {
+    border-color: #EC433E;
+    box-shadow: 0 0 0 0.2rem rgba(236, 67, 62, 0.25);
+}
+
+/* Social Links */
+.text-dark:hover {
+    color: #EC433E !important;
+    transform: scale(1.1);
+    transition: all 0.3s ease;
+}
+
+/* Clickable stats styling */
+.stats-clickable {
+    transition: all 0.3s ease;
+    padding: 4px 8px;
+    border-radius: 8px;
+}
+
+.stats-clickable:hover {
+    background-color: #f8f9fa !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* User card styling */
+.user-card {
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+.user-card:hover {
+    background-color: #f8f9fa !important;
+}
+
+.user-card:last-child {
+    border-bottom: none !important;
+}
+
+/* Modal enhancements */
+.modal-content {
+    border: none;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+/* Custom scrollbar for modal */
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Profile image styling in user cards */
+.user-card img {
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Button hover effects in user cards */
+.user-card .btn-outline-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
 }
