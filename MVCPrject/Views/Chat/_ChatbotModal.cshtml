@@ -4,12 +4,13 @@
 <div class="modal fade" id="chatbotModal" tabindex="-1" aria-labelledby="chatbotModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content" style="height: 600px;">
-            <div class="modal-header" style="background: #EC433E color: white;">
+            <div class="modal-header justify-content-between" style="background: #EC433E color: white;">
                 <h5 class="modal-title" id="chatbotModalLabel">
-                    <i class="fas fa-comments me-2"></i>Recipe Assistant
+                    <i data-feather="message-circle" class="me-2" style="width: 20px; height: 20px;"></i>Recipe
+                    Assistant
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                    aria-label="Close"></button>
+                <button type="button" class="btn text-white" data-bs-dismiss="modal" aria-label="Close"><i
+                        data-feather="x" class="me-2" style="width: 30px; height: 30px;"></i></button>
             </div>
             <div class="modal-body p-0 d-flex flex-column" style="height: calc(600px - 120px);">
                 <div class="chat-messages flex-grow-1 p-3" id="modal-chat-messages"
@@ -20,7 +21,7 @@
                         {
                             if (line.StartsWith("User: "))
                             {
-                                <div class="message user-message mb-3">
+                                <div class="message user-message mb-3 fs-1">
                                     <div class="message-content">@line.Substring(6)</div>
                                 </div>
                             }
@@ -36,7 +37,7 @@
                     {
                         <div class="message ai-message mb-3">
                             <div class="message-content">
-                                <i class="fas fa-robot me-2"></i>Hello! I'm your recipe assistant. Ask me anything about
+                                Hello! I'm your recipe assistant. Ask me anything about
                                 cooking, recipes, or meal planning!
                             </div>
                         </div>
@@ -51,7 +52,7 @@
                                 value="@Model.UserInput" />
                             <button type="submit" class="btn"
                                 style="background: linear-gradient(135deg, #EC433E 0%, #bd3732 100%); color: white;">
-                                <i class="fas fa-paper-plane"></i>
+                                <i data-feather="send" class="me-2" style="width: 20px; height: 20px;"></i>
                             </button>
                         </div>
 
