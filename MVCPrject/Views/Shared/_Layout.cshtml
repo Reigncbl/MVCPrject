@@ -89,14 +89,16 @@
                 data-bs-target="#addRecipeModal">
                 <i data-feather="plus" class="text-white fw-bold"></i>
             </button>
-            <button class="btn rounded-circle shadow" style="width: 56px; height: 56px; background-color: #EC433E;">
+            <button id="openChatbotModal" class="btn rounded-circle shadow"
+                style="width: 56px; height: 56px; background-color: #EC433E;" data-bs-toggle="modal" Add commentMore
+                actions data-bs-target="#chatbotModal">
                 <img src="~/img/bot-btn.png" alt="chatbot" style="width: 24px;">
             </button>
         </div>
+
+        <!-- Chatbot Modal -->
+        @await Html.PartialAsync("~/Views/Chat/_ChatbotModal.cshtml", new MVCPrject.Models.Chat())
     </div>
-
-    <script>feather.replace()</script>
-
 
 
 
@@ -107,6 +109,8 @@
             feather.replace();
         });
     </script>
+
+
 
 </body>
 

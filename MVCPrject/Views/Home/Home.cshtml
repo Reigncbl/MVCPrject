@@ -63,18 +63,18 @@
                                     style="z-index:2;">AI-Curated</span>
 
                                 <!-- Image -->
-                                <img class="card-img-top rounded-top-4" src="@recipe.RecipeImage" alt="@recipe.RecipeName"
+                                <img class="card-img-top rounded-top-4" src="@recipe?.RecipeImage" alt="@recipe?.RecipeName"
                                     style="height: 200px; object-fit: cover;">
 
                                 <div class="card-body d-flex flex-column">
                                     <!-- Title -->
-                                    <h5 class="card-title fw-bold mb-2">@recipe.RecipeName</h5>
+                                    <h5 class="card-title fw-bold mb-2">@recipe?.RecipeName</h5>
                                     <p class="card-text text-muted mb-2">
                                         @((recipe?.RecipeDescription != null && recipe.RecipeDescription.Length > 80) ?
                                                                         recipe.RecipeDescription.Substring(0, 80) + "..." : recipe?.RecipeDescription)
                             </p>
                             <div class="d-flex align-items-center mt-auto justify-content-end">
-                                <a asp-controller="Recipe" asp-action="Details" asp-route-id="@recipe.RecipeID"
+                                <a asp-controller="Recipe" asp-action="Details" asp-route-id="@recipe?.RecipeID"
                                     class="btn btn-danger rounded-pill px-4 py-1 fw-medium">View</a>
                             </div>
                         </div>

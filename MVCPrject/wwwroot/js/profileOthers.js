@@ -242,6 +242,120 @@ function updateFollowButton() {
     feather.replace();
 }
 
+// Show followers modal
+async function showFollowersModal() {
+    const modal = new bootstrap.Modal(document.getElementById('followersModal'));
+    const container = document.getElementById('followersContainer');
+    
+    // Show loading state
+    container.innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-border text-success" role="status">
+                <span class="visually-hidden">Loading followers...</span>
+            </div>
+            <p class="text-muted mt-3">Loading followers...</p>
+        </div>
+    `;
+    
+    modal.show();
+    
+    try {
+        const response = await fetch(`/Profile/GetUserFollowers?userEmail=${encodeURIComponent(profileUserEmail)}`);
+        const result = await response.json();
+        
+        if (result.success && result.followers && result.followers.length > 0) {
+            container.innerHTML = result.followers.map(follower => `
+                <div class="d-flex align-items-center p-3 border-bottom">
+                    <img src="/img/image.png" class="rounded-circle me-3" width="50" height="50" alt="${follower.name}">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1 fw-bold">${follower.name}</h6>
+                        <small class="text-muted">@${follower.email}</small>
+                    </div>
+                    <a href="/Profile/ProfileOthers?email=${encodeURIComponent(follower.email)}" class="btn btn-outline-primary btn-sm">
+                        View Profile
+                    </a>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = `
+                <div class="text-center py-5">
+                    <i data-feather="users" style="width: 64px; height: 64px;" class="text-muted mb-3"></i>
+                    <h4 class="text-muted">No followers yet</h4>
+                    <p class="text-muted">This user doesn't have any followers yet.</p>
+                </div>
+            `;
+            feather.replace();
+        }
+    } catch (error) {
+        console.error('Error loading followers:', error);
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <i data-feather="alert-circle" style="width: 64px; height: 64px;" class="text-danger mb-3"></i>
+                <h4 class="text-muted">Error loading followers</h4>
+                <p class="text-muted">Unable to load followers at this time.</p>
+            </div>
+        `;
+        feather.replace();
+    }
+}
+
+// Show following modal
+async function showFollowingModal() {
+    const modal = new bootstrap.Modal(document.getElementById('followingModal'));
+    const container = document.getElementById('followingContainer');
+    
+    // Show loading state
+    container.innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-border text-info" role="status">
+                <span class="visually-hidden">Loading following...</span>
+            </div>
+            <p class="text-muted mt-3">Loading following...</p>
+        </div>
+    `;
+    
+    modal.show();
+    
+    try {
+        const response = await fetch(`/Profile/GetUserFollowing?userEmail=${encodeURIComponent(profileUserEmail)}`);
+        const result = await response.json();
+        
+        if (result.success && result.following && result.following.length > 0) {
+            container.innerHTML = result.following.map(following => `
+                <div class="d-flex align-items-center p-3 border-bottom">
+                    <img src="/img/image.png" class="rounded-circle me-3" width="50" height="50" alt="${following.name}">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1 fw-bold">${following.name}</h6>
+                        <small class="text-muted">@${following.email}</small>
+                    </div>
+                    <a href="/Profile/ProfileOthers?email=${encodeURIComponent(following.email)}" class="btn btn-outline-primary btn-sm">
+                        View Profile
+                    </a>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = `
+                <div class="text-center py-5">
+                    <i data-feather="user-plus" style="width: 64px; height: 64px;" class="text-muted mb-3"></i>
+                    <h4 class="text-muted">Not following anyone yet</h4>
+                    <p class="text-muted">This user isn't following anyone yet.</p>
+                </div>
+            `;
+            feather.replace();
+        }
+    } catch (error) {
+        console.error('Error loading following:', error);
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <i data-feather="alert-circle" style="width: 64px; height: 64px;" class="text-danger mb-3"></i>
+                <h4 class="text-muted">Error loading following</h4>
+                <p class="text-muted">Unable to load following at this time.</p>
+            </div>
+        `;
+        feather.replace();
+    }
+}
+
 function showToast(message, type) {
     // Create toast element
     const toast = document.createElement('div');
