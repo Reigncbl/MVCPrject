@@ -4,22 +4,212 @@ class DataManager {
         this.data = {};
     }
             
+    // Updated saveFormData method in DataManager class
     saveFormData() {
-        // Save all form inputs from current step
+        // Save regular form inputs
         const inputs = document.querySelectorAll('.modal-content-area input, .modal-content-area textarea, .modal-content-area select');
         inputs.forEach(input => {
-            this.data[input.id] = input.value;
-        });
-    }
-            
-    loadFormData() {
-        // Load saved data into form inputs
-        const inputs = document.querySelectorAll('.modal-content-area input, .modal-content-area textarea, .modal-content-area select');
-        inputs.forEach(input => {
-            if (this.data[input.id] !== undefined) {
-                        input.value = this.data[input.id];
+            if (input.id && input.type !== 'file') {
+                this.data[input.id] = input.value;
             }
         });
+
+        // Save ingredients
+        const ingredientsContainer = document.getElementById('ingredientsContainer');
+        if (ingredientsContainer) {
+            const ingredients = Array.from(ingredientsContainer.querySelectorAll('input[type="text"]'))
+                .map(input => input.value.trim())
+                .filter(value => value !== '');
+            this.data.ingredients = ingredients;
+        }
+
+        // Save instructions
+        const instructionsContainer = document.getElementById('instructionsContainer');
+        if (instructionsContainer) {
+            const instructions = Array.from(instructionsContainer.querySelectorAll('textarea'))
+                .map(textarea => textarea.value.trim())
+                .filter(value => value !== '');
+            this.data.instructions = instructions;
+        }
+
+        // Save tags
+        const tagContainer = document.getElementById('tagContainer');
+        if (tagContainer) {
+            const tags = Array.from(tagContainer.querySelectorAll('.tag .tag-text'))
+                .map(tagElement => tagElement.textContent.trim())
+                .filter(value => value !== '');
+            this.data.tags = tags;
+        }
+
+        const previewImg = document.getElementById('previewImg');
+        const imagePreview = document.getElementById('imagePreview');
+        
+        // Check if image preview is visible and has a valid src
+        if (imagePreview && 
+            imagePreview.style.display !== 'none' && 
+            previewImg && 
+            previewImg.src && 
+            previewImg.src !== '' && 
+            previewImg.src !== window.location.href) { // Avoid empty or current page URL
+            
+            this.data.hasImage = true;
+            this.data.imageData = previewImg.src;
+            console.log('Image saved:', this.data.imageData.substring(0, 50) + '...'); // Debug log
+        } else {
+            this.data.hasImage = false;
+            this.data.imageData = null;
+            console.log('No image to save'); // Debug log
+        }
+    }
+
+    // Updated loadFormData method in DataManager class  
+    loadFormData() {
+        // Load regular form inputs
+        const inputs = document.querySelectorAll('.modal-content-area input, .modal-content-area textarea, .modal-content-area select');
+        inputs.forEach(input => {
+            if (input.id && this.data[input.id] !== undefined) {
+                input.value = this.data[input.id];
+            }
+        });
+
+        // Load ingredients
+        const ingredientsContainer = document.getElementById('ingredientsContainer');
+        if (ingredientsContainer && this.data.ingredients) {
+            this.loadIngredients(ingredientsContainer, this.data.ingredients);
+        }
+
+        // Load instructions
+        const instructionsContainer = document.getElementById('instructionsContainer');
+        if (instructionsContainer && this.data.instructions) {
+            this.loadInstructions(instructionsContainer, this.data.instructions);
+        }
+
+        // Load tags
+        const tagContainer = document.getElementById('tagContainer');
+        if (tagContainer && this.data.tags) {
+            this.loadTags(tagContainer, this.data.tags);
+        }
+
+        const previewImg = document.getElementById('previewImg');
+        const uploadContent = document.getElementById('uploadContent');
+        const imagePreview = document.getElementById('imagePreview');
+
+        console.log('Loading image data:', this.data.hasImage, this.data.imageData ? 'Data exists' : 'No data'); // Debug log
+
+        if (this.data.hasImage && this.data.imageData && previewImg) {
+            previewImg.src = this.data.imageData;
+            if (uploadContent) uploadContent.style.display = 'none';
+            if (imagePreview) imagePreview.style.display = 'block';
+            console.log('Image restored successfully'); // Debug log
+        } else {
+            if (uploadContent) uploadContent.style.display = 'block';
+            if (imagePreview) imagePreview.style.display = 'none';
+            if (previewImg) previewImg.src = '';
+            console.log('No image to restore or elements not found'); // Debug log
+        }
+    }
+
+    loadIngredients(container, ingredients) {
+        // Clear existing ingredients
+        container.innerHTML = '';
+        
+        // Add saved ingredients
+        ingredients.forEach(ingredient => {
+            const newRow = this.createElementFromHTML(`
+                <div class="ingredient-row d-flex align-items-center gap-2">
+                    <input type="text" class="form-control" placeholder="Enter ingredient" value="${ingredient}">
+                    <button class="remove-btn" onclick="removeIngredient(this)">
+                        <i data-feather="x"></i>
+                    </button>
+                </div>
+            `);
+            container.appendChild(newRow);
+            feather.replace();
+        });
+        
+        // Add at least 1 empty row if we have no ingredients
+        if (container.children.length === 0) {
+            const newRow = this.createElementFromHTML(`
+                <div class="ingredient-row d-flex align-items-center gap-2">
+                    <input type="text" class="form-control" placeholder="Enter ingredient">
+                    <button class="remove-btn" onclick="removeIngredient(this)">
+                        <i data-feather="x"></i>
+                    </button>
+                </div>
+            `);
+            container.appendChild(newRow);
+            feather.replace();
+        }
+    }
+
+    loadInstructions(container, instructions) {
+        // Clear existing instructions
+        container.innerHTML = '';
+        
+        // Add saved instructions
+        instructions.forEach((instruction, index) => {
+            const newRow = this.createElementFromHTML(`
+                <div class="instruction-row">
+                    <div class="instruction-number">${index + 1}</div>
+                    <div class="d-flex align-items-start gap-2">
+                        <textarea class="form-control" rows="3" placeholder="Enter instruction step">${instruction}</textarea>
+                        <button class="remove-btn" onclick="removeInstruction(this)">
+                            <i data-feather="x"></i>
+                        </button>
+                    </div>
+                </div>
+            `);
+            container.appendChild(newRow);
+            feather.replace();
+        });
+        
+        // Add at least 1 empty row if we have no instructions
+        if (container.children.length === 0) {
+            const newRow = this.createElementFromHTML(`
+                <div class="instruction-row">
+                    <div class="instruction-number">1</div>
+                    <div class="d-flex align-items-start gap-2">
+                        <textarea class="form-control" rows="3" placeholder="Enter instruction step"></textarea>
+                        <button class="remove-btn" onclick="removeInstruction(this)">
+                            <i data-feather="x"></i>
+                        </button>
+                    </div>
+                </div>
+            `);
+            container.appendChild(newRow);
+            feather.replace();
+        } 
+    }
+
+    loadTags(container, tags) {
+        // Clear existing tags (except the add button)
+        const existingTags = container.querySelectorAll('.tag');
+        existingTags.forEach(tag => tag.remove());
+        
+        // Add saved tags
+        tags.forEach(tagText => {
+            const tagElement = document.createElement('span');
+            tagElement.className = 'tag';
+            tagElement.innerHTML = `
+                <span class="tag-text">${tagText}</span>
+                <button type="button" class="remove-btn" onclick="removeTag(this)">
+                    <i data-feather="x"></i>
+                </button>
+            `;
+            
+            // Insert before the "Add Tag" button
+            const addButton = container.querySelector('.add-tag-btn');
+            container.insertBefore(tagElement, addButton);
+        });
+        
+        // Refresh feather icons
+        feather.replace();
+    }
+
+    createElementFromHTML(htmlString) {
+        const div = document.createElement('div');
+        div.innerHTML = htmlString.trim();
+        return div.firstChild;
     }
             
     clearData() {
@@ -219,6 +409,13 @@ class RecipeForm {
                         }
                     }
                 });
+
+                // Prevent Enter key from submitting form
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && e.target.matches('.modal-content-area input, .modal-content-area textarea')) {
+                        e.preventDefault();
+                    }
+                });
     }
 
     addIngredient() {
@@ -325,24 +522,18 @@ class RecipeForm {
 function addIngredient() {
     recipeForm.addIngredient();
 }
-function removeIngredient(button) {
-    recipeForm.removeIngredient(button);
-}
+
 function addInstruction() {
     recipeForm.addInstruction();
 }
-function removeInstruction(button) {
-    recipeForm.removeInstruction(button);
-}
+
 
 // Step Three Form
 class StepThree extends Step {
     constructor() {
         super("Step 3 - Upload Image", `
             <div class="row">
-                <div class="col-md-7">
-                    <h5 class="mb-4">Upload Image</h5>
-                                
+                <div class="col-md-7">                                
                     <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
                         <div id="uploadContent">
                                 <i data-feather="upload-cloud"></i>
@@ -350,16 +541,21 @@ class StepThree extends Step {
                                 <button type="button" class="btn btn-sm browse-btn">Browse Files</button>
                                 <p class="mt-2 text-muted small">PNG, JPG up to 5MB</p>
                         </div>
-                        <div id="imagePreview" style="display: none;">
-                            <img id="previewImg" class="uploaded-image" alt="Preview">
-                            <button type="button" class="btn btn-outline-secondary btn-sm change-image-btn" onclick="changeImage(event)">
-                                Change Image
-                            </button>
+                        <div id="imagePreview" style="display: none; height: 100%; width: 100%;">
+                            <div style="position: relative; width: 100%;">
+                                <img id="previewImg" class="uploaded-image" alt="Preview" style="width: 100%; height: auto; object-fit: cover; border-radius: 8px;">
+                            </div>
+                            <div class="mt-3">
+                                <button type="button" class="btn btn-outline-secondary btn-sm change-image-btn w-100" onclick="changeImage(event)">
+                                    Change Image
+                                </button>
+                            </div>
                         </div>
+
                     </div>
                                 
                     <input type="file" id="fileInput" accept="image/*" style="display: none;">
-                            </div>
+                </div>
                             
                             <div class="col-md-5">
                                 <h6 class="mb-3">Recipe Type</h6>
@@ -381,6 +577,132 @@ class StepThree extends Step {
                         </div>
         `)
     }
+}
+
+function handleFileUpload() {
+    const fileInput = document.getElementById('fileInput');
+    const uploadArea = document.getElementById('uploadArea');
+    const uploadContent = document.getElementById('uploadContent');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+
+    if (!fileInput) return;
+
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                uploadContent.style.display = 'none';
+                imagePreview.style.display = 'block';
+                
+                if (window.wizardController) {
+                    // Manually update the data manager with image info
+                    window.wizardController.dataManager.data.hasImage = true;
+                    window.wizardController.dataManager.data.imageData = e.target.result;
+                    window.wizardController.dataManager.saveFormData();
+                    console.log('Image uploaded and saved'); // Debug log
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('drag-over');
+    });
+
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('drag-over');
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('drag-over');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0 && files[0].type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                uploadContent.style.display = 'none';
+                imagePreview.style.display = 'block';
+                
+                if (window.wizardController) {
+                    window.wizardController.dataManager.data.hasImage = true;
+                    window.wizardController.dataManager.data.imageData = e.target.result;
+                    window.wizardController.dataManager.saveFormData();
+                    console.log('Image dropped and saved'); // Debug log
+                }
+            };
+            reader.readAsDataURL(files[0]);
+        }
+    });
+}
+
+function changeImage(event) {
+    event.stopPropagation();
+    const uploadContent = document.getElementById('uploadContent');
+    const imagePreview = document.getElementById('imagePreview');
+    const fileInput = document.getElementById('fileInput');
+
+    if (uploadContent) uploadContent.style.display = 'block';
+    if (imagePreview) imagePreview.style.display = 'none';
+    if (fileInput) fileInput.value = ''; // Clear file input so 'change' event fires if same file is re-selected
+
+    // Update the data manager
+    if (window.wizardController && window.wizardController.dataManager) {
+        window.wizardController.dataManager.data.hasImage = false;
+        window.wizardController.dataManager.data.imageData = null;
+        window.wizardController.dataManager.saveFormData(); // Save the cleared state
+        console.log('Image cleared and data manager updated');
+    }
+}
+
+// Tag functionality
+function handleTagInput(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        addTag();
+    }
+}
+
+function addTag() {
+    const tagInput = document.getElementById('tagInput');
+    const tagContainer = document.getElementById('tagContainer');
+    const tagValue = tagInput.value.trim();
+    
+    if (tagValue && !tagExists(tagValue)) {
+        const tagElement = document.createElement('span');
+        tagElement.className = 'tag';
+        tagElement.innerHTML = `
+            <span class="tag-text">${tagValue}</span>
+            <button type="button" class="remove-btn" onclick="removeTag(this)">
+                <i data-feather="x"></i>
+            </button>
+        `;
+        
+        // Insert before the "Add Tag" button
+        const addButton = tagContainer.querySelector('.add-tag-btn');
+        tagContainer.insertBefore(tagElement, addButton);
+        
+        tagInput.value = '';
+        feather.replace();
+    }
+}
+
+function removeTag(button) {
+    button.parentElement.remove();
+}
+
+function tagExists(tagValue) {
+    const existingTags = document.querySelectorAll('.tag');
+    return Array.from(existingTags).some(tag => 
+        tag.textContent.trim().toLowerCase() === tagValue.toLowerCase()
+    );
 }
 
 // UI Manager - for DOM Manipulation
@@ -433,7 +755,17 @@ class UIManager {
     }
 
     closeModal() {
-        bootstrap.Modal.getInstance(document.getElementById('addRecipeModal')).hide();
+        const modalElement = document.getElementById('addRecipeModal');
+        
+        // Use Bootstrap's built-in hide method via data attributes
+        const closeButton = modalElement.querySelector('[data-bs-dismiss="modal"]');
+        if (closeButton) {
+            closeButton.click();
+        } else {
+            // Fallback to programmatic close
+            let modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+            modalInstance.hide();
+        }
     }
 
     toggleNavigationButtons(currentStep) {
@@ -517,7 +849,18 @@ class WizardController {
             if (this.currentStep === 2) {
                 window.recipeForm = new RecipeForm(); // Set globally so onclick handlers still work
             }
-        }, 0);
+            
+            // Initialize file upload functionality on Step 3
+            if (this.currentStep === 3) {
+                handleFileUpload();
+            }
+
+            // Load form data after initializationZZ
+            this.dataManager.loadFormData();
+            
+            // Refresh Feather Icons
+            feather.replace();
+        }, 50);
                 
         // Update button text
         const buttonText = this.currentStep === this.totalSteps ? 'Finish' : 'Next';
@@ -716,5 +1059,5 @@ document.addEventListener('DOMContentLoaded', () => {
             
     const uiManager = new UIManager();
     const dataManager = new DataManager();
-    const wizard = new WizardController(uiManager, dataManager);
+    window.wizardController = new WizardController(uiManager, dataManager);
 });

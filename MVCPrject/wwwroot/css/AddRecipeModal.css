@@ -163,38 +163,38 @@ body {
 
 
 .upload-area {
-            border: 2px dashed #dee2e6;
-            border-radius: 8px;
-            padding: 3rem 2rem;
-            text-align: center;
-            background-color: #f8f9fa;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            min-height: 300px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
         
-        .upload-area:hover {
-            border-color: #dc3545;
-            background-color: #fff5f5;
-        }
+.upload-area:hover {
+    border-color: #dc3545;
+    background-color: #fff5f5;
+}
         
-        .upload-area.dragover {
-            border-color: #dc3545;
-            background-color: #fff5f5;
-            transform: scale(1.02);
-        }
+.upload-area.dragover {
+    border-color: #dc3545;
+    background-color: #fff5f5;
+    transform: scale(1.02);
+}
         
-        .upload-icon {
+.upload-icon {
             font-size: 3rem;
             color: #6c757d;
             margin-bottom: 1rem;
         }
         
-        .tag-container {
+.tag-container {
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
@@ -203,7 +203,7 @@ body {
             align-items: center;
         }
         
-        .tag {
+.tag {
             background-color: #e9ecef;
             color: #495057;
             padding: 0.25rem 0.75rem;
@@ -214,15 +214,19 @@ body {
             gap: 0.5rem;
         }
         
-        .tag .remove-tag {
+.tag .remove-tag {
             cursor: pointer;
             color: #6c757d;
             font-size: 0.75rem;
         }
         
-        .tag .remove-tag:hover {
+.tag .remove-tag:hover {
             color: #dc3545;
         }
+
+.tag-text {
+    margin-left: .5rem;
+}
         
 .add-tag-btn {
     background: none;
@@ -244,7 +248,8 @@ body {
 
 .uploaded-image {
     max-width: 100%;
-    max-height: 200px;
+    height: 400px;
+    object-fit: cover;
     border-radius: 8px;
     margin-bottom: 1rem;
 }

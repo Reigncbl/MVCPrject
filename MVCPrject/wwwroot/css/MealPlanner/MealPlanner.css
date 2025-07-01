@@ -42,16 +42,8 @@ body {
   font-size: 1.7rem; /* or try 1.5rem, 24px, etc. */
 }
 
-/* Icon sizing and alignment for feather */
-.calendar-icon {
-  width: 40px;
-  height: 40px;
-  stroke-width: 2;
-}
-
-.flatpickr-wrapper {
-  display: inline-flex;
-  align-items: center;
+#current-date {
+    font-size: 1.5rem;
 }
 
 /* Day cards styling (optional override) */
@@ -61,7 +53,7 @@ body {
 }
 
 .day-card h5 {
-  font-size: 3rem; /* Adjust as needed */
+    font-size: 3rem;
 }
 
 .today-card {
@@ -80,6 +72,14 @@ body {
   margin-top: 2rem;
   font-size: 1.2rem;
   text-align: center;
+}
+
+.add-meal-btn {
+  color: white;
+}
+
+.add-meal-btn:hover {
+  color: var(--light-yellow);
 }
 
 /* ALMUSAL, TANGHALIAN, MERYENDA, HAPUNAN */
@@ -409,4 +409,11 @@ textarea.form-control {
   line-height: 1.5;
   margin: 0;
   margin-left: 1rem;
+}
+
+.body-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100vh;
 }

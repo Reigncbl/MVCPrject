@@ -11,10 +11,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const currentDateEl = document.getElementById("current-date");
         const dateCardsContainer = document.getElementById("date-cards");
 
-        currentDateEl.textContent = today.toLocaleDateString('en-US', {
-            month: 'long',
-            day: 'numeric'
-        });
+    currentDateEl.textContent = today.toLocaleDateString('en-US', {
+        month: 'long'
+    });
 
         // Clear existing cards
         dateCardsContainer.innerHTML = '';
@@ -39,7 +38,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const isSelected = i === 0;
             const weekday = getWeekday(date);
             const day = date.getDate();
-            const mealCount = Math.floor(Math.random() * 5);
+            //const mealCount = Math.floor(Math.random() * 5);
+            const mealCount = 0; // Set to 0 for now, will be updated when meals are loaded
 
             const card = document.createElement("div");
             card.className = `day-card bg-white rounded-3 text-center px-3 py-2 shadow-sm ${isSelected ? "today-card border border-warning" : ""}`;
@@ -114,7 +114,9 @@ document.addEventListener("DOMContentLoaded", function () {
                       <span class="fw-bold meal-label">${mainLabel}</span>
                       <span class="fw-normal ms-1 meal-label fs-6">${parenthesisPart}</span>
                   </div>
-                <span class="add-btn" style="cursor:pointer;" onclick="openMealModal('${meal.id}')">+</span>
+                <span class="add-btn" style="cursor:pointer;" onclick="openMealModal('${meal.id}')">
+                  <i data-feather="plus" class="add-meal-btn"></i>
+                </span>
               </div>
               <div class="p-3" id="${meal.id}-list">
                   <p class="text-muted">No logged meals yet.</p>
@@ -871,8 +873,6 @@ function printGroceryList() {
 
     document.body.appendChild(printFrame);
 }
-
-
 
 // To update dropdown btn text
 function updateDateButton(selectedOption) {

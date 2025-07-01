@@ -19,29 +19,15 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 }
 
-<div class="container-fluid p-0 overflow-y-auto pb-5" style="height: 100vh;">
-    <!-- Curved Red Header Section -->
-    <div class="curved-header text-center text-dark py-4 px-3 full-expand-right">
-
-        <!-- Top Bar: Greeting + Calendar Icon -->
-        <div class="d-flex justify-content-between align-items-center px-4 mb-3">
-            <!-- Left Side: Greeting -->
-            <h5 class="fw-bold user-greeting">Kumusta, User!</h5>
-
-            <!-- Right Side: Feather Calendar Icon -->
-            <!-- Calendar Icon + Flatpickr Setup -->
-            <div class="position-relative d-inline-flex align-items-center" id="calendarWrapper">
-                <!-- Input used by Flatpickr (not hidden, but tiny and offscreen) -->
-                <input type="text" id="dateInput" data-input
-                    style="opacity:0; position:absolute; pointer-events:none;" />
-
-                <!-- Trigger Icon -->
-                <button type="button" class="btn p-2" data-toggle>
-                    <i data-feather="calendar"></i>
-                </button>
+<div class="container-fluid p-0 body-container">
+        <!-- Curved Red Header Section -->
+        <div class="curved-header text-center text-dark py-4 px-3 full-expand-right">
+        
+            <!-- Top Bar: Greeting + Calendar Icon -->
+            <div class="d-flex justify-content-between align-items-center px-4 mb-3">
+                <!-- Left Side: Greeting -->
+                <h5 class="fw-semibold user-greeting">Kumusta, User!</h5>
             </div>
-
-        </div>
 
         <!-- Date Navigation -->
         <div class="d-flex justify-content-center align-items-center mb-3">
@@ -92,27 +78,13 @@
 
     <!-- NUTRITION SUMMARY SECTION -->
 
-    <div class="container">
-        <!-- Title, Set Date, Set Goal -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="fw-bold">Nutrition Summary</h4>
-            <div class="d-flex gap-2">
-                <!-- Set Date BTN -->
-                <div class="dropdown">
-                    <button class="btn btn-date dropdown-toggle px-3" type="button" id="dateDropdown"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        Today
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="dateDropdown">
-                        <li><a class="dropdown-item" href="#" onclick="updateDateButton('Today')">Today</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="updateDateButton('This Week')">This Week</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="updateDateButton('This Month')">This Month</a>
-                        </li>
-                    </ul>
-                </div>
-                <!-- Set Goal BTN -->
-                <button id="setGoalBtn" class="btn btn-goal px-3" data-bs-toggle="modal"
-                    data-bs-target="#nutritionGoalModal">Set Goal</button>
+        <div class="container">
+            <!-- Title, Set Date, Set Goal -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold">Nutrition Summary</h4>
+                <div class="d-flex gap-2">
+                    <!-- Set Goal BTN -->
+                    <button id="setGoalBtn" class="btn btn-goal px-3" data-bs-toggle="modal" data-bs-target="#nutritionGoalModal">Set Goal</button>
 
             </div>
         </div>
