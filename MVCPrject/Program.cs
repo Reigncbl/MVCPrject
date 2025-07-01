@@ -31,6 +31,7 @@ namespace MVCPrject
             {
                 options.Configuration = builder.Configuration["Redis:ConnectionString"];
                 options.InstanceName = builder.Configuration["Redis:InstanceName"];
+
             });
 
 
