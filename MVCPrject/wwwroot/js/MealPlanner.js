@@ -76,16 +76,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 
-    // Initialize Flatpickr
-    flatpickr("#calendarWrapper", {
-        wrap: true,
-        allowInput: true,
-        position: "left", // or just "auto"
-        onChange: function (selectedDates, dateStr) {
-            console.log("Picked:", dateStr);
-        }
-    });
-
     feather.replace();
 
 
@@ -880,11 +870,67 @@ function updateDateButton(selectedOption) {
 }
 
 // For set goal btn
-document.getElementById('setGoalBtn').addEventListener('click', function () {
-    // Show the modal
-    var modal = new bootstrap.Modal(document.getElementById('nutritionGoalModal'));
-    modal.show();
+let nutritionGoalModalInstance = null;
+const nutritionGoalModalEl = document.getElementById('nutritionGoalModal');
+if (nutritionGoalModalEl) {
+    nutritionGoalModalInstance = new bootstrap.Modal(nutritionGoalModalEl);
+    document.getElementById('setGoalBtn').addEventListener('click', function () {
+        nutritionGoalModalInstance.show();
+    });
+}
+
+document.getElementById('saveGoalBtn')?.addEventListener('click', function () {
+    updateNutritionCardsFromGoal();
+    closeNutritionModal();
 });
+
+// For save goal btn
+function closeNutritionModal() {
+    const modalElement = document.getElementById('nutritionGoalModal');
+    if (!modalElement) return;
+    if (nutritionGoalModalInstance) {
+        nutritionGoalModalInstance.hide();
+    } else {
+        let modalInstance = bootstrap.Modal.getInstance(modalElement);
+        if (!modalInstance) {
+            modalInstance = new bootstrap.Modal(modalElement);
+        }
+        modalInstance.hide();
+    }
+}
+
+// Placeholder: implement this to update the UI
+function updateNutritionCardsFromGoal() {
+    // Extract values from modal inputs (assumed ids)
+    const caloriesGoal = document.getElementById('caloriesGoal')?.value || 0;
+    const proteinGoal = document.getElementById('proteinGoal')?.value || 0;
+    const carbsGoal = document.getElementById('carbsGoal')?.value || 0;
+    const fatGoal = document.getElementById('fatGoal')?.value || 0;
+
+    
+
+    // Map nutrient to value
+    const goals = {
+        calories: caloriesGoal,
+        protein: proteinGoal,
+        carbs: carbsGoal,
+        fat: fatGoal
+    };
+
+    // Update each nutrition card
+    document.querySelectorAll('.nutrition-card').forEach(card => {
+        const label = card.querySelector('.nutrition-label')?.textContent.trim().toLowerCase();
+        if (goals[label] !== undefined) {
+            let value = goals[label];
+            if (["protein", "carbs", "fat"].includes(label)) {
+                value = value + "g";
+            }
+            card.querySelector('.nutrition-value').textContent = value;
+        }
+    });
+
+    console.log('Nutrition cards updated with new goal values:', goals);
+}
 
 // Log Meal BTN on Calendar
 
