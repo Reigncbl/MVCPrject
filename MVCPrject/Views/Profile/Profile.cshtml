@@ -4,7 +4,7 @@
     ViewData["Title"] = "Profile";
 }
 
-<meta name="user-email" content="@(User.Identity?.Name ?? "")" />
+<meta name="user-email" content="@(User?.Identity?.Name ?? "")" />
 
 @section Styles {
     <link rel="stylesheet" href="~/css/profile.css" />
@@ -146,11 +146,6 @@
                     <div class="mb-3 text-start">
                         <label for="username" class="form-label small">Username</label>
                         <input type="text" class="form-control rounded-3" id="username">
-                    </div>
-
-                    <div class="mb-3 text-start">
-                        <label for="bio" class="form-label small">Bio</label>
-                        <textarea class="form-control rounded-3" id="bio" rows="3"></textarea>
                     </div>
 
                     <div class="mb-3 text-start">

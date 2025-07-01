@@ -36,8 +36,10 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 async function checkFollowStatus() {
     try {
+        console.log('Checking follow status for:', profileUserEmail);
         const response = await fetch(`/Profile/IsFollowing?followeeEmail=${encodeURIComponent(profileUserEmail)}`);
         const result = await response.json();
+        console.log('Follow status result:', result);
         isFollowing = result.isFollowing;
         updateFollowButton();
     } catch (error) {
@@ -227,15 +229,25 @@ function updateFollowButton() {
     const followBtn = document.getElementById('followBtn');
     const followText = document.getElementById('followText');
     
+    console.log('Updating follow button. isFollowing:', isFollowing);
+    console.log('Follow button element:', followBtn);
+    
+    if (!followBtn || !followText) {
+        console.error('Follow button elements not found');
+        return;
+    }
+    
     // Enable the button once we have the follow status
     followBtn.disabled = false;
     
     if (isFollowing) {
-        followBtn.className = 'btn btn-outline-danger btn-lg px-4 py-2 shadow-sm';
-        followText.innerHTML = '<i data-feather="user-minus" class="me-2" style="width: 16px; height: 16px;"></i>Unfollow';
+        followBtn.className = 'btn btn-outline-danger';
+        followText.innerHTML = '<i data-feather="user-minus" class="me-2"></i>Unfollow';
+        console.log('Set button to Unfollow state');
     } else {
-        followBtn.className = 'btn btn-custom-red btn-lg px-4 py-2 shadow-sm';
-        followText.innerHTML = '<i data-feather="user-plus" class="me-2" style="width: 16px; height: 16px;"></i>Follow';
+        followBtn.className = 'btn btn-custom-red';
+        followText.innerHTML = '<i data-feather="user-plus" class="me-2"></i>Follow';
+        console.log('Set button to Follow state');
     }
     
     // Re-initialize feather icons for the new icons

@@ -113,7 +113,7 @@ namespace MVCPrject.Controllers
             if (User.Identity?.IsAuthenticated == true)
             {
                 var currentUser = await _userManager.GetUserAsync(User);
-                if (currentUser != null && currentUser.Id == user.Id)
+                if (currentUser != null && user != null && currentUser.Id == user.Id)
                 {
                     // Redirect to own profile instead of ProfileOthers
                     return RedirectToAction("Profile");
