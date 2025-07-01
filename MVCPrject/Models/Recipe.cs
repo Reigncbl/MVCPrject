@@ -63,7 +63,7 @@ namespace MVCPrject.Models
 
         [Range(0, 1440, ErrorMessage = "Cook time must be between 0 and 1440 minutes")]
         public int? CookTimeMin { get; set; }
-        public string? RecipeMode { get; set; }
+        public string? RecipeMode { get; set; } = "user";
 
         // Computed property for total time
         public int? TotalTimeMin
