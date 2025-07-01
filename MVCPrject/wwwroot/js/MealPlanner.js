@@ -1,4 +1,33 @@
-document.addEventListener("DOMContentLoaded", function () {
+// Function to get meal count for a specific date
+async function getMealCountForDate(date) {
+    try {
+        const dateString = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+        console.log('🍽️ MealPlanner.js: Getting meal count for date:', dateString);
+
+        const response = await fetch(`/MealPlanner/GetMealLogsByDate?date=${dateString}`);
+
+        if (!response.ok) {
+            console.error('🍽️ MealPlanner.js: Failed to fetch meal logs for date:', dateString);
+            return 0;
+        }
+
+        const result = await response.json();
+
+        if (result.success && result.mealLogs) {
+            const mealCount = result.mealLogs.length;
+            console.log('🍽️ MealPlanner.js: Found', mealCount, 'meals for date:', dateString);
+            return mealCount;
+        } else {
+            console.log('🍽️ MealPlanner.js: No meal logs found for date:', dateString);
+            return 0;
+        }
+    } catch (error) {
+        console.error('🍽️ MealPlanner.js: Error getting meal count for date:', error);
+        return 0;
+    }
+}
+
+document.addEventListener("DOMContentLoaded", async function () {
     console.log('🍽️ MealPlanner.js: DOM Content Loaded - Initializing meal planner');
     feather.replace();
 
@@ -6,14 +35,15 @@ document.addEventListener("DOMContentLoaded", function () {
         return date.toLocaleDateString('en-US', { weekday: 'short' });
     };
 
-    const renderDateSection = () => {
+
+    const renderDateSection = async () => {
         const today = new Date();
         const currentDateEl = document.getElementById("current-date");
         const dateCardsContainer = document.getElementById("date-cards");
 
-    currentDateEl.textContent = today.toLocaleDateString('en-US', {
-        month: 'long'
-    });
+        currentDateEl.textContent = today.toLocaleDateString('en-US', {
+            month: 'long'
+        });
 
         // Clear existing cards
         dateCardsContainer.innerHTML = '';
@@ -39,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const weekday = getWeekday(date);
             const day = date.getDate();
             //const mealCount = Math.floor(Math.random() * 5);
-            const mealCount = 0; // Set to 0 for now, will be updated when meals are loaded
+            const mealCount = await getMealCountForDate(date);
 
             const card = document.createElement("div");
             card.className = `day-card bg-white rounded-3 text-center px-3 py-2 shadow-sm ${isSelected ? "today-card border border-warning" : ""}`;
@@ -123,7 +153,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     console.log('🍽️ MealPlanner.js: Rendering date section and loading today\'s meals');
-    renderDateSection();
+    await renderDateSection();
 
     // Load meal logs for today
     const today = new Date();
@@ -163,32 +193,37 @@ document.addEventListener("DOMContentLoaded", function () {
         // Reset and clear form when modal is hidden or exited
         const mealModalEl = document.getElementById('mealModal');
 
-        mealModalEl.addEventListener('hidden.bs.modal', function () {
-            // Clear form fields
-            document.getElementById('mealForm').reset();
+        // Only add event listener if not already added
+        if (!mealModalEl.hasAttribute('data-modal-listener-added')) {
+            mealModalEl.addEventListener('hidden.bs.modal', function () {
+                // Clear form fields
+                document.getElementById('mealForm').reset();
 
-            // Clear hidden fields explicitly
-            document.getElementById('mealType').value = 'meryenda';
-            document.getElementById('recipeID').value = '';
+                // Clear hidden fields explicitly
+                document.getElementById('mealType').value = 'meryenda';
+                document.getElementById('recipeID').value = '';
 
-            // Hide image preview and reset styling
-            const preview = document.getElementById('mealPhotoPreview');
-            if (preview) {
-                preview.src = '';
-                preview.classList.add('d-none');
-                preview.style.border = '';
-                preview.title = '';
-            }
+                // Hide image preview and reset styling
+                const preview = document.getElementById('mealPhotoPreview');
+                if (preview) {
+                    preview.src = '';
+                    preview.classList.add('d-none');
+                    preview.style.border = '';
+                    preview.title = '';
+                }
 
-            // Show upload label again
-            const uploadLabel = document.getElementById('uploadLabel');
-            if (uploadLabel) {
-                uploadLabel.style.display = '';
-            }
+                // Show upload label again
+                const uploadLabel = document.getElementById('uploadLabel');
+                if (uploadLabel) {
+                    uploadLabel.style.display = '';
+                }
 
-            console.log('🍽️ MealPlanner.js: Modal closed, form reset, recipe ID cleared');
-        });
+                console.log('🍽️ MealPlanner.js: Modal closed, form reset, recipe ID cleared');
+            });
 
+            // Mark that listener has been added
+            mealModalEl.setAttribute('data-modal-listener-added', 'true');
+        }
     };
 
     // MODAL FUNCTIONALITY
@@ -501,8 +536,73 @@ document.addEventListener("DOMContentLoaded", function () {
         if (modal) modal.hide();
     });
 
+    // FIXED SET GOAL BUTTON EVENT LISTENER
+    const setGoalBtn = document.getElementById('setGoalBtn');
+    if (setGoalBtn) {
+        setGoalBtn.addEventListener('click', function () {
+            console.log('🍽️ MealPlanner.js: Set Goal button clicked');
 
+            // Clean up any existing backdrops FIRST
+            cleanupModalBackdrops();
+
+            const modalElement = document.getElementById('nutritionGoalModal');
+            if (!modalElement) {
+                console.error('🍽️ MealPlanner.js: Nutrition modal element not found');
+                return;
+            }
+
+            // Get or create modal instance (don't dispose existing ones)
+            let modal = bootstrap.Modal.getInstance(modalElement);
+            if (!modal) {
+                console.log('🍽️ MealPlanner.js: Creating new modal instance');
+                modal = new bootstrap.Modal(modalElement);
+            } else {
+                console.log('🍽️ MealPlanner.js: Using existing modal instance');
+            }
+
+            modal.show();
+        });
+    }
+
+    // Save Goal Button Event Listener
+    const saveGoalBtn = document.getElementById('saveGoalBtn');
+    if (saveGoalBtn) {
+        saveGoalBtn.addEventListener('click', function () {
+            console.log('🍽️ MealPlanner.js: Save Goal button clicked');
+            updateNutritionCardsFromGoal();
+            closeNutritionModal();
+        });
+    }
+
+    // SINGLE nutrition modal cleanup listener
+    const nutritionModal = document.getElementById('nutritionGoalModal');
+    if (nutritionModal && !nutritionModal.hasAttribute('data-nutrition-listener-added')) {
+        nutritionModal.addEventListener('hidden.bs.modal', function () {
+            console.log('🍽️ MealPlanner.js: Nutrition modal hidden, cleaning up');
+            const form = document.getElementById('nutritionGoalForm');
+            if (form) form.reset();
+
+            // Cleanup after modal is hidden
+            setTimeout(() => cleanupModalBackdrops(), 100);
+        });
+
+        nutritionModal.setAttribute('data-nutrition-listener-added', 'true');
+    }
 });
+
+// Helper function to clean up modal backdrops
+function cleanupModalBackdrops() {
+    // Remove all modal backdrops
+    const backdrops = document.querySelectorAll('.modal-backdrop');
+    console.log('🍽️ MealPlanner.js: Cleaning up', backdrops.length, 'backdrop(s)');
+    backdrops.forEach(backdrop => backdrop.remove());
+
+    // Remove modal-open class and reset body styles
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+    document.body.style.marginRight = '';
+}
 
 // Recipe search variables
 let searchTimeout;
@@ -590,7 +690,7 @@ async function searchRecipesFromAPI(query) {
         console.log('🍽️ MealPlanner.js: Recipe search API response data:', data);
 
         if (data.success) {
-            console.log('��️ MealPlanner.js: Found', data.recipes?.length || 0, 'recipes');
+            console.log('🍽️ MealPlanner.js: Found', data.recipes?.length || 0, 'recipes');
             displayRecipeResults(data.recipes);
         } else {
             console.error('🍽️ MealPlanner.js: Recipe search failed:', data.message);
@@ -682,7 +782,7 @@ function selectRecipe(recipe) {
     const recipeIdField = document.getElementById('recipeID');
     if (recipeIdField && recipe.recipeID) {
         recipeIdField.value = recipe.recipeID;
-        console.log('����️ MealPlanner.js: Set recipe ID:', recipe.recipeID);
+        console.log('🍽️ MealPlanner.js: Set recipe ID:', recipe.recipeID);
     } else if (recipeIdField && recipe.id) {
         recipeIdField.value = recipe.id;
         console.log('🍽️ MealPlanner.js: Set recipe ID (from id field):', recipe.id);
@@ -907,7 +1007,7 @@ function updateNutritionCardsFromGoal() {
     const carbsGoal = document.getElementById('carbsGoal')?.value || 0;
     const fatGoal = document.getElementById('fatGoal')?.value || 0;
 
-    
+
 
     // Map nutrient to value
     const goals = {
@@ -933,7 +1033,6 @@ function updateNutritionCardsFromGoal() {
 }
 
 // Log Meal BTN on Calendar
-
 function openLogMealForm() {
     const modal = new bootstrap.Modal(document.getElementById('mealModal'));
 
@@ -972,6 +1071,35 @@ function openLogMealForm() {
     modal.show();
 }
 
+// Function to update meal count on date cards
+async function updateDateCardMealCount(dateString) {
+    try {
+        console.log('🍽️ MealPlanner.js: Updating meal count for date:', dateString);
+
+        // Find the date card for this date
+        const targetDate = new Date(dateString);
+        const today = new Date();
+
+        // Find the card by checking the date difference
+        const dateCards = document.querySelectorAll('.day-card');
+        dateCards.forEach(async (card, index) => {
+            const cardDate = new Date();
+            cardDate.setDate(today.getDate() + (index - Math.floor(dateCards.length / 2)));
+
+            if (cardDate.toISOString().split('T')[0] === dateString) {
+                const mealCount = await getMealCountForDate(targetDate);
+                const mealCountElement = card.querySelector('small:last-child');
+                if (mealCountElement) {
+                    mealCountElement.textContent = `${mealCount} meal${mealCount !== 1 ? 's' : ''}`;
+                    console.log('🍽️ MealPlanner.js: Updated meal count to', mealCount, 'for date:', dateString);
+                }
+            }
+        });
+    } catch (error) {
+        console.error('🍽️ MealPlanner.js: Error updating date card meal count:', error);
+    }
+}
+
 // Function to log a meal
 const loggedMeals = {};
 
@@ -982,6 +1110,9 @@ function logMeal(mealId, mealData) {
 
     loggedMeals[mealId].push(mealData);
     updateMealSummary(mealId);
+
+    // Update the meal count for the date card
+    updateDateCardMealCount(mealData.date);
 }
 
 // Function to update the UI
@@ -1097,6 +1228,9 @@ async function loadMealLogsForDate(date) {
                 updateMealSummary(mealType);
                 console.log('🍽️ MealPlanner.js: Updated UI for meal type:', mealType, 'with', loggedMeals[mealType]?.length || 0, 'meals');
             });
+
+            // Update the meal count for the current date card
+            updateDateCardMealCount(dateString);
         } else {
             console.log('🍽️ MealPlanner.js: No meal logs found for date:', dateString);
         }
@@ -1134,13 +1268,23 @@ async function deleteMealLog(mealLogId, mealType) {
         if (result.success) {
             console.log('🍽️ MealPlanner.js: Meal deleted successfully, updating UI');
 
-            // Remove from local storage
+            // Remove from local storage and get the date for updating meal count
+            let deletedMealDate = null;
             if (loggedMeals[mealType]) {
                 const beforeCount = loggedMeals[mealType].length;
+                const mealToDelete = loggedMeals[mealType].find(meal => meal.id === mealLogId);
+                if (mealToDelete) {
+                    deletedMealDate = mealToDelete.date;
+                }
                 loggedMeals[mealType] = loggedMeals[mealType].filter(meal => meal.id !== mealLogId);
                 const afterCount = loggedMeals[mealType].length;
                 console.log('🍽️ MealPlanner.js: Removed meal from local storage. Before:', beforeCount, 'After:', afterCount);
                 updateMealSummary(mealType);
+
+                // Update the meal count for the date card
+                if (deletedMealDate) {
+                    updateDateCardMealCount(deletedMealDate);
+                }
             }
 
             showNotification('Meal deleted successfully!', 'success');
@@ -1228,4 +1372,3 @@ function showMealPhotoModal(imageUrl, mealName) {
         this.remove();
     });
 }
-
