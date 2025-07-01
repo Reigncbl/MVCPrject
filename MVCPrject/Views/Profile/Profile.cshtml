@@ -35,11 +35,13 @@
                 </div>
             </div>
             <p class="mt-2 mb-1" style="padding-top: 2vh">
-                Hi! I'm a Filipino living in Antipolo. I love to cook and share recipes passed down from my lola. I'm here to spread the joy of lutong bahay. Tara, kain tayo!
+                Hi! I'm a Filipino living in Antipolo. I love to cook and share recipes passed down from my lola. I'm
+                here to spread the joy of lutong bahay. Tara, kain tayo!
             </p>
             <div class="d-flex justify-content-between align-items-center" style="padding-top: 5vh">
                 <div class="d-flex gap-3">
-                    <span><strong id="myRecipeCount">@(Model?.RecipeCount ?? 0)</strong> Recipes</span>
+                    <span class="stats-clickable"><strong id="myRecipeCount">@(Model?.RecipeCount ?? 0)</strong>
+                        Recipes</span>
                     <span class="stats-clickable" style="cursor: pointer;" onclick="showFollowingModal()">
                         <strong id="myFollowingCount">@(Model?.FollowingCount ?? 0)</strong> Following
                     </span>
@@ -57,52 +59,54 @@
 
 <!-- Followers Modal -->
 <div class="modal fade" id="followersModal" tabindex="-1" aria-labelledby="followersModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content rounded-4">
-      <div class="modal-header bg-success text-white rounded-top-4">
-        <h5 class="modal-title fw-semibold" id="followersModalLabel">
-          <i data-feather="users" class="me-2" style="width: 20px; height: 20px;"></i>
-          My Followers
-        </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body p-0">
-        <div id="followersContainer">
-          <div class="text-center py-5">
-            <div class="spinner-border text-success" role="status">
-              <span class="visually-hidden">Loading followers...</span>
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4">
+            <div class="modal-header bg-success text-white rounded-top-4">
+                <h5 class="modal-title fw-semibold" id="followersModalLabel">
+                    <i data-feather="users" class="me-2" style="width: 20px; height: 20px;"></i>
+                    My Followers
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
             </div>
-            <p class="text-muted mt-3">Loading followers...</p>
-          </div>
+            <div class="modal-body p-0">
+                <div id="followersContainer">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-success" role="status">
+                            <span class="visually-hidden">Loading followers...</span>
+                        </div>
+                        <p class="text-muted mt-3">Loading followers...</p>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </div>
 
 <!-- Following Modal -->
 <div class="modal fade" id="followingModal" tabindex="-1" aria-labelledby="followingModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content rounded-4">
-      <div class="modal-header bg-info text-white rounded-top-4">
-        <h5 class="modal-title fw-semibold" id="followingModalLabel">
-          <i data-feather="user-plus" class="me-2" style="width: 20px; height: 20px;"></i>
-          Following
-        </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body p-0">
-        <div id="followingContainer">
-          <div class="text-center py-5">
-            <div class="spinner-border text-info" role="status">
-              <span class="visually-hidden">Loading following...</span>
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4">
+            <div class="modal-header bg-info text-white rounded-top-4">
+                <h5 class="modal-title fw-semibold" id="followingModalLabel">
+                    <i data-feather="user-plus" class="me-2" style="width: 20px; height: 20px;"></i>
+                    Following
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
             </div>
-            <p class="text-muted mt-3">Loading following...</p>
-          </div>
+            <div class="modal-body p-0">
+                <div id="followingContainer">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-info" role="status">
+                            <span class="visually-hidden">Loading following...</span>
+                        </div>
+                        <p class="text-muted mt-3">Loading following...</p>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </div>
 
 <!-- Edit Profile Modal -->
@@ -176,7 +180,7 @@
 <!---- Recipe tab -->
 <div class="container-fluid border-top mt-1 pt-2">
     <h4 class="fw-bold fs-2" style="padding-left: 1.5vh; color: #EC433E;">Recipes</h4>
-    
+
     <!---- Picture of the recipe card -->
     <div class="container-fluid">
         <div class="grid-5">

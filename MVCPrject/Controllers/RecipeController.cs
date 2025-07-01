@@ -64,7 +64,15 @@ namespace MVCPrject.Controllers
             }
 
             var recipeDetails = await _repository.GetRecipeDetailsWithNutritionAsync(id);
-            return recipeDetails == null ? NotFound() : View(recipeDetails);
+            if (recipeDetails == null) 
+            {
+                return NotFound();
+            }
+
+            // Get the like count for this recipe
+            ViewBag.LikeCount = await _userService.GetLikeCountAsync(id);
+
+            return View(recipeDetails);
         }
 
         [HttpPost("Like")]
