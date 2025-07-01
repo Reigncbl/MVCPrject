@@ -73,7 +73,7 @@
                         <div class="flex-fill d-flex flex-row align-items-center justify-content-center gap-3">
                             <i data-feather="heart" style="width: 50px; height: 50px; color: #324089;"></i>
                             <div class="text-start">
-                                <div class="fw-bold fs-1">1,908</div>
+                                <div class="fw-bold fs-1">@(ViewBag.LikeCount ?? 0)</div>
                                 <small class="fs-5">likes</small>
                             </div>
                         </div>
@@ -153,18 +153,6 @@
                         <img src="@Model.Recipe?.RecipeImage" alt="@Model.Recipe?.RecipeName"
                             class="card-img-top rounded" />
                     </div>
-                </div>
-            </div>
-
-            <div class="mt-5">
-                <h5 class="fs-3 fw-bold">Gallery</h5>
-                <div class="d-flex gap-3 flex-wrap">
-                    <img src="@Model.Recipe?.RecipeImage" alt="Gallery" class="img-thumbnail"
-                        style="width: 120px; height: 120px; object-fit: cover;" />
-                    <img src="@Model.Recipe?.RecipeImage" alt="Gallery" class="img-thumbnail"
-                        style="width: 120px; height: 120px; object-fit: cover;" />
-                    <img src="@Model.Recipe?.RecipeImage" alt="Gallery" class="img-thumbnail"
-                        style="width: 120px; height: 120px; object-fit: cover;" />
                 </div>
             </div>
         </div>
