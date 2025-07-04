@@ -423,10 +423,10 @@ document.addEventListener("DOMContentLoaded", async function () {
             mealName: mealName,
             mealDate: mealDate,
             mealTime: mealTime,
-            calories: calories.toString(),
-            protein: protein.toString(),
-            carbohydrates: carbs.toString(),
-            fat: fat.toString(),
+            calories: calories,
+            protein: protein,
+            carbohydrates: carbs,
+            fat: fat,
             isPlanned: mode === "planned",
             recipeID: recipeID ? parseInt(recipeID) : null
         };
@@ -452,10 +452,10 @@ document.addEventListener("DOMContentLoaded", async function () {
                 formData.append('mealName', mealName);
                 formData.append('mealDate', mealDate);
                 formData.append('mealTime', mealTime);
-                formData.append('calories', calories.toString());
-                formData.append('protein', protein.toString());
-                formData.append('carbohydrates', carbs.toString());
-                formData.append('fat', fat.toString());
+                formData.append('calories', calories);
+                formData.append('protein', protein);
+                formData.append('carbohydrates', carbs);
+                formData.append('fat', fat);
                 formData.append('isPlanned', mode === "planned");
                 if (recipeID) formData.append('recipeID', recipeID);
                 formData.append('mealPhoto', photoFile);
@@ -489,16 +489,14 @@ document.addEventListener("DOMContentLoaded", async function () {
                 // Use the photo URL from the server response if available
                 const finalPhotoURL = result.photoUrl || photoURL;
 
-                // Update UI with local data for immediate feedback
-                logMeal(finalMealId, {
-                    name: mealName,
-                    calories,
-                    protein,
-                    time: formattedTime,
-                    date: mealDate,
-                    photo: finalPhotoURL,
-                    mode
-                });
+                // The meal was saved on the server, now refresh the UI from the server
+                // to ensure consistency.
+                
+                // Refresh the meal logs for the date the meal was added to
+                await loadMealLogsForDate(new Date(mealDate));
+
+                // Refresh the top-level nutrition summary cards
+                await refreshNutritionCardsFromServer();
 
                 // Show success message
                 showNotification('Meal logged successfully!', 'success');
@@ -999,38 +997,150 @@ function closeNutritionModal() {
     }
 }
 
-// Placeholder: implement this to update the UI
-function updateNutritionCardsFromGoal() {
-    // Extract values from modal inputs (assumed ids)
-    const caloriesGoal = document.getElementById('caloriesGoal')?.value || 0;
-    const proteinGoal = document.getElementById('proteinGoal')?.value || 0;
-    const carbsGoal = document.getElementById('carbsGoal')?.value || 0;
-    const fatGoal = document.getElementById('fatGoal')?.value || 0;
-
-
-
-    // Map nutrient to value
-    const goals = {
-        calories: caloriesGoal,
-        protein: proteinGoal,
-        carbs: carbsGoal,
-        fat: fatGoal
-    };
-
-    // Update each nutrition card
-    document.querySelectorAll('.nutrition-card').forEach(card => {
-        const label = card.querySelector('.nutrition-label')?.textContent.trim().toLowerCase();
-        if (goals[label] !== undefined) {
-            let value = goals[label];
-            if (["protein", "carbs", "fat"].includes(label)) {
-                value = value + "g";
-            }
-            card.querySelector('.nutrition-value').textContent = value;
+// Function to update nutrition cards and send goals to controller
+// Function specifically for page load - doesn't rely on form inputs
+async function initializeNutritionCardsOnLoad() {
+    try {
+        console.log('🍽️ MealPlanner.js: Initializing nutrition cards on page load');
+        
+        // Try to get current values from database first
+        const response = await fetch('/Nutrition/GetNutritionSummary');
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+            // Found data in database - use it
+            const currentValues = {
+                calories: result.data.calories,
+                protein: result.data.proteins,
+                carbs: result.data.carbs,
+                fat: result.data.fats
+            };
+            
+            console.log('🍽️ MealPlanner.js: Found current values in database:', currentValues);
+            
+            // Update the cards with database values
+            document.querySelectorAll('.nutrition-card').forEach(card => {
+                const label = card.querySelector('.nutrition-label')?.textContent.trim().toLowerCase();
+                if (currentValues[label] !== undefined) {
+                    let value = currentValues[label];
+                    if (["protein", "carbs", "fat"].includes(label)) {
+                        value += "g";
+                    }
+                    card.querySelector('.nutrition-value').textContent = value;
+                }
+            });
+            
+            console.log('🍽️ MealPlanner.js: Nutrition cards initialized with database values');
+        } else {
+            // No data in database - show default/placeholder values
+            console.log('🍽️ MealPlanner.js: No data in database, showing default values');
+            
+            const defaultValues = {
+                calories: 0,
+                protein: 0,
+                carbs: 0,
+                fat: 0
+            };
+            
+            document.querySelectorAll('.nutrition-card').forEach(card => {
+                const label = card.querySelector('.nutrition-label')?.textContent.trim().toLowerCase();
+                if (defaultValues[label] !== undefined) {
+                    let value = defaultValues[label];
+                    if (["protein", "carbs", "fat"].includes(label)) {
+                        value += "g";
+                    }
+                    card.querySelector('.nutrition-value').textContent = value;
+                }
+            });
+            
+            console.log('🍽️ MealPlanner.js: Nutrition cards initialized with default values');
         }
-    });
-
-    console.log('Nutrition cards updated with new goal values:', goals);
+        
+    } catch (error) {
+        console.error('🍽️ MealPlanner.js: Error initializing nutrition cards:', error);
+        
+        // Fallback to default values on error
+        const defaultValues = {
+            calories: 0,
+            protein: 0,
+            carbs: 0,
+            fat: 0
+        };
+        
+        document.querySelectorAll('.nutrition-card').forEach(card => {
+            const label = card.querySelector('.nutrition-label')?.textContent.trim().toLowerCase();
+            if (defaultValues[label] !== undefined) {
+                let value = defaultValues[label];
+                if (["protein", "carbs", "fat"].includes(label)) {
+                    value += "g";
+                }
+                card.querySelector('.nutrition-value').textContent = value;
+            }
+        });
+        
+        console.log('🍽️ MealPlanner.js: Nutrition cards initialized with default values (error fallback)');
+    }
 }
+
+// Keep your existing updateNutritionCardsFromGoal function for when goals are updated
+async function updateNutritionCardsFromGoal() {
+    // Extract and sanitize values from modal inputs
+    const caloriesGoal = parseInt(document.getElementById('caloriesGoal').value, 10) || 0;
+    const proteinGoal  = parseInt(document.getElementById('proteinGoal').value, 10) || 0;
+    const carbsGoal    = parseInt(document.getElementById('carbsGoal').value, 10) || 0;
+    const fatGoal      = parseInt(document.getElementById('fatGoal').value, 10) || 0;
+    
+    const formData = new FormData();
+    formData.append('calories', caloriesGoal);
+    formData.append('proteins', proteinGoal);
+    formData.append('carbs', carbsGoal);
+    formData.append('fats', fatGoal);
+    
+    try {
+        console.log('🍽️ MealPlanner.js: About to send request to /Nutrition/UpdateGoals');
+        const payload = Object.fromEntries(formData);
+        console.log('🍽️ MealPlanner.js: Request payload:', payload);
+        
+        const response = await fetch('/Nutrition/UpdateGoals', {
+            method: 'POST',
+            body: formData
+        });
+
+        console.log('🍽️ MealPlanner.js: Response status:', response.status);
+        console.log('🍽️ MealPlanner.js: Response ok:', response.ok);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('🍽️ MealPlanner.js: HTTP error!', response.status, errorText);
+            showNotification(`HTTP Error: ${response.status}`, 'error');
+            return;
+        }
+
+        const result = await response.json();
+        console.log('🍽️ MealPlanner.js: Nutrition goals API response:', result);
+
+        if (result.success) {
+            console.log('🍽️ MealPlanner.js: Nutrition goals saved successfully');
+            showNotification('Nutrition goals saved successfully!', 'success');
+            
+            // After saving, refresh the cards to show the latest data
+            await initializeNutritionCardsOnLoad();
+        } else {
+            console.error('🍽️ MealPlanner.js: Failed to save nutrition goals:', result.message);
+            showNotification(`Failed to save nutrition goals: ${result.message}`, 'error');
+        }
+    } catch (error) {
+        console.error('🍽️ MealPlanner.js: Error saving nutrition goals:', error);
+        showNotification('Error saving nutrition goals', 'error');
+    }
+}
+
+// Usage in your onload event:
+// Call initializeNutritionCardsOnLoad() instead of updateNutritionCardsFromGoal()
+window.addEventListener('load', function() {
+    initializeNutritionCardsOnLoad();
+    // ... other onload code
+});
 
 // Log Meal BTN on Calendar
 function openLogMealForm() {
@@ -1113,7 +1223,10 @@ function logMeal(mealId, mealData) {
 
     // Update the meal count for the date card
     updateDateCardMealCount(mealData.date);
-}
+
+    }
+
+
 
 // Function to update the UI
 function updateMealSummary(mealId) {

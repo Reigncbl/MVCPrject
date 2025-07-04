@@ -23,54 +23,66 @@ body {
 
 /* Recipe Card Hover Effects */
 .card-hover {
-    position: relative;
-    overflow: hidden;
-    border-radius: 15px;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-    width: 300px;
-    height: 200px;
+  position: relative;
+  width: 225px;
+  height: 300px;
+  overflow: hidden;
+  border-radius: 1rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s ease;
 }
 
 .card-hover:hover {
-    transform: scale(1.05);
+  transform: scale(1.05);
 }
 
 .card-hover img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 15px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .card-hover .overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(transparent, rgba(0,0,0,0.8));
-    color: white;
-    padding: 20px;
-    border-radius: 0 0 15px 15px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 1rem;
+  color: white;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  background: 
+    linear-gradient(to top, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 80%),
+    radial-gradient(ellipse at center, rgba(0,0,0,0) 20%, rgba(0,0,0,0.25) 70%, rgba(0,0,0,0.5) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 
-.card-hover .overlay h5 {
-    margin: 0 0 10px 0;
-    font-weight: bold;
-    font-size: 1.2rem;
+.card-hover:hover .overlay {
+  opacity: 1;
 }
 
-.card-hover .overlay .details {
-    display: flex;
-    gap: 20px;
-    font-size: 0.9rem;
+.overlay h5 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
-.card-hover .overlay .details span {
-    background: rgba(255,255,255,0.2);
-    padding: 4px 8px;
-    border-radius: 12px;
-    backdrop-filter: blur(10px);
+.overlay .details {
+  display: flex;
+  gap: 1rem;
+}
+
+.overlay .details span {
+  font-size: 0.85rem;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  padding: 4px 8px;
 }
 
 /* Grid Layout */

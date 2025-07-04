@@ -78,14 +78,18 @@ function createMyRecipeCard(recipe) {
     cardDiv.className = 'card-hover';
     
     cardDiv.innerHTML = `
-        <img src="${recipe.image || '/img/sampleimg.jpg'}" class="img-fluid" alt="${recipe.name}">
-        <div class="overlay">
-            <h5>${recipe.name}</h5>
-            <div class="details gap-5">
-                <span>${recipe.calories || '420'} cal</span>
-                <span>${recipe.totalTime || '45'} mins</span>
+    <div class="d-flex flex-wrap gap-4 justify-content-start" style="padding-left: 1vh;" id="recipesContainer">
+        <div class="card-hover">
+            <img src="${recipe.image || '/img/sampleimg.jpg'}" class="img-fluid" alt="${recipe.name}">
+            <div class="overlay">
+                <h5>${recipe.name}</h5>
+                <div class="details gap-5">
+                    <span>${recipe.calories || '420'} cal</span>
+                    <span>${recipe.totalTime || '45'} mins</span>
+                </div>
             </div>
         </div>
+    </div>
     `;
     
     // Add click event to navigate to recipe view
