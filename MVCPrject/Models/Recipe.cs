@@ -292,8 +292,8 @@ namespace MVCPrject.Models
     // DTO for grouping ingredients by recipe
     public class RecipeIngredientsViewModel
     {
-        public string RecipeName { get; set; }
-        public List<GroceryListItemViewModel> Ingredients { get; set; }
+        public string RecipeName { get; set; } = string.Empty;
+        public List<GroceryListItemViewModel> Ingredients { get; set; } = new List<GroceryListItemViewModel>();
     }
 
 }

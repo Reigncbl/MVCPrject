@@ -67,18 +67,38 @@
                         console.log('JS: Received data from API:', data);
                         var groceryItemsContainer = document.getElementById('groceryItems');
                         groceryItemsContainer.innerHTML = ''; // Clear existing items
-                        if (data.length === 0) {
-                            groceryItemsContainer.innerHTML = '<div class="list-group-item">No ingredients found for the selected dates.</div>';
-                        }
-                        data.forEach(item => {
-                            // Case-insensitive property access
-                            const unit = item.unit || item.Unit || '';
-                            const name = item.ingredientName || item.IngredientName || '';
-                            const quantity = item.quantity || item.Quantity || '';
 
+                        if (!data || data.length === 0) {
+                            groceryItemsContainer.innerHTML = '<div class="list-group-item">No ingredients found for the selected dates.</div>';
+                            return;
+                        }
+
+                        const allIngredients = data.flatMap(recipe => recipe.ingredients || recipe.Ingredients || []);
+
+                        if (allIngredients.length === 0) {
+                            groceryItemsContainer.innerHTML = '<div class="list-group-item">No ingredients found for the selected dates.</div>';
+                            return;
+                        }
+
+                        const consolidatedIngredients = {};
+                        allIngredients.forEach(ingredient => {
+                            const name = ingredient.ingredientName || ingredient.IngredientName;
+                            const unit = ingredient.unit || ingredient.Unit;
+                            const quantity = ingredient.quantity || ingredient.Quantity;
+
+                            const key = `${name}|${unit}`;
+                            if (!consolidatedIngredients[key]) {
+                                consolidatedIngredients[key] = { name: name, unit: unit, quantity: 0 };
+                            }
+                            consolidatedIngredients[key].quantity += quantity || 0;
+                        });
+
+                        const ingredientsList = Object.values(consolidatedIngredients);
+
+                        ingredientsList.forEach(item => {
                             var div = document.createElement('div');
                             div.className = 'list-group-item d-flex justify-content-between align-items-center';
-                            div.innerHTML = `<span>${unit} ${name}</span><span class="amt-badge py-1 px-2 rounded-pill">${quantity}</span>`;
+                            div.innerHTML = `<span>${item.unit} ${item.name}</span><span class="amt-badge py-1 px-2 rounded-pill">${item.quantity}</span>`;
                             groceryItemsContainer.appendChild(div);
                         });
                     })
@@ -92,6 +112,60 @@
     });
 
     function printGroceryList() {
-        window.print();
+        const groceryItemsContainer = document.getElementById('groceryItems');
+        const childNodes = groceryItemsContainer.childNodes;
+
+        if (childNodes.length === 0 || (childNodes.length === 1 && childNodes[0].innerText.includes('No ingredients found'))) {
+            alert("There are no items in the grocery list to print.");
+            return;
+        }
+
+        let printHtml = '<h1>Grocery List</h1>';
+        let inList = false;
+
+        childNodes.forEach(node => {
+            if (node.tagName === 'H6') {
+                if (inList) {
+                    printHtml += '</ul>';
+                }
+                printHtml += `<h2>${node.innerText}</h2><ul>`;
+                inList = true;
+            } else if (node.classList && node.classList.contains('list-group-item')) {
+                if (!inList) {
+                    printHtml += '<ul>';
+                    inList = true;
+                }
+                
+                const textSpan = node.querySelector('span:first-child');
+                const quantitySpan = node.querySelector('span.amt-badge');
+
+                if (textSpan && quantitySpan) {
+                    const text = textSpan.innerText;
+                    const quantity = quantitySpan.innerText;
+                    printHtml += `<li>${text} - <strong>${quantity}</strong></li>`;
+                } else {
+                    printHtml += `<li>${node.innerText}</li>`;
+                }
+            }
+        });
+
+        if (inList) {
+            printHtml += '</ul>';
+        }
+
+        const printWindow = window.open('', '', 'height=600,width=800');
+        if (printWindow) {
+            printWindow.document.write('<html><head><title>Print Grocery List</title>');
+            printWindow.document.write('<style>body{font-family:sans-serif}h1{font-size:24px}h2{font-size:18px;margin-top:1em}ul{list-style-type:disc;padding-left:20px}li{margin-bottom:5px}</style>');
+            printWindow.document.write('</head><body>');
+            printWindow.document.write(printHtml);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+            printWindow.close();
+        } else {
+            alert('Please allow pop-ups for this website to print the grocery list.');
+        }
     }
 </script>
