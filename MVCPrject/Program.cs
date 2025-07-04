@@ -22,21 +22,21 @@ namespace MVCPrject
 
             builder.Services.AddControllersWithViews();
             //Azure storage
-            var azureBlobConnectionString = builder.Configuration.GetSection("AzureBlobStorage")["DefaultEndpointsProtocol=https;AccountName=imageurlappdev;AccountKey=fZXCipQtMInu9SjS/ENdwuXhkTlrc5A7wGUzwsBb9HXgyZbgzzMMXgfzu/CJt1502fYUUG4J0oQV+AStRqd1qg==;EndpointSuffix=core.windows.net"];
+            var azureBlobConnectionString = builder.Configuration.GetSection("AzureBlobStorage")["ConnectionString"];
 
             // Register BlobServiceClient with the connection string from configuration
             builder.Services.AddSingleton(x => new BlobServiceClient(azureBlobConnectionString));
             //Redis
             builder.Services.AddStackExchangeRedisCache(options =>
             {
-                options.Configuration = builder.Configuration["recipe.redis.cache.windows.net:6380,password=mt5YOtwgtfQEhuKkr7ElUr5vYRUizkzipAzCaOPQhUM=,ssl=True,abortConnect=False"];
-                options.InstanceName = builder.Configuration["recipe"];
+                options.Configuration = builder.Configuration["Redis:ConnectionString"];
+                options.InstanceName = builder.Configuration["Redis:InstanceName"];
 
             });
 
 
             //Mistral AI API
-            var apikey = builder.Configuration["VAJ6bCJPUh4Tmd9ybgE53EVHGjUCj7Q"];
+            var apikey = builder.Configuration["Mistral:ApiKey"];
             if (string.IsNullOrEmpty(apikey))
             {
                 throw new InvalidOperationException("Mistral API key is not configured.");
@@ -49,7 +49,7 @@ namespace MVCPrject
             builder.Services.AddScoped<Kernel>();
             builder.Services.AddDbContext<DBContext>(options =>
                 options.UseSqlServer(
-                    builder.Configuration.GetConnectionString("Server=tcp:recipedev.database.windows.net,1433;Initial Catalog=AIrecipeDB;Persist Security Info=False;User ID=sarapmaster;Password=Welcome23;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"),
+                    builder.Configuration.GetConnectionString("RecipeDbConnection"),
                     sqlOptions => sqlOptions.EnableRetryOnFailure()
                 ));
 
