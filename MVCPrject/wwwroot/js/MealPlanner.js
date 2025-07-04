@@ -73,6 +73,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             const card = document.createElement("div");
             card.className = `day-card bg-white rounded-3 text-center px-3 py-2 shadow-sm ${isSelected ? "today-card border border-warning" : ""}`;
+            card.dataset.date = date.toISOString().split('T')[0]; // Add data-date attribute
             card.style.cursor = 'pointer';
 
             card.innerHTML = `
@@ -887,13 +888,137 @@ function formatTimeSpanTo12Hour(timeSpan) {
 // For generate grocery list btn
 function generateGroceryList() {
     const modalEl = document.getElementById('groceryListModal');
-    if (modalEl) {
-        const modal = new bootstrap.Modal(modalEl);
-        modal.show();
-        feather.replace();
-    } else {
-        console.error('Modal not found.');
+    const selectedDateCard = document.querySelector('.day-card.today-card'); // Find the selected card
+
+    if (!modalEl || !selectedDateCard) {
+        console.error('Modal or selected date card not found.');
+        return;
     }
+
+    const anchorDateString = selectedDateCard.dataset.date; // Get the selected date
+    modalEl.dataset.anchorDate = anchorDateString; // Store it on the modal
+
+    // Use event delegation for dropdown items
+    if (!modalEl.hasAttribute('data-delegation-attached')) {
+        // Log when the dropdown button is clicked
+        const dropdownBtn = document.getElementById('dateRangeDropdown');
+        if (dropdownBtn) {
+            dropdownBtn.addEventListener('click', function(e) {
+                console.log('🍽️ MealPlanner.js: Dropdown button clicked');
+                const dropdownMenu = modalEl.querySelector('.dropdown-menu');
+                if (dropdownMenu) {
+                    // Toggle visibility
+                    if (dropdownMenu.style.display === 'block') {
+                        dropdownMenu.style.display = 'none';
+                        console.log('🍽️ MealPlanner.js: Dropdown menu hidden');
+                    } else {
+                        dropdownMenu.style.display = 'block';
+                        console.log('🍽️ MealPlanner.js: Dropdown menu shown');
+                    }
+                }
+            });
+        }
+        modalEl.addEventListener('click', function(e) {
+            const target = e.target;
+            if (target && target.classList.contains('dropdown-item')) {
+                e.preventDefault();
+                console.log('🍽️ MealPlanner.js: Dropdown item clicked:', target.textContent, 'data-range:', target.dataset.range);
+                const range = target.dataset.range;
+                const anchorDate = new Date(modalEl.dataset.anchorDate + 'T00:00:00');
+                let startDate, endDate;
+
+                switch (range) {
+                    case 'today':
+                        startDate = anchorDate;
+                        endDate = anchorDate;
+                        break;
+                    case 'next7':
+                        startDate = anchorDate;
+                        endDate = new Date(anchorDate);
+                        endDate.setDate(anchorDate.getDate() + 6);
+                        break;
+                    case 'thisMonth':
+                        startDate = new Date(anchorDate.getFullYear(), anchorDate.getMonth(), 1);
+                        endDate = new Date(anchorDate.getFullYear(), anchorDate.getMonth() + 1, 0);
+                        break;
+                }
+
+                const startDateString = startDate.toISOString().split('T')[0];
+                const endDateString = endDate.toISOString().split('T')[0];
+
+                document.getElementById('dateRangeDropdown').textContent = target.textContent;
+                console.log('🍽️ MealPlanner.js: Fetching grocery list for range:', startDateString, 'to', endDateString);
+                fetchGroceryList(startDateString, endDateString);
+            }
+        });
+        modalEl.setAttribute('data-delegation-attached', 'true');
+    }
+
+    // Show the modal
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+    feather.replace();
+    console.log('🍽️ MealPlanner.js: Grocery list modal shown');
+
+    // Default action: fetch for the selected date ("Today")
+    document.getElementById('dateRangeDropdown').textContent = 'Today';
+    console.log('🍽️ MealPlanner.js: Fetching grocery list for Today:', anchorDateString);
+    fetchGroceryList(anchorDateString, anchorDateString);
+}
+
+function fetchGroceryList(startDateString, endDateString) {
+    const modalEl = document.getElementById('groceryListModal');
+    const spinner = modalEl.querySelector('#groceryListSpinner');
+    const groceryItemsContainer = modalEl.querySelector('#groceryItems');
+
+    spinner.style.display = 'block';
+    groceryItemsContainer.style.display = 'none';
+    groceryItemsContainer.innerHTML = '';
+
+    fetch(`/api/GroceryList?startDate=${startDateString}&endDate=${endDateString}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            spinner.style.display = 'none';
+            groceryItemsContainer.style.display = 'block';
+
+            if (data.length === 0) {
+                groceryItemsContainer.innerHTML = '<div class="list-group-item">No ingredients found for the selected dates.</div>';
+            } else {
+                data.forEach(recipe => {
+                    const recipeName = recipe.recipeName || recipe.RecipeName;
+                    const ingredients = recipe.ingredients || recipe.Ingredients;
+
+                    if (recipeName && ingredients && ingredients.length > 0) {
+                        const header = document.createElement('h6');
+                        header.className = 'mt-3 mb-2 fw-bold';
+                        header.textContent = recipeName;
+                        groceryItemsContainer.appendChild(header);
+
+                        ingredients.forEach(item => {
+                            const unit = item.unit || item.Unit || '';
+                            const name = item.ingredientName || item.IngredientName || '';
+                            const quantity = item.quantity || item.Quantity || '';
+
+                            const div = document.createElement('div');
+                            div.className = 'list-group-item';
+                            div.innerHTML = `<span>${quantity} ${unit} ${name}</span>`;
+                            groceryItemsContainer.appendChild(div);
+                        });
+                    }
+                });
+            }
+        })
+        .catch(error => {
+            spinner.style.display = 'none';
+            groceryItemsContainer.style.display = 'block';
+            groceryItemsContainer.innerHTML = '<div class="list-group-item text-danger">Failed to load grocery list.</div>';
+            console.error('JS: Grocery list fetch error:', error);
+        });
 }
 
 function closeGroceryModal() {
@@ -904,65 +1029,6 @@ function closeGroceryModal() {
     }
 }
 
-function printGroceryList() {
-    // Clone the modal content
-    const printContent = document.getElementById('groceryListModal').cloneNode(true);
-
-    // Create a hidden iframe for printing
-    const printFrame = document.createElement('iframe');
-    printFrame.style.position = 'absolute';
-    printFrame.style.width = '0';
-    printFrame.style.height = '0';
-    printFrame.style.border = 'none';
-
-    // When iframe loads, print its content
-    printFrame.onload = function () {
-        const printDocument = printFrame.contentWindow.document;
-
-        // Add print-specific styles
-        const style = printDocument.createElement('style');
-        style.innerHTML = `
-      @page { size: auto; margin: 5mm; }
-      body { padding: 10px; font-family: Arial, sans-serif; }
-      .list-group-item {
-        display: flex;
-        justify-content: space-between;
-        padding: 8px 0;
-        border-bottom: 1px solid #eee;
-      }
-      .badge {
-        background-color: #007bff !important;
-        color: white;
-        padding: 3px 8px;
-        border-radius: 10px;
-        font-size: 12px;
-      }
-      h5 {
-        color: #007bff;
-        text-align: center;
-        margin-bottom: 15px;
-      }
-    `;
-
-        printDocument.head.appendChild(style);
-        printDocument.body.appendChild(printContent.querySelector('.modal-content'));
-
-        // Remove unnecessary elements for printing
-        const modalFooter = printDocument.querySelector('.modal-footer');
-        const modalHeader = printDocument.querySelector('.modal-header button');
-        if (modalFooter) modalFooter.remove();
-        if (modalHeader) modalHeader.remove();
-
-        // Focus and print
-        printFrame.contentWindow.focus();
-        printFrame.contentWindow.print();
-
-        // Clean up
-        setTimeout(() => document.body.removeChild(printFrame), 1000);
-    };
-
-    document.body.appendChild(printFrame);
-}
 
 // To update dropdown btn text
 function updateDateButton(selectedOption) {

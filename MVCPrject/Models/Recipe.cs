@@ -281,4 +281,19 @@ namespace MVCPrject.Models
         public List<MealLogResponse> Meals { get; set; } = new List<MealLogResponse>();
     }
 
+    // DTO for grocery list items
+    public class GroceryListItemViewModel
+    {
+        public string? IngredientName { get; set; }
+        public decimal? Quantity { get; set; }
+        public string? Unit { get; set; }
+    }
+
+    // DTO for grouping ingredients by recipe
+    public class RecipeIngredientsViewModel
+    {
+        public string RecipeName { get; set; }
+        public List<GroceryListItemViewModel> Ingredients { get; set; }
+    }
+
 }

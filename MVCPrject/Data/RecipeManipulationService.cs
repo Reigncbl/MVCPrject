@@ -362,5 +362,29 @@ namespace MVCPrject.Data
                 await SearchRecipesByIngredientsAsync(filter);
             }
         }
+        public async Task<List<RecipeIngredientsViewModel>> GetIngredientsFromMealLogAsync(string userId, DateTime startDate, DateTime endDate)
+        {
+            var recipesWithIngredients = await _dbContext.MealLogs
+                .Where(ml => ml.UserID == userId && ml.MealDate.Date >= startDate.Date && ml.MealDate.Date <= endDate.Date && ml.RecipeID.HasValue)
+                .Select(ml => ml.Recipe)
+                .Distinct()
+                .Include(r => r.Ingredients)
+                .ToListAsync();
+
+            var result = recipesWithIngredients.Select(r => new RecipeIngredientsViewModel
+            {
+                RecipeName = r.RecipeName,
+                Ingredients = r.Ingredients
+                    .GroupBy(i => new { i.IngredientName, i.Unit })
+                    .Select(g => new GroceryListItemViewModel
+                    {
+                        IngredientName = g.Key.IngredientName,
+                        Unit = g.Key.Unit,
+                        Quantity = g.Sum(i => i.Quantity)
+                    }).ToList()
+            }).ToList();
+
+            return result;
+        }
     }
 }

@@ -1,33 +1,97 @@
-  <div class="modal fade" id="groceryListModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header text-white">
-          <h5 class="modal-title">Your Grocery List</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-            <i data-feather="x"></i>
-          </button>
+@using MVCPrject.Models
+
+<div class="modal fade" id="groceryListModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header text-white">
+        <h5 class="modal-title">Your Grocery List</h5>
+        <div class="dropdown ms-auto">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dateRangeDropdown">
+            Select Date Range
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dateRangeDropdown">
+                <li><a class="dropdown-item" href="#" data-range="today">Today</a></li>
+                <li><a class="dropdown-item" href="#" data-range="next7">Next 7 Days</a></li>
+                <li><a class="dropdown-item" href="#" data-range="thisMonth">This Month</a></li>
+            </ul>
         </div>
-        <div class="modal-body">
-          
-          <div id="groceryItems" class="list-group list-group-flush">
-            <!-- Dynamically populated with grocery items -->
-            <!-- Example Content -->
-            <div class="list-group-item d-flex justify-content-between align-items-center">
-              <span>Chicken Breast</span>
-              <span class="amt-badge py-1 px-2 rounded-pill">2 lbs</span>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+          <i data-feather="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="groceryListSpinner" class="text-center my-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
             </div>
-            <div class="list-group-item d-flex justify-content-between align-items-center">
-              <span>Bell Peppers</span>
-              <span class="amt-badge py-1 px-2 rounded-pill">3 pcs</span>
-            </div>
-          </div>
+            <p class="mt-2">Generating your grocery list...</p>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn fw-bold print-btn" onclick="printGroceryList()">Print
-          </button>
+        <div id="groceryItems" class="list-group list-group-flush" style="display: none;">
+          <!-- Dynamically populated with grocery items -->
         </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn fw-bold print-btn" onclick="printGroceryList()">Print
+        </button>
       </div>
     </div>
   </div>
+</div>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var generateBtn = document.getElementById('generateGroceryBtn');
+        if (generateBtn) {
+            console.log('JS: GenerateGrocery button listener attached.');
+            generateBtn.addEventListener('click', function () {
+                console.log('JS: GenerateGrocery button clicked.');
+                var startDate = document.getElementById('startDate').value;
+                var endDate = document.getElementById('endDate').value;
+                console.log(`JS: Fetching ingredients for startDate: ${startDate}, endDate: ${endDate}`);
+
+                if (!startDate || !endDate) {
+                    alert('Please select both a start and end date.');
+                    return;
+                }
+
+                fetch(`/api/GroceryList?startDate=${startDate}&endDate=${endDate}`)
+                    .then(response => {
+                        console.log('JS: Received response from API:', response);
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('JS: Received data from API:', data);
+                        var groceryItemsContainer = document.getElementById('groceryItems');
+                        groceryItemsContainer.innerHTML = ''; // Clear existing items
+                        if (data.length === 0) {
+                            groceryItemsContainer.innerHTML = '<div class="list-group-item">No ingredients found for the selected dates.</div>';
+                        }
+                        data.forEach(item => {
+                            // Case-insensitive property access
+                            const unit = item.unit || item.Unit || '';
+                            const name = item.ingredientName || item.IngredientName || '';
+                            const quantity = item.quantity || item.Quantity || '';
+
+                            var div = document.createElement('div');
+                            div.className = 'list-group-item d-flex justify-content-between align-items-center';
+                            div.innerHTML = `<span>${unit} ${name}</span><span class="amt-badge py-1 px-2 rounded-pill">${quantity}</span>`;
+                            groceryItemsContainer.appendChild(div);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('JS: There has been a problem with your fetch operation:', error);
+                        var groceryItemsContainer = document.getElementById('groceryItems');
+                        groceryItemsContainer.innerHTML = '<div class="list-group-item text-danger">Failed to load grocery list.</div>';
+                    });
+            });
+        }
+    });
+
+    function printGroceryList() {
+        window.print();
+    }
+</script>
