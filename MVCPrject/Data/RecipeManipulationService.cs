@@ -37,7 +37,7 @@ namespace MVCPrject.Data
         /// <param name="factory">A function that returns a Task of type T to fetch the data if it's not in the cache.</param>
         /// <param name="expiration">The TimeSpan indicating how long the data should be cached.</param>
         /// <returns>The retrieved or fetched data.</returns>
-        private async Task<T?> GetOrSetCacheAsync<T>(string cacheKey, Func<Task<T>> factory, TimeSpan expiration) where T : class
+        private async Task<T?> GetOrSetCacheAsync<T>(string cacheKey, Func<Task<T>> factory, TimeSpan expiration) where T : class?
         {
             var cachedData = await _cache.GetStringAsync(cacheKey);
             if (!string.IsNullOrEmpty(cachedData))
@@ -114,13 +114,14 @@ namespace MVCPrject.Data
 
         public async Task<RecipeDetailsViewModel?> GetRecipeDetailsWithNutritionAsync(int id)
         {
-            var recipe = await GetOrSetCacheAsync($"recipeDetails_{id}", async () =>
+            var recipe = await GetOrSetCacheAsync<Recipe>($"recipeDetails_{id}", async () =>
             {
-                return await _dbContext.Recipes
+                var result = await _dbContext.Recipes
                     .Include(r => r.Ingredients)
                     .Include(r => r.Instructions)
                     .Include(r => r.Author)
                     .FirstOrDefaultAsync(r => r.RecipeID == id);
+                return result!; // We know this will be null or a valid Recipe, not Recipe?
             }, TimeSpan.FromHours(10));
 
             if (recipe == null) return null;
@@ -141,13 +142,14 @@ namespace MVCPrject.Data
         /// <returns>A list of all recipes.</returns>
         public async Task<List<Recipe>> GetAllRecipesAsync()
         {
-            return await GetOrSetCacheAsync("recipeAllRecipes", async () =>
+            var recipes = await GetOrSetCacheAsync("recipeAllRecipes", async () =>
             {
                 return await _dbContext.Recipes
                     .Include(r => r.Author)
                     .OrderBy(r => r.RecipeID)
                     .ToListAsync();
             }, TimeSpan.FromHours(1));
+            return recipes ?? new List<Recipe>();
         }
 
         /// <summary>
@@ -160,7 +162,7 @@ namespace MVCPrject.Data
             var normalizedKeywords = NormalizeKeywords(keywords);
             var cacheKey = $"recipeSearchRecipes_{normalizedKeywords}";
 
-            return await GetOrSetCacheAsync(cacheKey, async () =>
+            var recipes = await GetOrSetCacheAsync(cacheKey, async () =>
             {
                 var keywordList = keywords.Split(',')
                     .Select(k => k.Trim())
@@ -177,6 +179,7 @@ namespace MVCPrject.Data
                     .AsSplitQuery()
                     .ToListAsync();
             }, TimeSpan.FromHours(1));
+            return recipes ?? new List<Recipe>();
         }
 
         /// <summary>
@@ -190,7 +193,7 @@ namespace MVCPrject.Data
             var normalizedKeywords = NormalizeKeywords(keywords);
             var cacheKey = $"recipeSearch_{mode?.ToLower() ?? "all"}_{normalizedKeywords}";
 
-            return await GetOrSetCacheAsync(cacheKey, async () =>
+            var recipes = await GetOrSetCacheAsync(cacheKey, async () =>
             {
                 var keywordList = keywords.Split(',')
                     .Select(k => k.Trim())
@@ -209,6 +212,7 @@ namespace MVCPrject.Data
                     .AsSplitQuery()
                     .ToListAsync();
             }, TimeSpan.FromHours(1));
+            return recipes ?? new List<Recipe>();
         }
 
         /// <summary>
@@ -361,6 +365,37 @@ namespace MVCPrject.Data
             {
                 await SearchRecipesByIngredientsAsync(filter);
             }
+        }
+        public async Task<List<RecipeIngredientsViewModel>> GetIngredientsFromMealLogAsync(string userId, DateTime startDate, DateTime endDate)
+        {
+            var recipeIds = await _dbContext.MealLogs
+                .Where(ml => ml.UserID == userId && ml.MealDate.Date >= startDate.Date && ml.MealDate.Date <= endDate.Date && ml.RecipeID.HasValue)
+                .Select(ml => ml.RecipeID!.Value)
+                .Distinct()
+                .ToListAsync();
+
+            if (!recipeIds.Any())
+            {
+                return new List<RecipeIngredientsViewModel>();
+            }
+
+            var recipesWithIngredients = await _dbContext.Recipes
+                .Where(r => recipeIds.Contains(r.RecipeID))
+                .Include(r => r.Ingredients)
+                .ToListAsync();
+
+            var result = recipesWithIngredients.Select(r => new RecipeIngredientsViewModel
+            {
+                RecipeName = r.RecipeName ?? string.Empty,
+                Ingredients = r.Ingredients.Select(i => new GroceryListItemViewModel
+                {
+                    IngredientName = i.IngredientName,
+                    Quantity = i.Quantity,
+                    Unit = i.Unit
+                }).ToList()
+            }).ToList();
+
+            return result;
         }
     }
 }
