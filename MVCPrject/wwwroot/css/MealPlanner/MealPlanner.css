@@ -369,7 +369,7 @@ textarea.form-control {
   height: 100%;
   background: linear-gradient(90deg, #4299e1 0%, #2b6cb0 100%);
   border-radius: 3px;
-  width: 85%;
+  width: 0%;
 }
 
 .tip-alert {
