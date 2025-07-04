@@ -98,13 +98,6 @@ namespace MVCPrject
             app.UseAuthentication();
             app.UseAuthorization();
 
-            //Prepopulate Recipes
-            using (var scope = app.Services.CreateScope())
-            {
-                var recipeService = scope.ServiceProvider.GetRequiredService<RecipeManipulationService>();
-                await recipeService.PrepopulateCacheAsync();
-            }
-
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Landing}/{action=Index}/{id?}");
