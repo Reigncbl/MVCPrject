@@ -1,6 +1,8 @@
 using System.Data.Entity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MVCPrject.Data;
 using MVCPrject.Models;
@@ -55,22 +57,59 @@ namespace MVCPrject.Controllers
         /// Follow another user by email (UserName field is the email address)
         /// Example: followerEmail=J024@gmail.com, followeeEmail=another@email.com
         /// </summary>
+        
         [HttpPost]
-        public async Task<IActionResult> Follow([FromBody] FollowRequest request)
+        [Authorize] // Now recognized with the correct namespace
+        public async Task<IActionResult> UpdateProfile([FromForm] string displayName, string username, IFormFile profileImage)
         {
-            _logger.LogInformation("Follow endpoint called with followerEmail: {FollowerEmail}, followeeEmail: {FolloweeEmail}",
-                request?.followerEmail, request?.followeeEmail);
-
-            if (request == null)
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null)
             {
-                _logger.LogWarning("Follow request is null");
-                return Json(new { success = false, message = "Invalid request" });
+                _logger.LogWarning("UpdateProfile: User not found");
+                return Json(new { success = false, message = "User not found" });
             }
 
-            var (success, message) = await _userService.FollowUserByEmailAsync(request.followerEmail, request.followeeEmail);
+            if (string.IsNullOrEmpty(displayName) || string.IsNullOrEmpty(username))
+            {
+                _logger.LogWarning("UpdateProfile: DisplayName or Username is empty");
+                return Json(new { success = false, message = "Display name and username are required" });
+            }
 
-            _logger.LogInformation("Follow result: Success={Success}, Message={Message}", success, message);
-            return Json(new { success, message });
+            if (profileImage != null)
+            {
+                try
+                {
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(profileImage.FileName);
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await profileImage.CopyToAsync(stream);
+                    }
+                    currentUser.ProfileImageUrl = "/img/" + fileName;
+                    _logger.LogInformation("UpdateProfile: Profile image uploaded to {FilePath}", filePath);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "UpdateProfile: Error uploading profile image");
+                    return Json(new { success = false, message = "Error uploading profile image" });
+                }
+            }
+
+            currentUser.Name = displayName;
+            currentUser.UserName = username;
+
+            var result = await _userManager.UpdateAsync(currentUser);
+            if (result.Succeeded)
+            {
+                _logger.LogInformation("UpdateProfile: Profile updated successfully for user {UserId}", currentUser.Id);
+                return Json(new { success = true });
+            }
+            else
+            {
+                _logger.LogWarning("UpdateProfile: Failed to update profile for user {UserId}. Errors: {Errors}", 
+                    currentUser.Id, string.Join(", ", result.Errors.Select(e => e.Description)));
+                return Json(new { success = false, message = string.Join(", ", result.Errors.Select(e => e.Description)) });
+            }
         }
 
         /// <summary>
@@ -213,7 +252,7 @@ namespace MVCPrject.Controllers
                     id = user.Id,
                     name = user.Name,
                     email = user.UserName,
-                    profileImage = "/img/image.png"
+                    profileImage = user.ProfileImageUrl ?? "/img/image.png" // Updated to use ProfileImageUrl
                 }).ToList();
 
                 return Json(new { success = true, followers = followerResults });
@@ -243,7 +282,7 @@ namespace MVCPrject.Controllers
                     id = user.Id,
                     name = user.Name,
                     email = user.UserName,
-                    profileImage = "/img/image.png"
+                    profileImage = user.ProfileImageUrl ?? "/img/image.png" // Updated to use ProfileImageUrl
                 }).ToList();
 
                 return Json(new { success = true, following = followingResults });
