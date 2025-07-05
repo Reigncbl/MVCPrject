@@ -1,7 +1,7 @@
-using System.Data.Entity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using MVCPrject.Data;
 using MVCPrject.Models;
 
@@ -167,23 +167,55 @@ namespace MVCPrject.Controllers
 
             try
             {
-                var recipes = await _userService.GetRecipesByEmailAsync(userEmail);
+                // Get user
+                var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.UserName == userEmail);
+                if (user == null)
+                    return Json(new { success = false, message = "User not found." });
 
-                var recipeResults = recipes.Select(recipe => new
-                {
-                    id = recipe.RecipeID,
-                    name = recipe.RecipeName,
-                    description = recipe.RecipeDescription,
-                    image = recipe.RecipeImage,
-                    author = recipe.Author?.Name ?? "Unknown Author",
-                    authorEmail = recipe.Author?.UserName,
-                    type = recipe.RecipeType,
-                    servings = recipe.RecipeServings,
-                    cookTime = recipe.CookTimeMin,
-                    prepTime = recipe.PrepTimeMin,
-                    totalTime = recipe.TotalTimeMin,
-                    ingredientCount = recipe.Ingredients?.Count ?? 0,
-                    instructionCount = recipe.Instructions?.Count ?? 0
+                // Get recipes with includes
+                var recipes = await _dbContext.Recipes
+                    .Where(r => r.AuthorId == user.Id)
+                    .Include(r => r.Author)
+                    .Include(r => r.Ingredients)
+                    .Include(r => r.Instructions)
+                    .OrderByDescending(r => r.RecipeID)
+                    .ToListAsync();
+
+                // Get nutrition facts separately
+                var recipeIds = recipes.Select(r => r.RecipeID).ToList();
+                var nutritionFacts = await _dbContext.RecipeNutritionFacts
+                    .Where(nf => recipeIds.Contains(nf.RecipeID ?? 0))
+                    .ToDictionaryAsync(nf => nf.RecipeID ?? 0);
+
+                _logger.LogInformation("Found {Count} recipes for user {UserEmail}", recipes.Count, userEmail);
+
+                var recipeResults = recipes.Select(recipe => {
+                    nutritionFacts.TryGetValue(recipe.RecipeID, out var currentNutrition);
+                    
+                    var calories = currentNutrition?.Calories;
+                    _logger.LogInformation("Recipe {RecipeId} - {RecipeName}: Calories = \'{Calories}\', NutritionFacts exists = {HasNutrition}",
+                        recipe.RecipeID,
+                        recipe.RecipeName,
+                        calories ?? "NULL",
+                        currentNutrition != null);
+
+                    return new
+                    {
+                        id = recipe.RecipeID,
+                        name = recipe.RecipeName,
+                        description = recipe.RecipeDescription,
+                        image = recipe.RecipeImage,
+                        author = recipe.Author?.Name ?? "Unknown Author",
+                        authorEmail = recipe.Author?.UserName,
+                        type = recipe.RecipeType,
+                        servings = recipe.RecipeServings,
+                        cookTime = recipe.CookTimeMin,
+                        prepTime = recipe.PrepTimeMin,
+                        totalTime = recipe.TotalTimeMin,
+                        Calories = calories,
+                        ingredientCount = recipe.Ingredients?.Count ?? 0,
+                        instructionCount = recipe.Instructions?.Count ?? 0
+                    };
                 }).ToList();
 
                 return Json(new { success = true, recipes = recipeResults });
@@ -252,6 +284,39 @@ namespace MVCPrject.Controllers
             {
                 _logger.LogError(ex, "Error getting following for email: {UserEmail}", userEmail);
                 return Json(new { success = false, following = new List<object>() });
+            }
+        }
+
+
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> TestNutritionData()
+        {
+            try
+            {
+                var totalNutritionFacts = await _dbContext.RecipeNutritionFacts.CountAsync();
+                var nutritionFactsWithCalories = await _dbContext.RecipeNutritionFacts
+                    .Where(n => !string.IsNullOrEmpty(n.Calories))
+                    .CountAsync();
+                
+                var sampleNutritionFacts = await _dbContext.RecipeNutritionFacts
+                    .Take(5)
+                    .Select(n => new { n.RecipeID, n.Calories, n.NutritionFactsID })
+                    .ToListAsync();
+
+                var totalRecipes = await _dbContext.Recipes.CountAsync();
+
+                return Json(new { 
+                    totalRecipes,
+                    totalNutritionFacts, 
+                    nutritionFactsWithCalories, 
+                    sampleNutritionFacts 
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error testing nutrition facts");
+                return Json(new { error = ex.Message });
             }
         }
     }

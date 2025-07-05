@@ -48,6 +48,18 @@ async function loadMyRecipes() {
         
         console.log('My recipes loaded:', result);
         
+        // Debug each recipe's calories
+        if (result.success && result.recipes) {
+            result.recipes.forEach((recipe, index) => {
+                console.log(`Recipe ${index + 1}: ${recipe.name}`);
+                console.log(`  - All property names:`, Object.keys(recipe));
+                console.log(`  - Calories (capital C): "${recipe.Calories}" (type: ${typeof recipe.Calories})`);
+                console.log(`  - calories (lowercase c): "${recipe.calories}" (type: ${typeof recipe.calories})`);
+                console.log(`  - Total Time: "${recipe.totalTime}" (type: ${typeof recipe.totalTime})`);
+                console.log(`  - Full recipe object:`, recipe);
+            });
+        }
+        
         const recipesContainer = document.getElementById('recipesContainer');
         
         if (result.success && result.recipes && result.recipes.length > 0) {
@@ -77,19 +89,24 @@ function createMyRecipeCard(recipe) {
     const cardDiv = document.createElement('div');
     cardDiv.className = 'card-hover';
     
+    // Debug logging
+    console.log('Creating recipe card for:', recipe.name);
+    console.log('Recipe object keys:', Object.keys(recipe));
+    console.log('Calories value (capital C):', recipe.Calories);
+    console.log('calories value (lowercase c):', recipe.calories);
+    
+    // Try both cases
+    const caloriesValue = recipe.Calories || recipe.calories || '420';
+    
     cardDiv.innerHTML = `
-    <div class="d-flex flex-wrap gap-4 justify-content-start" style="padding-left: 1vh;" id="recipesContainer">
-        <div class="card-hover">
-            <img src="${recipe.image || '/img/sampleimg.jpg'}" class="img-fluid" alt="${recipe.name}">
-            <div class="overlay">
-                <h5>${recipe.name}</h5>
-                <div class="details gap-5">
-                    <span>${recipe.calories || '420'} cal</span>
-                    <span>${recipe.totalTime || '45'} mins</span>
-                </div>
+        <img src="${recipe.image || '/img/sampleimg.jpg'}" class="img-fluid" alt="${recipe.name}">
+        <div class="overlay">
+            <h5>${recipe.name}</h5>
+            <div class="details gap-5">
+                <span>${caloriesValue} cal</span>
+                <span>${recipe.totalTime || '45'} mins</span>
             </div>
         </div>
-    </div>
     `;
     
     // Add click event to navigate to recipe view

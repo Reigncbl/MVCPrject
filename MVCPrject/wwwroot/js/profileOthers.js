@@ -111,53 +111,29 @@ async function loadUserRecipes() {
 }
 
 function createRecipeCard(recipe) {
-    const col = document.createElement('div');
-    col.className = 'col-md-6 col-lg-4 mb-4';
+    const cardDiv = document.createElement('div');
+    cardDiv.className = 'card-hover';
     
-    col.innerHTML = `
-        <div class="card h-100 shadow-sm border-0 rounded-3 card-hover">
-            <div class="position-relative">
-                <img src="${recipe.image || '/img/default-recipe.jpg'}" 
-                     class="card-img-top" 
-                     alt="${recipe.name}"
-                     style="height: 200px; object-fit: cover;">
-                <span class="badge bg-primary position-absolute top-0 start-0 m-3 rounded-pill px-3 py-2">
-                    ${recipe.type || 'Recipe'}
-                </span>
-                ${recipe.totalTime ? `
-                <span class="badge bg-dark position-absolute top-0 end-0 m-3 rounded-pill px-3 py-2">
-                    <i data-feather="clock" style="width: 14px; height: 14px;" class="me-1"></i>
-                    ${recipe.totalTime}min
-                </span>
-                ` : ''}
-            </div>
-            <div class="card-body d-flex flex-column">
-                <h5 class="card-title fw-bold mb-2">${recipe.name}</h5>
-                <p class="card-text text-muted mb-3 flex-grow-1" style="font-size: 0.9rem;">
-                    ${recipe.description ? (recipe.description.length > 100 ? recipe.description.substring(0, 100) + '...' : recipe.description) : 'No description available'}
-                </p>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <small class="text-muted">
-                        <i data-feather="users" style="width: 14px; height: 14px;" class="me-1"></i>
-                        ${recipe.servings || 'N/A'} servings
-                    </small>
-                    <small class="text-muted">
-                        <i data-feather="list" style="width: 14px; height: 14px;" class="me-1"></i>
-                        ${recipe.ingredientCount} ingredients
-                    </small>
-                </div>
-                <a href="/Recipe/View/${recipe.id}" class="btn btn-custom-red btn-sm w-100">
-                    <i data-feather="eye" style="width: 14px; height: 14px;" class="me-2"></i>
-                    View Recipe
-                </a>
+    // Try both cases for calories
+    const caloriesValue = recipe.Calories || recipe.calories || '420';
+    
+    cardDiv.innerHTML = `
+        <img src="${recipe.image || '/img/default-recipe.jpg'}" class="img-fluid" alt="${recipe.name}">
+        <div class="overlay">
+            <h5>${recipe.name}</h5>
+            <div class="details gap-5">
+                <span>${caloriesValue} cal</span>
+                <span>${recipe.totalTime || '45'} mins</span>
             </div>
         </div>
     `;
     
-    // Re-initialize feather icons for the new card
-    setTimeout(() => feather.replace(), 100);
+    // Add click event to navigate to recipe view
+    cardDiv.addEventListener('click', function() {
+        window.location.href = `/Recipe/View/${recipe.id}`;
+    });
     
-    return col;
+    return cardDiv;
 }
 
 async function toggleFollow() {

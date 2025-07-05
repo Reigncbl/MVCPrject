@@ -248,6 +248,42 @@ namespace MVCPrject.Data
         }
 
         /// <summary>
+        /// Get recipes with nutrition facts created by a user by email
+        /// </summary>
+        public async Task<List<RecipeDetailsViewModel>> GetRecipesWithNutritionByEmailAsync(string userEmail)
+        {
+            if (string.IsNullOrEmpty(userEmail))
+                return new List<RecipeDetailsViewModel>();
+
+            var user = _dbContext.Users.FirstOrDefault(u => u.UserName == userEmail);
+            if (user == null)
+                return new List<RecipeDetailsViewModel>();
+
+            var recipes = await _dbContext.Recipes
+                .Include(r => r.Author)
+                .Include(r => r.Ingredients)
+                .Include(r => r.Instructions)
+                .Where(r => r.AuthorId == user.Id)
+                .OrderByDescending(r => r.RecipeID)
+                .ToListAsync();
+
+            var result = new List<RecipeDetailsViewModel>();
+            foreach (var recipe in recipes)
+            {
+                var nutritionFacts = await _dbContext.RecipeNutritionFacts
+                    .FirstOrDefaultAsync(n => n.RecipeID == recipe.RecipeID);
+
+                result.Add(new RecipeDetailsViewModel
+                {
+                    Recipe = recipe,
+                    NutritionFacts = nutritionFacts
+                });
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Get recipes created by a user by user ID
         /// </summary>
         public async Task<List<Recipe>> GetRecipesByUserIdAsync(string userId)

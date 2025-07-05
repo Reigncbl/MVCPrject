@@ -97,7 +97,7 @@ namespace MVCPrject.Controllers
         }
 
         // API endpoints for JavaScript integration
-        
+
         // GET: Get meal logs for a specific date
         [HttpGet]
         [Route("GetMealLogsByDate")]
@@ -106,7 +106,7 @@ namespace MVCPrject.Controllers
             try
             {
                 _logger.LogInformation("[API] [GetMealLogsByDate] Called for date: {Date}", date.ToString("yyyy-MM-dd"));
-                
+
                 // Get current user using UserCacheService
                 var currentUser = await _userCacheService.GetCurrentUserAsync(User);
                 if (currentUser == null)
@@ -117,10 +117,10 @@ namespace MVCPrject.Controllers
 
                 var currentUserId = currentUser.Id;
                 _logger.LogInformation("[API] [GetMealLogsByDate] Getting meal logs for user: {UserID}", currentUserId);
-                
+
                 var mealLogs = await _mealLogService.GetMealLogsByDateAndUserAsync(date, currentUserId);
-                
-                _logger.LogInformation("[API] [GetMealLogsByDate] Retrieved {Count} meal logs for date: {Date} and user: {UserID}", 
+
+                _logger.LogInformation("[API] [GetMealLogsByDate] Retrieved {Count} meal logs for date: {Date} and user: {UserID}",
                     mealLogs.Count, date.ToString("yyyy-MM-dd"), currentUserId);
 
                 // Log each meal log for debugging
@@ -129,7 +129,7 @@ namespace MVCPrject.Controllers
                     _logger.LogInformation("[API] [GetMealLogsByDate] MealLogID: {MealLogID}, Name: {MealName}, Date: {MealDate}, Type: {MealType}, Photo: {PhotoUrl}",
                         mealLog.MealLogID, mealLog.MealName, mealLog.MealDate, mealLog.MealType, mealLog.MealPhoto);
                 }
-                
+
                 return Json(new { success = true, mealLogs = mealLogs });
             }
             catch (Exception ex)
@@ -158,7 +158,7 @@ namespace MVCPrject.Controllers
                 // Set the UserID from the current authenticated user using UserCacheService
                 _logger.LogInformation("[API] [CreateMealLog] Attempting to get current user for meal log creation");
                 var currentUser = await _userCacheService.GetCurrentUserAsync(User);
-                
+
                 if (currentUser == null)
                 {
                     _logger.LogWarning("[API] [CreateMealLog] User not authenticated - UserCacheService returned null");
@@ -226,7 +226,7 @@ namespace MVCPrject.Controllers
                 if (TryValidateModel(mealLog))
                 {
                     var result = await _mealLogService.AddMealLogAsync(mealLog);
-                    
+
                     if (result)
                     {
                         _logger.LogInformation("[API] [CreateMealLog] Successfully created meal log for: {MealName}", mealLog.MealName);
@@ -238,21 +238,21 @@ namespace MVCPrject.Controllers
                         return Json(new { success = false, message = "Failed to save meal log" });
                     }
                 }
-                
+
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
                 _logger.LogWarning("[API] [CreateMealLog] Invalid model state: {Errors}", string.Join(", ", errors));
-                
+
                 // Log detailed model state information
                 foreach (var modelState in ModelState)
                 {
                     if (modelState.Value.Errors.Count > 0)
                     {
-                        _logger.LogWarning("[API] [CreateMealLog] Model validation error for {Key}: {Errors}", 
-                            modelState.Key, 
+                        _logger.LogWarning("[API] [CreateMealLog] Model validation error for {Key}: {Errors}",
+                            modelState.Key,
                             string.Join(", ", modelState.Value.Errors.Select(e => e.ErrorMessage)));
                     }
                 }
-                
+
                 return Json(new { success = false, message = "Invalid data", errors = errors });
             }
             catch (Exception ex)
@@ -269,7 +269,7 @@ namespace MVCPrject.Controllers
         {
             try
             {
-                _logger.LogInformation("CreateMealLogWithPhoto called for meal: {MealName}, Type: {MealType}, Date: {Date}", 
+                _logger.LogInformation("CreateMealLogWithPhoto called for meal: {MealName}, Type: {MealType}, Date: {Date}",
                     request.MealName, request.MealType, request.MealDate);
 
                 // Validate request
@@ -282,7 +282,7 @@ namespace MVCPrject.Controllers
                 // Set the UserID from the current authenticated user using UserCacheService
                 _logger.LogInformation("Attempting to get current user for meal log creation");
                 var currentUser = await _userCacheService.GetCurrentUserAsync(User);
-                
+
                 if (currentUser == null)
                 {
                     _logger.LogWarning("User not authenticated for meal log creation - UserCacheService returned null");
@@ -293,7 +293,7 @@ namespace MVCPrject.Controllers
 
                 // Handle photo - either uploaded file or recipe image
                 string? photoUrl = null;
-                
+
                 // First, check if there's a recipe ID and get recipe image
                 if (request.RecipeID.HasValue && request.RecipeID > 0)
                 {
@@ -304,7 +304,7 @@ namespace MVCPrject.Controllers
                         _logger.LogInformation("Using recipe image for meal log: {RecipeImage}", recipeImage);
                     }
                 }
-                
+
                 // If no recipe image and user uploaded a photo, use uploaded photo
                 if (string.IsNullOrEmpty(photoUrl) && request.MealPhoto != null && request.MealPhoto.Length > 0)
                 {
@@ -358,7 +358,7 @@ namespace MVCPrject.Controllers
                     return Json(new { success = false, message = "Invalid time format" });
                 }
 
-                _logger.LogInformation("Successfully created MealLog object - UserID: {UserID}, MealType: {MealType}, Date: {Date}, Photo: {PhotoUrl}", 
+                _logger.LogInformation("Successfully created MealLog object - UserID: {UserID}, MealType: {MealType}, Date: {Date}, Photo: {PhotoUrl}",
                     mealLog.UserID, mealLog.MealType, mealLog.MealDate.ToString("yyyy-MM-dd"), photoUrl ?? "None");
 
                 // Clear ModelState to avoid validation issues from the DTO binding
@@ -368,7 +368,7 @@ namespace MVCPrject.Controllers
                 if (TryValidateModel(mealLog))
                 {
                     var result = await _mealLogService.AddMealLogAsync(mealLog);
-                    
+
                     if (result)
                     {
                         _logger.LogInformation("Successfully created meal log for: {MealName}", mealLog.MealName);
@@ -380,21 +380,21 @@ namespace MVCPrject.Controllers
                         return Json(new { success = false, message = "Failed to save meal log" });
                     }
                 }
-                
+
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
                 _logger.LogWarning("Invalid model state for CreateMealLogWithPhoto: {Errors}", string.Join(", ", errors));
-                
+
                 // Log detailed model state information
                 foreach (var modelState in ModelState)
                 {
                     if (modelState.Value.Errors.Count > 0)
                     {
-                        _logger.LogWarning("Model validation error for {Key}: {Errors}", 
-                            modelState.Key, 
+                        _logger.LogWarning("Model validation error for {Key}: {Errors}",
+                            modelState.Key,
                             string.Join(", ", modelState.Value.Errors.Select(e => e.ErrorMessage)));
                     }
                 }
-                
+
                 return Json(new { success = false, message = "Invalid data", errors = errors });
             }
             catch (Exception ex)
@@ -433,7 +433,7 @@ namespace MVCPrject.Controllers
                 // For now, I'll show the pattern - you may need to adjust based on your architecture
                 using var scope = HttpContext.RequestServices.CreateScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<DBContext>();
-                
+
                 var recipe = await dbContext.Recipes
                     .Where(r => r.RecipeID == recipeId)
                     .Select(r => new { r.RecipeImage })
@@ -455,13 +455,13 @@ namespace MVCPrject.Controllers
         {
             try
             {
-                _logger.LogInformation("UpdateMealLog called for meal ID: {MealLogID}, Name: {MealName}", 
+                _logger.LogInformation("UpdateMealLog called for meal ID: {MealLogID}, Name: {MealName}",
                     mealLog.MealLogID, mealLog.MealName);
 
                 if (ModelState.IsValid)
                 {
                     var result = await _mealLogService.UpdateMealLogAsync(mealLog);
-                    
+
                     if (result)
                     {
                         _logger.LogInformation("Successfully updated meal log ID: {MealLogID}", mealLog.MealLogID);
@@ -473,8 +473,8 @@ namespace MVCPrject.Controllers
                         return Json(new { success = false, message = "Meal log not found" });
                     }
                 }
-                
-                _logger.LogWarning("Invalid model state for UpdateMealLog: {Errors}", 
+
+                _logger.LogWarning("Invalid model state for UpdateMealLog: {Errors}",
                     string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
                 return Json(new { success = false, message = "Invalid data" });
             }
@@ -514,13 +514,13 @@ namespace MVCPrject.Controllers
 
                 if (mealLog.UserID != currentUserId)
                 {
-                    _logger.LogWarning("User {UserID} attempted to delete meal log {MealLogID} belonging to user {OwnerUserID}", 
+                    _logger.LogWarning("User {UserID} attempted to delete meal log {MealLogID} belonging to user {OwnerUserID}",
                         currentUserId, id, mealLog.UserID);
                     return Json(new { success = false, message = "Unauthorized to delete this meal log" });
                 }
 
                 var result = await _mealLogService.DeleteMealLogAsync(id);
-                
+
                 if (result)
                 {
                     _logger.LogInformation("Successfully deleted meal log ID: {MealLogID} for user: {UserID}", id, currentUserId);
