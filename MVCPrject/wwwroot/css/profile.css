@@ -242,10 +242,41 @@ body {
 .user-card img {
     border: 2px solid #fff;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.user-card:hover img {
+    transform: scale(1.05);
 }
 
 /* Button hover effects in user cards */
 .user-card .btn-outline-primary:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+/* Enhanced user card layout */
+.user-card {
+    border-radius: 8px;
+    margin: 4px 8px;
+}
+
+.user-card:hover {
+    background-color: #f8f9fa !important;
+    border-radius: 8px;
+}
+
+/* Profile image fallback styling */
+.user-card img[src="/img/image.png"] {
+    background-color: #e9ecef;
+    border: 2px solid #dee2e6;
+}
+
+/* Empty state styling */
+.modal-body .text-center {
+    padding: 3rem 1rem;
+}
+
+.modal-body .text-center i[data-feather] {
+    opacity: 0.6;
 }

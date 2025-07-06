@@ -2,6 +2,23 @@ document.addEventListener('DOMContentLoaded', function () {
     // Feather icon init
     feather.replace();
 
+    // Add modal cleanup event listener
+    const editProfileModal = document.getElementById('editProfileModal');
+    if (editProfileModal) {
+        editProfileModal.addEventListener('hidden.bs.modal', function () {
+            // Clean up any remaining backdrops
+            setTimeout(() => {
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(backdrop => backdrop.remove());
+                
+                // Ensure body classes are cleaned up
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+            }, 100);
+        });
+    }
+
     // Social Link Add/Remove
     const addLinkBtn = document.getElementById('add-link-btn');
     const linkContainer = document.getElementById('social-links');
@@ -122,8 +139,23 @@ document.addEventListener('DOMContentLoaded', function () {
                     
                     // Close modal after a short delay
                     setTimeout(() => {
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('editProfileModal'));
-                        modal.hide();
+                        const modalElement = document.getElementById('editProfileModal');
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        
+                        if (modal) {
+                            modal.hide();
+                        }
+                        
+                        // Force remove any remaining backdrop
+                        setTimeout(() => {
+                            const backdrops = document.querySelectorAll('.modal-backdrop');
+                            backdrops.forEach(backdrop => backdrop.remove());
+                            
+                            // Ensure body classes are cleaned up
+                            document.body.classList.remove('modal-open');
+                            document.body.style.overflow = '';
+                            document.body.style.paddingRight = '';
+                        }, 300);
                     }, 1500);
                 } else {
                     showNotification('Error: ' + result.message, 'error');
