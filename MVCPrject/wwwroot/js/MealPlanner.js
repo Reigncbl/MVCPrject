@@ -424,10 +424,10 @@ document.addEventListener("DOMContentLoaded", async function () {
             mealName: mealName,
             mealDate: mealDate,
             mealTime: mealTime,
-            calories: calories,
-            protein: protein,
-            carbohydrates: carbs,
-            fat: fat,
+            calories: calories.toString(),
+            protein: protein.toString(),
+            carbohydrates: carbs.toString(),
+            fat: fat.toString(),
             isPlanned: mode === "planned",
             recipeID: recipeID ? parseInt(recipeID) : null
         };
@@ -453,10 +453,10 @@ document.addEventListener("DOMContentLoaded", async function () {
                 formData.append('mealName', mealName);
                 formData.append('mealDate', mealDate);
                 formData.append('mealTime', mealTime);
-                formData.append('calories', calories);
-                formData.append('protein', protein);
-                formData.append('carbohydrates', carbs);
-                formData.append('fat', fat);
+                formData.append('calories', calories.toString());
+                formData.append('protein', protein.toString());
+                formData.append('carbohydrates', carbs.toString());
+                formData.append('fat', fat.toString());
                 formData.append('isPlanned', mode === "planned");
                 if (recipeID) formData.append('recipeID', recipeID);
                 formData.append('mealPhoto', photoFile);
@@ -495,9 +495,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                 
                 // Refresh the meal logs for the date the meal was added to
                 await loadMealLogsForDate(new Date(mealDate));
-
-                // Refresh the top-level nutrition summary cards
-                await refreshNutritionCardsFromServer();
 
                 // Show success message
                 showNotification('Meal logged successfully!', 'success');
