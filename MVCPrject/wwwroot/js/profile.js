@@ -265,7 +265,7 @@ function createUserCard(user, type) {
     
     card.innerHTML = `
         <div class="d-flex align-items-center">
-            <img src="${user.profileImage}" 
+            <img src="${user.profileImageUrl || '/img/image.png'}" 
                  alt="${user.name}" 
                  class="rounded-circle me-3" 
                  style="width: 50px; height: 50px; object-fit: cover;">
