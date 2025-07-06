@@ -1,7 +1,4 @@
-<<<<<<< Updated upstream
-=======
 using Microsoft.AspNetCore.Authorization;
->>>>>>> Stashed changes
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using MVCPrject.Data;
 using MVCPrject.Models;
+using Azure.Storage.Blobs;
 
 namespace MVCPrject.Controllers
 {
@@ -18,31 +16,42 @@ namespace MVCPrject.Controllers
         private readonly UserService _userService;
         private readonly UserManager<User> _userManager;
         private readonly ILogger<ProfileController> _logger;
+        private readonly BlobServiceClient _blobServiceClient;
 
-        public ProfileController(DBContext dbContext, UserService userService, UserManager<User> userManager, ILogger<ProfileController> logger)
+        public ProfileController(DBContext dbContext, UserService userService, UserManager<User> userManager, ILogger<ProfileController> logger, BlobServiceClient blobServiceClient)
         {
             _dbContext = dbContext;
             _userService = userService;
             _userManager = userManager;
             _logger = logger;
+            _blobServiceClient = blobServiceClient;
         }
 
         public async Task<IActionResult> Profile()
         {
+            _logger.LogInformation("Profile page accessed.");
+
             if (!User.Identity?.IsAuthenticated == true)
             {
+                _logger.LogWarning("User is not authenticated. Redirecting to login.");
                 return RedirectToAction("Login", "Landing");
             }
 
             var currentUser = await _userManager.GetUserAsync(User);
             if (currentUser == null)
             {
+                _logger.LogWarning("Current user not found. Redirecting to login.");
                 return RedirectToAction("Login", "Landing");
             }
+
+            _logger.LogInformation("User {UserName} authenticated.", currentUser.UserName);
 
             var followers = await _userService.GetFollowerCountByEmailAsync(currentUser.UserName ?? "");
             var following = await _userService.GetFollowingCountByEmailAsync(currentUser.UserName ?? "");
             var recipes = await _userService.GetRecipeCountByEmailAsync(currentUser.UserName ?? "");
+
+            _logger.LogInformation("User {UserName} stats: Followers={Followers}, Following={Following}, Recipes={Recipes}",
+                currentUser.UserName, followers, following, recipes);
 
             var viewModel = new ProfileViewModel
             {
@@ -52,60 +61,157 @@ namespace MVCPrject.Controllers
                 RecipeCount = recipes
             };
 
+            _logger.LogInformation("ProfileViewModel created for user {UserName}.", currentUser.UserName);
+
             return View(viewModel);
         }
 
         [HttpPost]
-        [Authorize] // Now recognized with the correct namespace
-        public async Task<IActionResult> UpdateProfile([FromForm] string displayName, string username, IFormFile profileImage)
+        [Authorize]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
         {
-            var currentUser = await _userManager.GetUserAsync(User);
-            if (currentUser == null)
+            _logger.LogInformation("UpdateProfile: Starting profile update for user");
+            
+            try
             {
-                _logger.LogWarning("UpdateProfile: User not found");
-                return Json(new { success = false, message = "User not found" });
-            }
-
-            if (string.IsNullOrEmpty(displayName) || string.IsNullOrEmpty(username))
-            {
-                _logger.LogWarning("UpdateProfile: DisplayName or Username is empty");
-                return Json(new { success = false, message = "Display name and username are required" });
-            }
-
-            if (profileImage != null)
-            {
-                try
+                // Get current user
+                var currentUser = await _userManager.GetUserAsync(User);
+                if (currentUser == null)
                 {
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(profileImage.FileName);
-                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", fileName);
-                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    _logger.LogWarning("UpdateProfile: User not found");
+                    return Json(new { success = false, message = "User not found" });
+                }
+
+                _logger.LogInformation("UpdateProfile: User {UserId} updating profile - DisplayName: '{DisplayName}', Username: '{Username}', HasImage: {HasImage}",
+                    currentUser.Id, request.DisplayName, request.Username, !string.IsNullOrEmpty(request.ProfileImageBase64));
+
+                // Simple validation
+                if (string.IsNullOrWhiteSpace(request.DisplayName) || string.IsNullOrWhiteSpace(request.Username))
+                {
+                    _logger.LogWarning("UpdateProfile: Validation failed - empty fields");
+                    return Json(new { success = false, message = "Display name and username are required" });
+                }
+
+                if (request.DisplayName.Length > 100 || request.Username.Length < 3 || request.Username.Length > 50)
+                {
+                    _logger.LogWarning("UpdateProfile: Validation failed - invalid length");
+                    return Json(new { success = false, message = "Invalid field lengths" });
+                }
+
+                // Check username availability
+                if (request.Username != currentUser.UserName)
+                {
+                    var existingUser = await _userManager.FindByNameAsync(request.Username);
+                    if (existingUser != null && existingUser.Id != currentUser.Id)
                     {
-                        await profileImage.CopyToAsync(stream);
+                        _logger.LogWarning("UpdateProfile: Username '{Username}' already taken", request.Username);
+                        return Json(new { success = false, message = "Username is already taken" });
                     }
-                    currentUser.ProfileImageUrl = "/img/" + fileName;
-                    _logger.LogInformation("UpdateProfile: Profile image uploaded to {FilePath}", filePath);
                 }
-                catch (Exception ex)
+
+                // Handle image upload if provided
+                if (!string.IsNullOrEmpty(request.ProfileImageBase64))
                 {
-                    _logger.LogError(ex, "UpdateProfile: Error uploading profile image");
-                    return Json(new { success = false, message = "Error uploading profile image" });
+                    _logger.LogInformation("UpdateProfile: Processing image upload");
+                    
+                    var imageUrl = await UploadProfileImageAsync(currentUser.Id, request.ProfileImageBase64);
+                    if (imageUrl != null)
+                    {
+                        currentUser.ProfileImageUrl = imageUrl;
+                        _logger.LogInformation("UpdateProfile: Image uploaded successfully to {ImageUrl}", imageUrl);
+                    }
+                    else
+                    {
+                        _logger.LogError("UpdateProfile: Image upload failed");
+                        return Json(new { success = false, message = "Failed to upload image" });
+                    }
+                }
+
+                // Update user data
+                currentUser.Name = request.DisplayName.Trim();
+                currentUser.UserName = request.Username.Trim();
+
+                // Save changes
+                var result = await _userManager.UpdateAsync(currentUser);
+                if (result.Succeeded)
+                {
+                    _logger.LogInformation("UpdateProfile: Profile updated successfully for user {UserId}", currentUser.Id);
+                    return Json(new { 
+                        success = true, 
+                        message = "Profile updated successfully!",
+                        data = new {
+                            displayName = currentUser.Name,
+                            username = currentUser.UserName,
+                            profileImageUrl = currentUser.ProfileImageUrl
+                        }
+                    });
+                }
+                else
+                {
+                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                    _logger.LogError("UpdateProfile: Failed to save changes - {Errors}", errors);
+                    return Json(new { success = false, message = errors });
                 }
             }
-
-            currentUser.Name = displayName;
-            currentUser.UserName = username;
-
-            var result = await _userManager.UpdateAsync(currentUser);
-            if (result.Succeeded)
+            catch (Exception ex)
             {
-                _logger.LogInformation("UpdateProfile: Profile updated successfully for user {UserId}", currentUser.Id);
-                return Json(new { success = true });
+                _logger.LogError(ex, "UpdateProfile: Unexpected error occurred");
+                return Json(new { success = false, message = "An unexpected error occurred. Please try again." });
             }
-            else
+        }
+
+        private async Task<string?> UploadProfileImageAsync(string userId, string base64Image)
+        {
+            try
             {
-                _logger.LogWarning("UpdateProfile: Failed to update profile for user {UserId}. Errors: {Errors}", 
-                    currentUser.Id, string.Join(", ", result.Errors.Select(e => e.Description)));
-                return Json(new { success = false, message = string.Join(", ", result.Errors.Select(e => e.Description)) });
+                _logger.LogInformation("UploadProfileImage: Starting upload for user {UserId}", userId);
+
+                // Convert base64 to bytes
+                var imageBytes = Convert.FromBase64String(base64Image);
+                
+                // Validate file size (5MB max)
+                const long maxFileSize = 5 * 1024 * 1024;
+                if (imageBytes.Length > maxFileSize)
+                {
+                    _logger.LogWarning("UploadProfileImage: File too large - {FileSize} bytes", imageBytes.Length);
+                    return null;
+                }
+
+                // Setup Azure Blob Storage
+                var containerClient = _blobServiceClient.GetBlobContainerClient("profiles");
+                await containerClient.CreateIfNotExistsAsync();
+
+                var blobName = $"profile-{userId}-{Guid.NewGuid()}.jpg";
+                var blobClient = containerClient.GetBlobClient(blobName);
+
+                _logger.LogInformation("UploadProfileImage: Uploading to blob {BlobName}", blobName);
+
+                // Upload image
+                using (var stream = new MemoryStream(imageBytes))
+                {
+                    await blobClient.UploadAsync(stream, overwrite: true);
+                }
+
+                // Set content type
+                await blobClient.SetHttpHeadersAsync(new Azure.Storage.Blobs.Models.BlobHttpHeaders
+                {
+                    ContentType = "image/jpeg"
+                });
+
+                var imageUrl = blobClient.Uri.ToString();
+                _logger.LogInformation("UploadProfileImage: Upload successful - {ImageUrl}", imageUrl);
+                
+                return imageUrl;
+            }
+            catch (FormatException ex)
+            {
+                _logger.LogError(ex, "UploadProfileImage: Invalid base64 format");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "UploadProfileImage: Upload failed for user {UserId}", userId);
+                return null;
             }
         }
 
@@ -221,9 +327,10 @@ namespace MVCPrject.Controllers
 
                 _logger.LogInformation("Found {Count} recipes for user {UserEmail}", recipes.Count, userEmail);
 
-                var recipeResults = recipes.Select(recipe => {
+                var recipeResults = recipes.Select(recipe =>
+                {
                     nutritionFacts.TryGetValue(recipe.RecipeID, out var currentNutrition);
-                    
+
                     var calories = currentNutrition?.Calories;
                     _logger.LogInformation("Recipe {RecipeId} - {RecipeName}: Calories = \'{Calories}\', NutritionFacts exists = {HasNutrition}",
                         recipe.RecipeID,
@@ -324,7 +431,7 @@ namespace MVCPrject.Controllers
                 var nutritionFactsWithCalories = await _dbContext.RecipeNutritionFacts
                     .Where(n => !string.IsNullOrEmpty(n.Calories))
                     .CountAsync();
-                
+
                 var sampleNutritionFacts = await _dbContext.RecipeNutritionFacts
                     .Take(5)
                     .Select(n => new { n.RecipeID, n.Calories, n.NutritionFactsID })
@@ -332,11 +439,12 @@ namespace MVCPrject.Controllers
 
                 var totalRecipes = await _dbContext.Recipes.CountAsync();
 
-                return Json(new { 
+                return Json(new
+                {
                     totalRecipes,
-                    totalNutritionFacts, 
-                    nutritionFactsWithCalories, 
-                    sampleNutritionFacts 
+                    totalNutritionFacts,
+                    nutritionFactsWithCalories,
+                    sampleNutritionFacts
                 });
             }
             catch (Exception ex)
@@ -351,5 +459,12 @@ namespace MVCPrject.Controllers
     {
         public string followerEmail { get; set; } = string.Empty;
         public string followeeEmail { get; set; } = string.Empty;
+    }
+
+    public class UpdateProfileRequest
+    {
+        public string DisplayName { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
+        public string? ProfileImageBase64 { get; set; }
     }
 }
