@@ -397,5 +397,13 @@ namespace MVCPrject.Data
 
             return result;
         }
+
+        public async Task<Recipe?> GetRecipeByIdAsync(int id)
+            {
+                return await _dbContext.Recipes
+                    .Include(r => r.Author)
+                    .FirstOrDefaultAsync(r => r.RecipeID == id);
+            }
+
     }
 }

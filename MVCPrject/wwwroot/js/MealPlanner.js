@@ -1292,6 +1292,26 @@ function logMeal(mealId, mealData) {
 
     }
 
+function getMealFormData() {
+    const form = document.getElementById('mealForm');
+    const formData = new FormData(form);
+
+    const data = {
+        mealType: formData.get('mealType'),
+        mealName: formData.get('mealName'),
+        mealDate: formData.get('mealDate'),
+        mealTime: formData.get('mealTime'),
+        calories: parseInt(formData.get('calories'), 10) || 0,
+        protein: parseInt(formData.get('protein'), 10) || 0,
+        carbs: parseInt(formData.get('carbs'), 10) || 0,
+        fat: parseInt(formData.get('fat'), 10) || 0,
+        recipeID: formData.get('recipeID') || null,
+        photo: document.getElementById('mealPhoto')?.files[0] || null
+    };
+
+    console.log('🍽️ Extracted Log Meal Info:', data);
+    return data;
+}
 
 
 // Function to update the UI
@@ -1316,7 +1336,9 @@ function updateMealSummary(mealId) {
         const imageUrl = log.photo || defaultImage;
 
         return `
-        <div class="card shadow-sm mb-2">
+        <div class="card shadow-sm mb-2" style: "cursor: pointer;"
+                            onclick="showMealPhotoModal(JSON.parse(this.dataset.log))"
+                            data-log="${escapeLogData(log)}">
             <div class="card-body log-entry position-relative">
                 <div class="row align-items-center">
                     <!-- Image -->
@@ -1326,7 +1348,7 @@ function updateMealSummary(mealId) {
                              style="width:50px; height:50px; object-fit:cover; cursor: pointer;" 
                              alt="Meal Image"
                              onerror="this.src='${defaultImage}'"
-                             onclick="showMealPhotoModal('${imageUrl}', '${log.name}')">
+                        >
                     </div>
 
                     <!-- Content -->
@@ -1394,6 +1416,8 @@ async function loadMealLogsForDate(date) {
                     name: mealLog.mealName,
                     calories: parseInt(mealLog.calories) || 0,
                     protein: parseInt(mealLog.protein) || 0,
+                    carbs: parseInt(mealLog.carbohydrates) || 0,
+                    fat: parseInt(mealLog.fat) || 0,
                     time: formatTimeSpanTo12Hour(mealLog.mealTime),
                     date: mealLog.mealDate,
                     photo: mealLog.mealPhoto || 'https://via.placeholder.com/50?text=🍽️',
@@ -1498,9 +1522,14 @@ function showNotification(message, type = 'info') {
     }, 5000);
 }
 
-// Show meal photo in modal
-function showMealPhotoModal(imageUrl, mealName) {
-    console.log('🍽️ MealPlanner.js: Showing photo modal for:', mealName, 'URL:', imageUrl);
+// Show meal photo in modal - view meal
+// log is from loggedMeals[mealType].push
+function showMealPhotoModal(log) {
+    console.log('🍽️ Meal Data for Modal:', log);
+
+    const defaultImage = 'https://via.placeholder.com/50?text=🍽️';
+    const imageUrl = log.photo || defaultImage;
+    const mealName = log.name || 'Meal Name Not Available';
 
     // Check if it's a placeholder image
     if (imageUrl.includes('placeholder')) {
@@ -1514,19 +1543,49 @@ function showMealPhotoModal(imageUrl, mealName) {
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="mealPhotoModalLabel">${mealName}</h5>
+                        <h5 class="modal-title" id="mealPhotoModalLabel">Meal Info</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body text-center">
-                        <img src="${imageUrl}" 
-                             class="img-fluid rounded" 
-                             alt="${mealName}"
-                             style="max-height: 70vh; object-fit: contain;"
-                             onerror="this.parentElement.innerHTML='<p class=\\"text-muted\\">Image could not be loaded</p>'">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 text-start">
+                                <img src="${imageUrl}" 
+                                    class="img-fluid rounded" 
+                                    alt="${mealName}"
+                                    style="max-height: 70vh; width: 100%; object-fit: contain;"
+                                    onerror="this.src='https://via.placeholder.com/500?text=No+Image'">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <h5 class="col-md-6 fw-bold mb-4" id="mealPhotoModalLabel">${mealName}</h5>
+                                    <small class="col-md-6 text-muted text-end">${
+                                        log.date ? new Date(log.date).toLocaleDateString('en-US', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric'
+                                        }) : ''
+                                        } | ${log.time}</small>
+                                </div>
+                                <div class="column">
+                                    <div class="col-12 mb-2">
+                                        <strong>Calories:</strong> <span id="mealCalories">${log.calories || 0} cal</span>
+                                    </div>
+                                    <div class="col-12 mb-2">
+                                        <strong>Protein:</strong> <span id="mealProtein">${log.protein || 0}g</span>
+                                    </div>
+                                    <div class="col-12 mb-2">
+                                        <strong>Carbs:</strong> <span id="mealCarbs">${log.carbs || 0}g</span>
+                                    </div>
+                                    <div class="col-12 mb-2">
+                                        <strong>Fat:</strong> <span id="mealFat">${log.fat || 0}g</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <a href="${imageUrl}" target="_blank" class="btn btn-primary">Open in New Tab</a>
+                        <a href="${imageUrl}" target="_blank" class="btn download-img-btn">Download Image</a>
                     </div>
                 </div>
             </div>
@@ -1550,4 +1609,8 @@ function showMealPhotoModal(imageUrl, mealName) {
     document.getElementById('mealPhotoModal').addEventListener('hidden.bs.modal', function () {
         this.remove();
     });
+}
+
+function escapeLogData(log) {
+    return JSON.stringify(log).replace(/"/g, '&quot;');
 }

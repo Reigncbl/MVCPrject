@@ -417,3 +417,13 @@ textarea.form-control {
   overflow-x: hidden;
   height: 100vh;
 }
+
+.download-img-btn {
+  background-color: var(--strong-pink);
+  color: white;
+}
+
+.download-img-btn:hover {
+  background-color: var(--strong-yellow);
+  color: white;
+}

@@ -1,3 +1,10 @@
+:root {
+  --light-pink: #ffdddd;
+  --strong-pink: #f04a4f;
+  --strong-yellow: #fbae1f;
+  --light-yellow: #ffedc9;
+}
+
 body {
   font-family: 'Poppins', sans-serif;
   background: #fff;
@@ -224,4 +231,16 @@ body {
 .user-card .btn-outline-primary:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+button.delete-btn {
+    border: none;
+    background: none;
+    outline: none;
+    box-shadow: none;
+    color: white;
+}
+
+.delete-btn:hover {
+    color: var(--strong-pink);
 }

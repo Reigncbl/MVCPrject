@@ -11,9 +11,11 @@ namespace MVCPrject.Data
     public class UserService
     {
         private readonly DBContext _dbContext;
-        public UserService(DBContext dBContext)
+        private readonly ILogger<UserService> _logger;
+        public UserService(DBContext dBContext, ILogger<UserService> logger)
         {
             _dbContext = dBContext;
+            _logger = logger;
         }
 
 
@@ -298,6 +300,23 @@ namespace MVCPrject.Data
                 .Where(f => f.FollowerId == user.Id)
                 .Join(_dbContext.Users, f => f.FolloweeId, u => u.Id, (f, u) => u)
                 .ToListAsync();
+        }
+
+        public async Task<bool> DeleteRecipeAsync(int recipeId)
+        {
+            try
+            {
+                var recipeCard = await _dbContext.Recipes.FindAsync(recipeId);
+                if (recipeCard == null) return false;
+
+                _dbContext.Recipes.Remove(recipeCard);
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

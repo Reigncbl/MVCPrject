@@ -131,6 +131,7 @@ namespace MVCPrject.Models
     {
         public Recipe? Recipe { get; set; }
         public RecipeNutritionFacts? NutritionFacts { get; set; }
+        public string? CurrentUserId { get; set; }
     }
 
 
