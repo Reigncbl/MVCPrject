@@ -15,6 +15,8 @@ namespace MVCPrject.Data
         public DbSet<RecipeLikes> RecipeLikes { get; set; } = null!;
         public DbSet<Follows> Follows { get; set; } = null!;
 
+        public DbSet<NutritionSummary> NutritionSummaries { get; set; } = null!;
+
         public DbSet<MealLog> MealLogs { get; set; } = null!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

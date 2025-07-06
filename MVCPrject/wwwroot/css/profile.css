@@ -21,64 +21,81 @@ body {
     box-shadow: 0 4px 12px rgba(236, 67, 62, 0.3);
 }
 
+/* FIXED: Grid system for 5 cards per row */
+.grid-5 {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    max-width: 1400px; /* Optional: constrain total width */
+}
+
+/* FIXED: Recipe container for 5 cards per row */
+#recipesContainer {
+    display: grid;
+    grid-template-columns: repeat(5, 225px);
+    gap: 25px; /* FIXED: Changed from 10rem to 10px */
+    padding: 1rem;
+    justify-content: start;
+}
+
 /* Recipe Card Hover Effects */
 .card-hover {
     position: relative;
+    width: 225px;
+    height: 300px;
     overflow: hidden;
-    border-radius: 15px;
+    border-radius: 1rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: none;
     cursor: pointer;
     transition: transform 0.3s ease;
-    width: 300px;
-    height: 200px;
-}
-
-.card-hover:hover {
-    transform: scale(1.05);
 }
 
 .card-hover img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 15px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .card-hover .overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(transparent, rgba(0,0,0,0.8));
-    color: white;
-    padding: 20px;
-    border-radius: 0 0 15px 15px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 1rem;
+  color: white;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  background: 
+    linear-gradient(to top, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 80%),
+    radial-gradient(ellipse at center, rgba(0,0,0,0) 20%, rgba(0,0,0,0.25) 70%, rgba(0,0,0,0.5) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 
-.card-hover .overlay h5 {
-    margin: 0 0 10px 0;
-    font-weight: bold;
-    font-size: 1.2rem;
+.card-hover:hover .overlay {
+  opacity: 1;
 }
 
-.card-hover .overlay .details {
-    display: flex;
-    gap: 20px;
-    font-size: 0.9rem;
+.overlay h5 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
-.card-hover .overlay .details span {
-    background: rgba(255,255,255,0.2);
-    padding: 4px 8px;
-    border-radius: 12px;
-    backdrop-filter: blur(10px);
+.overlay .details {
+  display: flex;
+  gap: 1rem;
 }
 
-/* Grid Layout */
-.grid-5 {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: flex-start;
+.overlay .details span {
+  font-size: 0.85rem;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  padding: 4px 8px;
 }
 
 /* Upload Modal Styles */
@@ -107,15 +124,34 @@ body {
     color: #EC433E;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
+/* FIXED: Responsive Design */
+@media (max-width: 1200px) {
+    #recipesContainer {
+        grid-template-columns: repeat(4, 225px);
+    }
+}
+
+@media (max-width: 960px) {
+    #recipesContainer {
+        grid-template-columns: repeat(3, 225px);
+    }
+}
+
+@media (max-width: 720px) {
+    #recipesContainer {
+        grid-template-columns: repeat(2, 225px);
+    }
+}
+
+@media (max-width: 480px) {
+    #recipesContainer {
+        grid-template-columns: repeat(1, 225px);
+        justify-content: center;
+    }
+    
     .card-hover {
         width: 100%;
         max-width: 300px;
-    }
-    
-    .grid-5 {
-        justify-content: center;
     }
 }
 

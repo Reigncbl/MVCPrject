@@ -424,10 +424,10 @@ document.addEventListener("DOMContentLoaded", async function () {
             mealName: mealName,
             mealDate: mealDate,
             mealTime: mealTime,
-            calories: calories.toString(),
-            protein: protein.toString(),
-            carbohydrates: carbs.toString(),
-            fat: fat.toString(),
+            calories: calories,
+            protein: protein,
+            carbohydrates: carbs,
+            fat: fat,
             isPlanned: mode === "planned",
             recipeID: recipeID ? parseInt(recipeID) : null
         };
@@ -453,10 +453,10 @@ document.addEventListener("DOMContentLoaded", async function () {
                 formData.append('mealName', mealName);
                 formData.append('mealDate', mealDate);
                 formData.append('mealTime', mealTime);
-                formData.append('calories', calories.toString());
-                formData.append('protein', protein.toString());
-                formData.append('carbohydrates', carbs.toString());
-                formData.append('fat', fat.toString());
+                formData.append('calories', calories);
+                formData.append('protein', protein);
+                formData.append('carbohydrates', carbs);
+                formData.append('fat', fat);
                 formData.append('isPlanned', mode === "planned");
                 if (recipeID) formData.append('recipeID', recipeID);
                 formData.append('mealPhoto', photoFile);
@@ -490,16 +490,14 @@ document.addEventListener("DOMContentLoaded", async function () {
                 // Use the photo URL from the server response if available
                 const finalPhotoURL = result.photoUrl || photoURL;
 
-                // Update UI with local data for immediate feedback
-                logMeal(finalMealId, {
-                    name: mealName,
-                    calories,
-                    protein,
-                    time: formattedTime,
-                    date: mealDate,
-                    photo: finalPhotoURL,
-                    mode
-                });
+                // The meal was saved on the server, now refresh the UI from the server
+                // to ensure consistency.
+                
+                // Refresh the meal logs for the date the meal was added to
+                await loadMealLogsForDate(new Date(mealDate));
+
+                // Refresh the top-level nutrition summary cards
+                await refreshNutritionCardsFromServer();
 
                 // Show success message
                 showNotification('Meal logged successfully!', 'success');
@@ -1065,38 +1063,163 @@ function closeNutritionModal() {
     }
 }
 
-// Placeholder: implement this to update the UI
-function updateNutritionCardsFromGoal() {
-    // Extract values from modal inputs (assumed ids)
-    const caloriesGoal = document.getElementById('caloriesGoal')?.value || 0;
-    const proteinGoal = document.getElementById('proteinGoal')?.value || 0;
-    const carbsGoal = document.getElementById('carbsGoal')?.value || 0;
-    const fatGoal = document.getElementById('fatGoal')?.value || 0;
+// Function to update nutrition cards and send goals to controller
+// Function specifically for page load - doesn't rely on form inputs
+async function initializeNutritionCardsOnLoad() {
+    try {
+        console.log('🍽️ MealPlanner.js: Initializing nutrition cards on page load');
+        
+        // Try to get current values from database first
+        const response = await fetch('/Nutrition/GetNutritionSummary');
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+            // Found data in database - use it
+            const currentValues = {
+                calories: result.data.calories,
+                protein: result.data.proteins,
+                carbs: result.data.carbs,
+                fat: result.data.fats
+            };
+            
+            console.log('🍽️ MealPlanner.js: Found current values in database:', currentValues);
+            
+            // Update the cards with database values
+            document.querySelectorAll('.nutrition-card').forEach(card => {
+                const label = card.querySelector('.nutrition-label')?.textContent.trim().toLowerCase();
+                if (currentValues[label] !== undefined) {
+                    let value = currentValues[label];
+                    if (["protein", "carbs", "fat"].includes(label)) {
+                        value += "g";
+                    }
+                    card.querySelector('.nutrition-value').textContent = value;
+                }
+            });
+            
+            console.log('🍽️ MealPlanner.js: Nutrition cards initialized with database values');
 
+            // Also update the global nutritionGoals object
+            nutritionGoals.calories = result.data.calories || 0;
+            nutritionGoals.protein = result.data.proteins || 0;
+            nutritionGoals.carbs = result.data.carbs || 0;
+            nutritionGoals.fat = result.data.fats || 0;
 
-
-    // Map nutrient to value
-    const goals = {
-        calories: caloriesGoal,
-        protein: proteinGoal,
-        carbs: carbsGoal,
-        fat: fatGoal
-    };
-
-    // Update each nutrition card
-    document.querySelectorAll('.nutrition-card').forEach(card => {
-        const label = card.querySelector('.nutrition-label')?.textContent.trim().toLowerCase();
-        if (goals[label] !== undefined) {
-            let value = goals[label];
-            if (["protein", "carbs", "fat"].includes(label)) {
-                value = value + "g";
-            }
-            card.querySelector('.nutrition-value').textContent = value;
+        } else {
+            // No data in database - show default/placeholder values
+            console.log('🍽️ MealPlanner.js: No data in database, showing default values');
+            
+            const defaultValues = {
+                calories: 0,
+                protein: 0,
+                carbs: 0,
+                fat: 0
+            };
+                        
+            document.querySelectorAll('.nutrition-card').forEach(card => {
+                const label = card.querySelector('.nutrition-label')?.textContent.trim().toLowerCase();
+                if (defaultValues[label] !== undefined) {
+                    let value = defaultValues[label];
+                    if (["protein", "carbs", "fat"].includes(label)) {
+                        value += "g";
+                    }
+                    card.querySelector('.nutrition-value').textContent = value;
+                }
+            });
+            
+            console.log('🍽️ MealPlanner.js: Nutrition cards initialized with default values');
         }
-    });
-
-    console.log('Nutrition cards updated with new goal values:', goals);
+        
+    } catch (error) {
+        console.error('🍽️ MealPlanner.js: Error initializing nutrition cards:', error);
+        
+        // Fallback to default values on error
+        const defaultValues = {
+            calories: 0,
+            protein: 0,
+            carbs: 0,
+            fat: 0
+        };
+        
+        document.querySelectorAll('.nutrition-card').forEach(card => {
+            const label = card.querySelector('.nutrition-label')?.textContent.trim().toLowerCase();
+            if (defaultValues[label] !== undefined) {
+                let value = defaultValues[label];
+                if (["protein", "carbs", "fat"].includes(label)) {
+                    value += "g";
+                }
+                card.querySelector('.nutrition-value').textContent = value;
+            }
+        });
+        
+        console.log('🍽️ MealPlanner.js: Nutrition cards initialized with default values (error fallback)');
+    }
 }
+
+// Keep your existing updateNutritionCardsFromGoal function for when goals are updated
+async function updateNutritionCardsFromGoal() {
+    // Extract and sanitize values from modal inputs
+    const caloriesGoal = parseInt(document.getElementById('caloriesGoal').value, 10) || 0;
+    const proteinGoal  = parseInt(document.getElementById('proteinGoal').value, 10) || 0;
+    const carbsGoal    = parseInt(document.getElementById('carbsGoal').value, 10) || 0;
+    const fatGoal      = parseInt(document.getElementById('fatGoal').value, 10) || 0;
+    
+    const formData = new FormData();
+    formData.append('calories', caloriesGoal);
+    formData.append('proteins', proteinGoal);
+    formData.append('carbs', carbsGoal);
+    formData.append('fats', fatGoal);
+    
+    try {
+        console.log('🍽️ MealPlanner.js: About to send request to /Nutrition/UpdateGoals');
+        const payload = Object.fromEntries(formData);
+        console.log('🍽️ MealPlanner.js: Request payload:', payload);
+        
+        const response = await fetch('/Nutrition/UpdateGoals', {
+            method: 'POST',
+            body: formData
+        });
+
+        console.log('🍽️ MealPlanner.js: Response status:', response.status);
+        console.log('🍽️ MealPlanner.js: Response ok:', response.ok);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('🍽️ MealPlanner.js: HTTP error!', response.status, errorText);
+            showNotification(`HTTP Error: ${response.status}`, 'error');
+            return;
+        }
+
+        const result = await response.json();
+        console.log('🍽️ MealPlanner.js: Nutrition goals API response:', result);
+
+        if (result.success) {
+        console.log('🍽️ MealPlanner.js: Nutrition goals saved successfully');
+        showNotification('Nutrition goals saved successfully!', 'success');
+        
+        // After saving, refresh the cards to show the latest data
+        await initializeNutritionCardsOnLoad();
+        
+        // Also update dashboard cards if available (for when both pages are open)
+        if (typeof window.updateDashboardFromMealPlanner === 'function') {
+        console.log('🍽️ MealPlanner.js: Updating dashboard cards...');
+        await window.updateDashboardFromMealPlanner();
+        }
+        } else {
+            console.error('🍽️ MealPlanner.js: Failed to save nutrition goals:', result.message);
+            showNotification(`Failed to save nutrition goals: ${result.message}`, 'error');
+        }
+    } catch (error) {
+        console.error('🍽️ MealPlanner.js: Error saving nutrition goals:', error);
+        showNotification('Error saving nutrition goals', 'error');
+    }
+}
+
+// Usage in your onload event:
+// Call initializeNutritionCardsOnLoad() instead of updateNutritionCardsFromGoal()
+window.addEventListener('load', function() {
+    initializeNutritionCardsOnLoad();
+    // ... other onload code
+});
 
 // Log Meal BTN on Calendar
 function openLogMealForm() {
@@ -1179,7 +1302,10 @@ function logMeal(mealId, mealData) {
 
     // Update the meal count for the date card
     updateDateCardMealCount(mealData.date);
-}
+
+    }
+
+
 
 // Function to update the UI
 function updateMealSummary(mealId) {
@@ -1253,6 +1379,11 @@ async function loadMealLogsForDate(date) {
         const dateString = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
         console.log('🍽️ MealPlanner.js: Loading meal logs for date:', dateString);
 
+        if (!nutritionGoals || Object.values(nutritionGoals).every(val => val === 0)) {
+            console.log('🍽️ Initializing nutrition cards and goals...');
+            await initializeNutritionCardsOnLoad();
+        }
+
         const response = await fetch(`/MealPlanner/GetMealLogsByDate?date=${dateString}`);
         console.log('🍽️ MealPlanner.js: API response status for date load:', response.status);
 
@@ -1281,6 +1412,8 @@ async function loadMealLogsForDate(date) {
                     name: mealLog.mealName,
                     calories: parseInt(mealLog.calories) || 0,
                     protein: parseInt(mealLog.protein) || 0,
+                    carbs: parseInt(mealLog.carbohydrates) || 0,
+                    fat: parseInt(mealLog.fat) || 0,
                     time: formatTimeSpanTo12Hour(mealLog.mealTime),
                     date: mealLog.mealDate,
                     photo: mealLog.mealPhoto || 'https://via.placeholder.com/50?text=🍽️',
@@ -1297,8 +1430,13 @@ async function loadMealLogsForDate(date) {
 
             // Update the meal count for the current date card
             updateDateCardMealCount(dateString);
+
+            // Update the nutrition progress bar
+            updateNutritionProgressBar(date);
         } else {
             console.log('🍽️ MealPlanner.js: No meal logs found for date:', dateString);
+            // Still update the progress bar to show 0 for the day
+            updateNutritionProgressBar(date);
         }
     } catch (error) {
         console.error('🍽️ MealPlanner.js: Error loading meal logs:', error);
@@ -1437,4 +1575,85 @@ function showMealPhotoModal(imageUrl, mealName) {
     document.getElementById('mealPhotoModal').addEventListener('hidden.bs.modal', function () {
         this.remove();
     });
+}
+const nutritionGoals = {
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0
+};
+
+
+// Function to calculate nutrition totals from logged meals only (not planned)
+function calculateNutritionTotals() {
+    const totals = {
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0
+    };
+    
+    // Sum up nutrition values from all meal types, but only for logged meals
+    ['almusal', 'tanghalian', 'meryenda', 'hapunan'].forEach(mealType => {
+        if (loggedMeals[mealType]) {
+            loggedMeals[mealType].forEach(meal => {
+                // Only count logged meals, not planned ones
+                if (meal.mode === 'logged') {
+                    totals.calories += meal.calories || 0;
+                    totals.protein += meal.protein || 0;
+                    totals.carbs += meal.carbs || 0;
+                    totals.fat += meal.fat || 0;
+                }
+            });
+        }
+    });
+    
+    console.log('🍽️ Calculated nutrition totals (logged only):', totals);
+    return totals;
+}
+
+async function updateNutritionProgressBar(date) {
+    const dateString = date.toISOString().split('T')[0];
+    console.log('🍽️ Updating nutrition progress for:', dateString);
+    
+    try {
+        const goals = nutritionGoals;
+        
+        if (!goals || Object.values(goals).every(val => val === 0)) {
+            console.warn('🍽️ Nutrition goals not initialized yet.');
+            return null;
+        }
+        
+        // Calculate totals from logged meals
+        const totals = calculateNutritionTotals();
+        
+        // Store percentage values to return
+        const percentages = {};
+        
+        // Update each card
+        document.querySelectorAll('.nutrition-card').forEach(card => {
+            const label = card.querySelector('.nutrition-label')?.textContent.trim().toLowerCase();
+            const valueEl = card.querySelector('.nutrition-value');
+            const barEl = card.querySelector('.progress-fill');
+            
+            if (label && goals[label] !== undefined && valueEl && barEl) {
+                const actual = totals[label] || 0;
+                const goal = goals[label];
+                const percent = goal > 0 ? Math.min(100, Math.round((actual / goal) * 100)) : 0;
+                
+                // Store the percentage for return
+                percentages[label] = percent;
+                
+                // Update progress bar
+                barEl.style.width = `${percent}%`;
+                barEl.style.backgroundColor = percent >= 100 ? '#28a745' : '#ffc107';
+                barEl.title = `${actual} / ${goal} ${label === 'calories' ? 'Cal' : 'g'}`;
+            }
+        });
+        
+        
+    } catch (error) {
+        console.error('❌ Error updating nutrition progress:', error);
+        return null;
+    }
 }

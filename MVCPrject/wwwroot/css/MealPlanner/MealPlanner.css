@@ -336,7 +336,7 @@ textarea.form-control {
 }
 
 .nutrition-card {
-  background: linear-gradient(135deg, #a8b5ff 0%, #c5d0ff 100%);
+  background:#C2CCFFAB;
   border-radius: 15px;
   padding: 1.5rem;
   margin-bottom: 1rem;
@@ -369,7 +369,8 @@ textarea.form-control {
   height: 100%;
   background: linear-gradient(90deg, #4299e1 0%, #2b6cb0 100%);
   border-radius: 3px;
-  width: 85%;
+  width: 0%;
+  transition: width 0.5s ease-in-out;
 }
 
 .tip-alert {
