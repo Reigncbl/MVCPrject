@@ -424,10 +424,10 @@ document.addEventListener("DOMContentLoaded", async function () {
             mealName: mealName,
             mealDate: mealDate,
             mealTime: mealTime,
-            calories: calories,
-            protein: protein,
-            carbohydrates: carbs,
-            fat: fat,
+            calories: calories.toString(),
+            protein: protein.toString(),
+            carbohydrates: carbs.toString(),
+            fat: fat.toString(),
             isPlanned: mode === "planned",
             recipeID: recipeID ? parseInt(recipeID) : null
         };
@@ -453,10 +453,10 @@ document.addEventListener("DOMContentLoaded", async function () {
                 formData.append('mealName', mealName);
                 formData.append('mealDate', mealDate);
                 formData.append('mealTime', mealTime);
-                formData.append('calories', calories);
-                formData.append('protein', protein);
-                formData.append('carbohydrates', carbs);
-                formData.append('fat', fat);
+                formData.append('calories', calories.toString());
+                formData.append('protein', protein.toString());
+                formData.append('carbohydrates', carbs.toString());
+                formData.append('fat', fat.toString());
                 formData.append('isPlanned', mode === "planned");
                 if (recipeID) formData.append('recipeID', recipeID);
                 formData.append('mealPhoto', photoFile);
@@ -495,9 +495,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                 
                 // Refresh the meal logs for the date the meal was added to
                 await loadMealLogsForDate(new Date(mealDate));
-
-                // Refresh the top-level nutrition summary cards
-                await refreshNutritionCardsFromServer();
 
                 // Show success message
                 showNotification('Meal logged successfully!', 'success');
@@ -606,6 +603,7 @@ function cleanupModalBackdrops() {
 // Recipe search variables
 let searchTimeout;
 const SEARCH_DELAY = 300; // milliseconds
+let isSearchActive = false; // Flag to track if search is active
 
 // Recipe search functionality
 function setupRecipeSearch() {
@@ -623,9 +621,14 @@ function setupRecipeSearch() {
         }
 
         if (query.length === 0) {
+            isSearchActive = false; // Mark search as inactive when empty
+            console.log('🔍 MealPlanner.js: Search cleared, re-enabling auto-refresh');
             hideDropdown();
             return;
         }
+
+        isSearchActive = true; // Mark search as active
+        console.log('🔍 MealPlanner.js: Search activated, disabling auto-refresh');
 
         // Add loading indicator
         dropdown.innerHTML = '<div class="dropdown-item-text text-muted"><i class="spinner-border spinner-border-sm me-2"></i>Searching...</div>';
@@ -641,6 +644,11 @@ function setupRecipeSearch() {
     document.addEventListener('click', function (e) {
         if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
             hideDropdown();
+            // If search input is empty when clicking outside, mark search as inactive
+            if (searchInput.value.trim() === '') {
+                isSearchActive = false;
+                console.log('🔍 MealPlanner.js: Search deactivated by clicking outside');
+            }
         }
     });
 
@@ -821,6 +829,10 @@ function selectRecipe(recipe) {
     // Update search input to show selected recipe
     document.getElementById('recipeSearch').value = recipe.name;
 
+    // Mark search as inactive since recipe is selected
+    isSearchActive = false;
+    console.log('🔍 MealPlanner.js: Recipe selected, search deactivated');
+
     // Hide dropdown
     hideDropdown();
 
@@ -832,6 +844,13 @@ function hideDropdown() {
     const dropdown = document.getElementById('recipeDropdown');
     if (dropdown) {
         dropdown.style.display = 'none';
+    }
+    
+    // Check if search input is empty when hiding dropdown
+    const searchInput = document.getElementById('recipeSearch');
+    if (searchInput && searchInput.value.trim() === '') {
+        isSearchActive = false;
+        console.log('🔍 MealPlanner.js: Dropdown hidden with empty search, deactivating search');
     }
 }
 
@@ -1097,6 +1116,13 @@ async function initializeNutritionCardsOnLoad() {
             });
             
             console.log('🍽️ MealPlanner.js: Nutrition cards initialized with database values');
+
+            // Also update the global nutritionGoals object
+            nutritionGoals.calories = result.data.calories || 0;
+            nutritionGoals.protein = result.data.proteins || 0;
+            nutritionGoals.carbs = result.data.carbs || 0;
+            nutritionGoals.fat = result.data.fats || 0;
+
         } else {
             // No data in database - show default/placeholder values
             console.log('🍽️ MealPlanner.js: No data in database, showing default values');
@@ -1107,7 +1133,7 @@ async function initializeNutritionCardsOnLoad() {
                 carbs: 0,
                 fat: 0
             };
-            
+                        
             document.querySelectorAll('.nutrition-card').forEach(card => {
                 const label = card.querySelector('.nutrition-label')?.textContent.trim().toLowerCase();
                 if (defaultValues[label] !== undefined) {
@@ -1186,11 +1212,17 @@ async function updateNutritionCardsFromGoal() {
         console.log('🍽️ MealPlanner.js: Nutrition goals API response:', result);
 
         if (result.success) {
-            console.log('🍽️ MealPlanner.js: Nutrition goals saved successfully');
-            showNotification('Nutrition goals saved successfully!', 'success');
-            
-            // After saving, refresh the cards to show the latest data
-            await initializeNutritionCardsOnLoad();
+        console.log('🍽️ MealPlanner.js: Nutrition goals saved successfully');
+        showNotification('Nutrition goals saved successfully!', 'success');
+        
+        // After saving, refresh the cards to show the latest data
+        await initializeNutritionCardsOnLoad();
+        
+        // Also update dashboard cards if available (for when both pages are open)
+        if (typeof window.updateDashboardFromMealPlanner === 'function') {
+        console.log('🍽️ MealPlanner.js: Updating dashboard cards...');
+        await window.updateDashboardFromMealPlanner();
+        }
         } else {
             console.error('🍽️ MealPlanner.js: Failed to save nutrition goals:', result.message);
             showNotification(`Failed to save nutrition goals: ${result.message}`, 'error');
@@ -1388,6 +1420,11 @@ async function loadMealLogsForDate(date) {
         const dateString = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
         console.log('🍽️ MealPlanner.js: Loading meal logs for date:', dateString);
 
+        if (!nutritionGoals || Object.values(nutritionGoals).every(val => val === 0)) {
+            console.log('🍽️ Initializing nutrition cards and goals...');
+            await initializeNutritionCardsOnLoad();
+        }
+
         const response = await fetch(`/MealPlanner/GetMealLogsByDate?date=${dateString}`);
         console.log('🍽️ MealPlanner.js: API response status for date load:', response.status);
 
@@ -1434,8 +1471,13 @@ async function loadMealLogsForDate(date) {
 
             // Update the meal count for the current date card
             updateDateCardMealCount(dateString);
+
+            // Update the nutrition progress bar
+            updateNutritionProgressBar(date);
         } else {
             console.log('🍽️ MealPlanner.js: No meal logs found for date:', dateString);
+            // Still update the progress bar to show 0 for the day
+            updateNutritionProgressBar(date);
         }
     } catch (error) {
         console.error('🍽️ MealPlanner.js: Error loading meal logs:', error);
@@ -1487,6 +1529,7 @@ async function deleteMealLog(mealLogId, mealType) {
                 // Update the meal count for the date card
                 if (deletedMealDate) {
                     updateDateCardMealCount(deletedMealDate);
+                    initializeNutritionCardsOnLoad();
                 }
             }
 
@@ -1610,6 +1653,176 @@ function showMealPhotoModal(log) {
         this.remove();
     });
 }
+
+function escapeLogData(log) {
+    return JSON.stringify(log).replace(/"/g, '&quot;');
+}
+
+const nutritionGoals = {
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0
+};
+
+
+// Function to calculate nutrition totals from logged meals only (not planned)
+function calculateNutritionTotals() {
+    const totals = {
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0
+    };
+    
+    // Sum up nutrition values from all meal types, but only for logged meals
+    ['almusal', 'tanghalian', 'meryenda', 'hapunan'].forEach(mealType => {
+        if (loggedMeals[mealType]) {
+            loggedMeals[mealType].forEach(meal => {
+                // Only count logged meals, not planned ones
+                if (meal.mode === 'logged') {
+                    totals.calories += meal.calories || 0;
+                    totals.protein += meal.protein || 0;
+                    totals.carbs += meal.carbs || 0;
+                    totals.fat += meal.fat || 0;
+                }
+            });
+        }
+    });
+    
+    console.log('🍽️ Calculated nutrition totals (logged only):', totals);
+    return totals;
+}
+
+async function updateNutritionProgressBar(date) {
+    const dateString = date.toISOString().split('T')[0];
+    console.log('🍽️ Updating nutrition progress for:', dateString);
+    
+    try {
+        const goals = nutritionGoals;
+        
+        if (!goals || Object.values(goals).every(val => val === 0)) {
+            console.warn('🍽️ Nutrition goals not initialized yet.');
+            return null;
+        }
+        
+        // Calculate totals from logged meals
+        const totals = calculateNutritionTotals();
+        
+        // Store percentage values to return
+        const percentages = {};
+        
+        // Update each card
+        document.querySelectorAll('.nutrition-card').forEach(card => {
+            const label = card.querySelector('.nutrition-label')?.textContent.trim().toLowerCase();
+            const valueEl = card.querySelector('.nutrition-value');
+            const barEl = card.querySelector('.progress-fill');
+            
+            if (label && goals[label] !== undefined && valueEl && barEl) {
+                const actual = totals[label] || 0;
+                const goal = goals[label];
+                const percent = goal > 0 ? Math.min(100, Math.round((actual / goal) * 100)) : 0;
+                
+                // Store the percentage for return
+                percentages[label] = percent;
+                
+                // Update progress bar
+                barEl.style.width = `${percent}%`;
+                barEl.style.backgroundColor = percent >= 100 ? '#28a745' : '#ffc107';
+                barEl.title = `${actual} / ${goal} ${label === 'calories' ? 'Cal' : 'g'}`;
+            }
+        });
+        
+        
+    } catch (error) {
+        console.error('❌ Error updating nutrition progress:', error);
+        return null;
+    }
+}
+
+// Function to refresh content when database changes
+async function refreshContentFromDatabase() {
+    try {
+        // Check if search is active - skip refresh if user is searching
+        if (isSearchActive) {
+            console.log('🔄 MealPlanner.js: Skipping refresh - search is active');
+            return;
+        }
+        
+        console.log('🔄 MealPlanner.js: Refreshing content from database...');
+        
+        // Get the currently selected date
+        const selectedDateCard = document.querySelector('.day-card.today-card');
+        let currentDate = new Date(); // Default to today
+        
+        if (selectedDateCard && selectedDateCard.dataset.date) {
+            currentDate = new Date(selectedDateCard.dataset.date);
+            console.log('🔄 MealPlanner.js: Using selected date:', currentDate.toISOString().split('T')[0]);
+        } else {
+            console.log('🔄 MealPlanner.js: Using today as default date');
+        }
+        
+        // Show loading indicator (optional)
+        showNotification('Refreshing content...', 'info');
+        
+        // Refresh date section to update meal counts
+        await renderDateSection();
+        console.log('🔄 MealPlanner.js: Date section refreshed');
+        
+        // Reload meal logs for the current date
+        await loadMealLogsForDate(currentDate);
+        console.log('🔄 MealPlanner.js: Meal logs refreshed for date:', currentDate.toISOString().split('T')[0]);
+        
+        // Refresh nutrition cards and goals
+        await initializeNutritionCardsOnLoad();
+        console.log('🔄 MealPlanner.js: Nutrition cards refreshed');
+        
+        // Update nutrition progress bar
+        await updateNutritionProgressBar(currentDate);
+        console.log('🔄 MealPlanner.js: Nutrition progress bar updated');
+        
+        // Re-apply feather icons
+        feather.replace();
+        
+        console.log('✅ MealPlanner.js: Content refresh completed successfully');
+        showNotification('Content refreshed successfully!', 'success');
+        
+    } catch (error) {
+        console.error('❌ MealPlanner.js: Error refreshing content:', error);
+        showNotification('Error refreshing content. Please try again.', 'error');
+    }
+}
+
+// Auto-refresh function that can be called periodically
+function startAutoRefresh(intervalMinutes = 5) {
+    console.log(`🔄 MealPlanner.js: Starting auto-refresh every ${intervalMinutes} minutes`);
+    
+    const intervalMs = intervalMinutes * 60 * 1000;
+    
+    return setInterval(async () => {
+        console.log('🔄 MealPlanner.js: Auto-refresh triggered');
+        await refreshContentFromDatabase();
+    }, intervalMs);
+}
+
+// Manual refresh function that can be triggered by user action
+window.refreshMealPlannerContent = refreshContentFromDatabase;
+
+// Global variable to store auto-refresh interval
+let autoRefreshInterval = null;
+
+// Function to enable/disable auto-refresh
+function toggleAutoRefresh(enable = true, intervalMinutes = 5) {
+    if (enable && !autoRefreshInterval) {
+        autoRefreshInterval = startAutoRefresh(intervalMinutes);
+        console.log('🔄 MealPlanner.js: Auto-refresh enabled');
+    } else if (!enable && autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+        console.log('🔄 MealPlanner.js: Auto-refresh disabled');
+    }
+}
+
 
 function escapeLogData(log) {
     return JSON.stringify(log).replace(/"/g, '&quot;');

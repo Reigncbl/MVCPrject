@@ -10,7 +10,7 @@
 <meta name="user-authenticated" content="@User.Identity?.IsAuthenticated" />
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/profile.css" />
+    <link rel="stylesheet" href="~/css/profileOthers.css" />
 }
 
 @section Scripts {
@@ -131,7 +131,7 @@
     <div class="container-fluid">
         <div class="grid-5">
             <!-- Recipe Card -->
-            <div class="d-flex flex-wrap gap-4 justify-content-start" style="padding-left: 1vh;" id="recipesContainer">
+            <div id="recipesContainer">
                 <div class="card-hover">
                     <img src="~/img/sampleimg.jpg" class="img-fluid" alt="Recipe Image">
                     <div class="overlay">
@@ -146,88 +146,3 @@
         </div>
     </div>
 </div>
-
-
-<style>
-    .btn-custom-red {
-        background-color: #EC433E;
-        border-color: #EC433E;
-        color: white;
-        transition: all 0.3s ease;
-    }
-
-    .btn-custom-red:hover {
-        background-color: #d73527;
-        border-color: #d73527;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(236, 67, 62, 0.3);
-    }
-
-    .btn-outline-danger:hover {
-        background-color: #dc3545;
-        border-color: #dc3545;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
-    }
-
-    .nav-tabs .nav-link.active {
-        border-bottom: 3px solid #EC433E !important;
-        color: #EC433E !important;
-    }
-
-    .nav-tabs .nav-link:hover {
-        color: #EC433E;
-        border-bottom: 3px solid transparent;
-    }
-
-    .shadow-lg {
-        box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
-    }
-
-    .card-hover {
-        transition: all 0.3s ease;
-    }
-
-    .card-hover:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    }
-
-    .spinner-border-sm {
-        width: 1rem;
-        height: 1rem;
-    }
-
-    @@keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .fade-in {
-        animation: fadeIn 0.5s ease-out;
-    }
-
-    .toast-container {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-    }
-
-    .profile-stats {
-        transition: all 0.3s ease;
-    }
-
-    .profile-stats:hover {
-        transform: scale(1.05);
-    }
-</style>

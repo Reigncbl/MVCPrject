@@ -28,21 +28,34 @@ body {
     box-shadow: 0 4px 12px rgba(236, 67, 62, 0.3);
 }
 
-/* Recipe Card Hover Effects */
-.card-hover {
-  position: relative;
-  width: 225px;
-  height: 300px;
-  overflow: hidden;
-  border-radius: 1rem;
-  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-  border: none;
-  cursor: pointer;
-  transition: transform 0.3s ease;
+/* FIXED: Grid system for 5 cards per row */
+.grid-5 {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    max-width: 1400px; /* Optional: constrain total width */
 }
 
-.card-hover:hover {
-  transform: scale(1.05);
+/* FIXED: Recipe container for 5 cards per row */
+#recipesContainer {
+    display: grid;
+    grid-template-columns: repeat(5, 225px);
+    gap: 25px; /* FIXED: Changed from 10rem to 10px */
+    padding: 1rem;
+    justify-content: start;
+}
+
+/* Recipe Card Hover Effects */
+.card-hover {
+    position: relative;
+    width: 225px;
+    height: 300px;
+    overflow: hidden;
+    border-radius: 1rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: none;
+    cursor: pointer;
+    transition: transform 0.3s ease;
 }
 
 .card-hover img {
@@ -92,14 +105,6 @@ body {
   padding: 4px 8px;
 }
 
-/* Grid Layout */
-.grid-5 {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: flex-start;
-}
-
 /* Upload Modal Styles */
 .upload-overlay {
     background: rgba(0,0,0,0.5);
@@ -126,15 +131,34 @@ body {
     color: #EC433E;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
+/* FIXED: Responsive Design */
+@media (max-width: 1200px) {
+    #recipesContainer {
+        grid-template-columns: repeat(4, 225px);
+    }
+}
+
+@media (max-width: 960px) {
+    #recipesContainer {
+        grid-template-columns: repeat(3, 225px);
+    }
+}
+
+@media (max-width: 720px) {
+    #recipesContainer {
+        grid-template-columns: repeat(2, 225px);
+    }
+}
+
+@media (max-width: 480px) {
+    #recipesContainer {
+        grid-template-columns: repeat(1, 225px);
+        justify-content: center;
+    }
+    
     .card-hover {
         width: 100%;
         max-width: 300px;
-    }
-    
-    .grid-5 {
-        justify-content: center;
     }
 }
 

@@ -48,6 +48,18 @@ async function loadMyRecipes() {
         
         console.log('My recipes loaded:', result);
         
+        // Debug each recipe's calories
+        if (result.success && result.recipes) {
+            result.recipes.forEach((recipe, index) => {
+                console.log(`Recipe ${index + 1}: ${recipe.name}`);
+                console.log(`  - All property names:`, Object.keys(recipe));
+                console.log(`  - Calories (capital C): "${recipe.Calories}" (type: ${typeof recipe.Calories})`);
+                console.log(`  - calories (lowercase c): "${recipe.calories}" (type: ${typeof recipe.calories})`);
+                console.log(`  - Total Time: "${recipe.totalTime}" (type: ${typeof recipe.totalTime})`);
+                console.log(`  - Full recipe object:`, recipe);
+            });
+        }
+        
         const recipesContainer = document.getElementById('recipesContainer');
         
         if (result.success && result.recipes && result.recipes.length > 0) {
@@ -76,8 +88,32 @@ async function loadMyRecipes() {
 function createMyRecipeCard(recipe) {
     const cardDiv = document.createElement('div');
     cardDiv.className = 'position-relative card-hover';
+    
+    // Debug logging
+    console.log('Creating recipe card for:', recipe.name);
+    console.log('Recipe object keys:', Object.keys(recipe));
+    console.log('Calories value (capital C):', recipe.Calories);
+    console.log('calories value (lowercase c):', recipe.calories);
+    
+    // Try both cases
+    const caloriesValue = recipe.Calories || recipe.calories || '420';
 
     cardDiv.innerHTML = `
+        <img src="${recipe.image || '/img/sampleimg.jpg'}" class="img-fluid" alt="${recipe.name}">
+        <div class="overlay">
+            <button class="delete-btn position-absolute" 
+                style="top: 10px; right: 10px; width: 32px; height: 32px; padding: 0; z-index: 10;"
+                title="Delete Recipe"
+                onclick="event.stopPropagation(); deleteMyRecipe(${recipe.id})">
+                <i data-feather="trash-2" style="width: 16px; height: 16px;"></i>
+            </button>
+            <h5>${recipe.name}</h5>
+            <div class="details gap-5">
+                <span>${recipe.calories || '420'} cal</span>
+                <span>${recipe.totalTime || '45'} mins</span>
+            </div>
+        </div>
+        
         <img src="${recipe.image || '/img/sampleimg.jpg'}" class="img-fluid" alt="${recipe.name}">
         <div class="overlay">
             <button class="delete-btn position-absolute" 
@@ -101,7 +137,66 @@ function createMyRecipeCard(recipe) {
     });
 
     feather.replace();
+
+    feather.replace();
     return cardDiv;
+}
+
+
+// Function to delete a recipe
+async function deleteMyRecipe(recipeId) {
+    console.log('Profile.js: Delete meal log requested for ID:', recipeId);
+
+    if (!confirm('Are you sure you want to delete this recipe?')) {
+        console.log('Profile.js: Delete cancelled by user');
+        return;
+    }
+
+    try {
+        console.log('Profile.js: Sending delete request to API');
+        const response = await fetch(`/Profile/DeleteRecipe/${recipeId}`, {
+            method: 'DELETE'
+        });
+
+        console.log('Profile.js: Delete API response status:', response.status);
+
+        const result = await response.json();
+        console.log('Profile.js: Delete API response data:', result);
+
+        if (result.success) {
+            console.log('Profile.js: Recipe deleted successfully, updating UI');
+
+            showNotification('Recipe deleted successfully!', 'success');
+            await loadMyRecipes();
+        } else {
+            console.error('Profile.js: Delete API returned error:', result.message);
+            showNotification(result.message || 'Failed to delete recipe', 'error');
+        }
+    } catch (error) {
+        console.error('Profile.js: Error deleting recipe:', error);
+        showNotification('Error deleting recipe. Please try again.', 'error');
+    }
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    document.body.appendChild(notification);
+
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 5000);
 }
 
 

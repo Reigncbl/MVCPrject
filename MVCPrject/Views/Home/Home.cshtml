@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="~/css/home.css" />
 }
 @section Scripts {
+
     <script src="~/js/dashboardCards.js"></script>
 }
 @model List<MVCPrject.Models.Suggestion>
@@ -72,15 +73,15 @@
                                     <p class="card-text text-muted mb-2">
                                         @((recipe?.RecipeDescription != null && recipe.RecipeDescription.Length > 80) ?
                                                                         recipe.RecipeDescription.Substring(0, 80) + "..." : recipe?.RecipeDescription)
-                            </p>
-                            <div class="d-flex align-items-center mt-auto justify-content-end">
-                                <a asp-controller="Recipe" asp-action="Details" asp-route-id="@recipe?.RecipeID"
-                                    class="btn btn-danger rounded-pill px-4 py-1 fw-medium">View</a>
+                                    </p>
+                                    <div class="d-flex align-items-center mt-auto justify-content-end">
+                                        <a asp-controller="Recipe" asp-action="Details" asp-route-id="@recipe?.RecipeID"
+                                            class="btn btn-danger rounded-pill px-4 py-1 fw-medium">View</a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                                }
+                    }
                 </div>
             }
             else

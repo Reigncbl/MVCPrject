@@ -26,7 +26,15 @@
         <!-- Top Bar: Greeting + Calendar Icon -->
         <div class="d-flex justify-content-between align-items-center px-4 mb-3">
             <!-- Left Side: Greeting -->
-            <h5 class="fw-semibold user-greeting">Kumusta, User!</h5>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <h5 class="fs-5">Welcome, @ViewBag.UserName!</h5>
+            }
+            else
+            {
+                <a href="/Landing/Login" class="btn btn-primary">Please log in</a>
+            }
+
         </div>
 
         <!-- Date Navigation -->
