@@ -36,7 +36,7 @@ namespace MVCPrject
 
 
             //Mistral AI API
-            var apikey = builder.Configuration["Mistral:ApiKey"];
+            var apikey = builder.Configuration["Mistral:AIzaSyBhTIw3N_NmeqxUYdWP5ardejMHen_LLjU"];
             if (string.IsNullOrEmpty(apikey))
             {
                 throw new InvalidOperationException("Mistral API key is not configured.");

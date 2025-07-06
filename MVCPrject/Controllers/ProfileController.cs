@@ -1,5 +1,10 @@
+<<<<<<< Updated upstream
+=======
+using Microsoft.AspNetCore.Authorization;
+>>>>>>> Stashed changes
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using MVCPrject.Data;
@@ -35,7 +40,6 @@ namespace MVCPrject.Controllers
                 return RedirectToAction("Login", "Landing");
             }
 
-            // Get initial data for faster page load
             var followers = await _userService.GetFollowerCountByEmailAsync(currentUser.UserName ?? "");
             var following = await _userService.GetFollowingCountByEmailAsync(currentUser.UserName ?? "");
             var recipes = await _userService.GetRecipeCountByEmailAsync(currentUser.UserName ?? "");
@@ -51,10 +55,60 @@ namespace MVCPrject.Controllers
             return View(viewModel);
         }
 
-        /// <summary>
-        /// Follow another user by email (UserName field is the email address)
-        /// Example: followerEmail=J024@gmail.com, followeeEmail=another@email.com
-        /// </summary>
+        [HttpPost]
+        [Authorize] // Now recognized with the correct namespace
+        public async Task<IActionResult> UpdateProfile([FromForm] string displayName, string username, IFormFile profileImage)
+        {
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null)
+            {
+                _logger.LogWarning("UpdateProfile: User not found");
+                return Json(new { success = false, message = "User not found" });
+            }
+
+            if (string.IsNullOrEmpty(displayName) || string.IsNullOrEmpty(username))
+            {
+                _logger.LogWarning("UpdateProfile: DisplayName or Username is empty");
+                return Json(new { success = false, message = "Display name and username are required" });
+            }
+
+            if (profileImage != null)
+            {
+                try
+                {
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(profileImage.FileName);
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await profileImage.CopyToAsync(stream);
+                    }
+                    currentUser.ProfileImageUrl = "/img/" + fileName;
+                    _logger.LogInformation("UpdateProfile: Profile image uploaded to {FilePath}", filePath);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "UpdateProfile: Error uploading profile image");
+                    return Json(new { success = false, message = "Error uploading profile image" });
+                }
+            }
+
+            currentUser.Name = displayName;
+            currentUser.UserName = username;
+
+            var result = await _userManager.UpdateAsync(currentUser);
+            if (result.Succeeded)
+            {
+                _logger.LogInformation("UpdateProfile: Profile updated successfully for user {UserId}", currentUser.Id);
+                return Json(new { success = true });
+            }
+            else
+            {
+                _logger.LogWarning("UpdateProfile: Failed to update profile for user {UserId}. Errors: {Errors}", 
+                    currentUser.Id, string.Join(", ", result.Errors.Select(e => e.Description)));
+                return Json(new { success = false, message = string.Join(", ", result.Errors.Select(e => e.Description)) });
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> Follow([FromBody] FollowRequest request)
         {
@@ -73,10 +127,6 @@ namespace MVCPrject.Controllers
             return Json(new { success, message });
         }
 
-        /// <summary>
-        /// Unfollow another user by email (UserName field is the email address)
-        /// Example: followerEmail=J024@gmail.com, followeeEmail=another@email.com
-        /// </summary>
         [HttpPost]
         public async Task<IActionResult> UnFollow([FromBody] FollowRequest request)
         {
@@ -95,13 +145,6 @@ namespace MVCPrject.Controllers
             return Json(new { success, message });
         }
 
-        /// <summary>
-        /// View another user's profile by user ID, name, email, or username
-        /// Examples: 
-        /// - /Profile/ProfileOthers?id=0b4b92d2-12fc-4738-bf0e-af1010bc57a7
-        /// - /Profile/ProfileOthers?name=Paul
-        /// - /Profile/ProfileOthers?email=J024@gmail.com
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> ProfileOthers(string id, string name, string email, string username)
         {
@@ -109,13 +152,11 @@ namespace MVCPrject.Controllers
             if (user == null)
                 return NotFound();
 
-            // Check if the user being viewed is the same as the current logged-in user
             if (User.Identity?.IsAuthenticated == true)
             {
                 var currentUser = await _userManager.GetUserAsync(User);
                 if (currentUser != null && user != null && currentUser.Id == user.Id)
                 {
-                    // Redirect to own profile instead of ProfileOthers
                     return RedirectToAction("Profile");
                 }
             }
@@ -123,9 +164,6 @@ namespace MVCPrject.Controllers
             return View("ProfileOthers", user);
         }
 
-        /// <summary>
-        /// Check if current user is following another user by email
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> IsFollowing(string followeeEmail)
         {
@@ -140,9 +178,6 @@ namespace MVCPrject.Controllers
             return Json(new { isFollowing });
         }
 
-        /// <summary>
-        /// Get user statistics (followers, following, recipes count)
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> GetUserStats(string userEmail)
         {
@@ -156,9 +191,6 @@ namespace MVCPrject.Controllers
             return Json(new { followers, following, recipes });
         }
 
-        /// <summary>
-        /// Get recipes created by a user
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> GetUserRecipes(string userEmail)
         {
@@ -227,9 +259,6 @@ namespace MVCPrject.Controllers
             }
         }
 
-        /// <summary>
-        /// Get followers of a user
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> GetUserFollowers(string userEmail)
         {
@@ -245,7 +274,7 @@ namespace MVCPrject.Controllers
                     id = user.Id,
                     name = user.Name,
                     email = user.UserName,
-                    profileImage = "/img/image.png"
+                    profileImage = user.ProfileImageUrl ?? "/img/image.png" // Updated to use ProfileImageUrl
                 }).ToList();
 
                 return Json(new { success = true, followers = followerResults });
@@ -257,9 +286,6 @@ namespace MVCPrject.Controllers
             }
         }
 
-        /// <summary>
-        /// Get users that a user is following
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> GetUserFollowing(string userEmail)
         {
@@ -275,7 +301,7 @@ namespace MVCPrject.Controllers
                     id = user.Id,
                     name = user.Name,
                     email = user.UserName,
-                    profileImage = "/img/image.png"
+                    profileImage = user.ProfileImageUrl ?? "/img/image.png" // Updated to use ProfileImageUrl
                 }).ToList();
 
                 return Json(new { success = true, following = followingResults });

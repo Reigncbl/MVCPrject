@@ -213,14 +213,13 @@ async function loadFollowing() {
     }
 }
 
-// Create user card for followers/following lists
 function createUserCard(user, type) {
     const card = document.createElement('div');
     card.className = 'border-bottom p-3 user-card';
     
     card.innerHTML = `
         <div class="d-flex align-items-center">
-            <img src="${user.profileImage}" 
+            <img src="${user.profileImageUrl || '/img/image.png'}" 
                  alt="${user.name}" 
                  class="rounded-circle me-3" 
                  style="width: 50px; height: 50px; object-fit: cover;">
@@ -239,7 +238,6 @@ function createUserCard(user, type) {
         </div>
     `;
     
-    // Add hover effect
     card.addEventListener('mouseenter', function() {
         this.style.backgroundColor = '#f8f9fa';
     });

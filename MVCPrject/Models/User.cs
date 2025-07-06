@@ -5,7 +5,9 @@ namespace MVCPrject.Models
     public class User : IdentityUser
     {
         public string? Name { get; set; }
+        public string? ProfileImageUrl { get; set; }
     }
+
     public class UserInfo
     {
         public string Id { get; set; } = string.Empty;
