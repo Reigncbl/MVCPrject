@@ -17,20 +17,45 @@ namespace MVCPrject.Controllers
         private readonly ILogger<MealPlannerController> _logger;
         private readonly IUserCacheService _userCacheService;
         private readonly BlobServiceClient _blobServiceClient;
+        private readonly UserManager<User> _userManager;
 
-        public MealPlannerController(MealLogService mealLogService, ILogger<MealPlannerController> logger, IUserCacheService userCacheService, BlobServiceClient blobServiceClient)
+        public MealPlannerController(MealLogService mealLogService, ILogger<MealPlannerController> logger, IUserCacheService userCacheService, BlobServiceClient blobServiceClient, UserManager<User> userManager)
         {
             _mealLogService = mealLogService;
             _logger = logger;
             _userCacheService = userCacheService;
             _blobServiceClient = blobServiceClient;
+            _userManager = userManager;
         }
 
         // GET: Main meal planner page
         [HttpGet]
         [Route("")]
-        public IActionResult MealPlanner()
+        public async Task<IActionResult> MealPlanner()
         {
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                var userName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+                var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+
+                var user = await _userManager.GetUserAsync(User);
+
+                // If user is null, try to find by ID from claims
+                if (user == null && !string.IsNullOrEmpty(userId))
+                {
+                    user = await _userManager.FindByIdAsync(userId);
+                }
+
+                // If still null, try to find by email
+                if (user == null && !string.IsNullOrEmpty(email))
+                {
+                    user = await _userManager.FindByEmailAsync(email);
+                }
+
+                ViewBag.UserName = user?.Name ?? userName ?? email ?? "User";
+            }
+
             return View();
         }
 

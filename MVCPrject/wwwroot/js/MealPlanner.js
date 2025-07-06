@@ -603,6 +603,7 @@ function cleanupModalBackdrops() {
 // Recipe search variables
 let searchTimeout;
 const SEARCH_DELAY = 300; // milliseconds
+let isSearchActive = false; // Flag to track if search is active
 
 // Recipe search functionality
 function setupRecipeSearch() {
@@ -620,9 +621,14 @@ function setupRecipeSearch() {
         }
 
         if (query.length === 0) {
+            isSearchActive = false; // Mark search as inactive when empty
+            console.log('🔍 MealPlanner.js: Search cleared, re-enabling auto-refresh');
             hideDropdown();
             return;
         }
+
+        isSearchActive = true; // Mark search as active
+        console.log('🔍 MealPlanner.js: Search activated, disabling auto-refresh');
 
         // Add loading indicator
         dropdown.innerHTML = '<div class="dropdown-item-text text-muted"><i class="spinner-border spinner-border-sm me-2"></i>Searching...</div>';
@@ -638,6 +644,11 @@ function setupRecipeSearch() {
     document.addEventListener('click', function (e) {
         if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
             hideDropdown();
+            // If search input is empty when clicking outside, mark search as inactive
+            if (searchInput.value.trim() === '') {
+                isSearchActive = false;
+                console.log('🔍 MealPlanner.js: Search deactivated by clicking outside');
+            }
         }
     });
 
@@ -818,6 +829,10 @@ function selectRecipe(recipe) {
     // Update search input to show selected recipe
     document.getElementById('recipeSearch').value = recipe.name;
 
+    // Mark search as inactive since recipe is selected
+    isSearchActive = false;
+    console.log('🔍 MealPlanner.js: Recipe selected, search deactivated');
+
     // Hide dropdown
     hideDropdown();
 
@@ -829,6 +844,13 @@ function hideDropdown() {
     const dropdown = document.getElementById('recipeDropdown');
     if (dropdown) {
         dropdown.style.display = 'none';
+    }
+    
+    // Check if search input is empty when hiding dropdown
+    const searchInput = document.getElementById('recipeSearch');
+    if (searchInput && searchInput.value.trim() === '') {
+        isSearchActive = false;
+        console.log('🔍 MealPlanner.js: Dropdown hidden with empty search, deactivating search');
     }
 }
 
@@ -1485,6 +1507,7 @@ async function deleteMealLog(mealLogId, mealType) {
                 // Update the meal count for the date card
                 if (deletedMealDate) {
                     updateDateCardMealCount(deletedMealDate);
+                    initializeNutritionCardsOnLoad();
                 }
             }
 
@@ -1652,5 +1675,88 @@ async function updateNutritionProgressBar(date) {
     } catch (error) {
         console.error('❌ Error updating nutrition progress:', error);
         return null;
+    }
+}
+
+// Function to refresh content when database changes
+async function refreshContentFromDatabase() {
+    try {
+        // Check if search is active - skip refresh if user is searching
+        if (isSearchActive) {
+            console.log('🔄 MealPlanner.js: Skipping refresh - search is active');
+            return;
+        }
+        
+        console.log('🔄 MealPlanner.js: Refreshing content from database...');
+        
+        // Get the currently selected date
+        const selectedDateCard = document.querySelector('.day-card.today-card');
+        let currentDate = new Date(); // Default to today
+        
+        if (selectedDateCard && selectedDateCard.dataset.date) {
+            currentDate = new Date(selectedDateCard.dataset.date);
+            console.log('🔄 MealPlanner.js: Using selected date:', currentDate.toISOString().split('T')[0]);
+        } else {
+            console.log('🔄 MealPlanner.js: Using today as default date');
+        }
+        
+        // Show loading indicator (optional)
+        showNotification('Refreshing content...', 'info');
+        
+        // Refresh date section to update meal counts
+        await renderDateSection();
+        console.log('🔄 MealPlanner.js: Date section refreshed');
+        
+        // Reload meal logs for the current date
+        await loadMealLogsForDate(currentDate);
+        console.log('🔄 MealPlanner.js: Meal logs refreshed for date:', currentDate.toISOString().split('T')[0]);
+        
+        // Refresh nutrition cards and goals
+        await initializeNutritionCardsOnLoad();
+        console.log('🔄 MealPlanner.js: Nutrition cards refreshed');
+        
+        // Update nutrition progress bar
+        await updateNutritionProgressBar(currentDate);
+        console.log('🔄 MealPlanner.js: Nutrition progress bar updated');
+        
+        // Re-apply feather icons
+        feather.replace();
+        
+        console.log('✅ MealPlanner.js: Content refresh completed successfully');
+        showNotification('Content refreshed successfully!', 'success');
+        
+    } catch (error) {
+        console.error('❌ MealPlanner.js: Error refreshing content:', error);
+        showNotification('Error refreshing content. Please try again.', 'error');
+    }
+}
+
+// Auto-refresh function that can be called periodically
+function startAutoRefresh(intervalMinutes = 5) {
+    console.log(`🔄 MealPlanner.js: Starting auto-refresh every ${intervalMinutes} minutes`);
+    
+    const intervalMs = intervalMinutes * 60 * 1000;
+    
+    return setInterval(async () => {
+        console.log('🔄 MealPlanner.js: Auto-refresh triggered');
+        await refreshContentFromDatabase();
+    }, intervalMs);
+}
+
+// Manual refresh function that can be triggered by user action
+window.refreshMealPlannerContent = refreshContentFromDatabase;
+
+// Global variable to store auto-refresh interval
+let autoRefreshInterval = null;
+
+// Function to enable/disable auto-refresh
+function toggleAutoRefresh(enable = true, intervalMinutes = 5) {
+    if (enable && !autoRefreshInterval) {
+        autoRefreshInterval = startAutoRefresh(intervalMinutes);
+        console.log('🔄 MealPlanner.js: Auto-refresh enabled');
+    } else if (!enable && autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+        console.log('🔄 MealPlanner.js: Auto-refresh disabled');
     }
 }
