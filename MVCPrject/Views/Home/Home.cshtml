@@ -15,14 +15,33 @@
 
         @if (User.Identity?.IsAuthenticated == true)
         {
-            <h2 class="fs-5">Welcome, @ViewBag.Name!</h2>
+            <div class="d-flex align-items-center gap-3">
+                <h2 class="fs-5 mb-0">Welcome, @ViewBag.Name!</h2>
+                <div class="dropdown">
+                    <button class="btn btn-link p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="@(ViewBag.UserProfileImage ?? "~/img/image.png")" 
+                             alt="Profile" 
+                             class="border rounded-pill" 
+                             style="width: 48px; height: 48px; object-fit: cover;"
+                             onerror="this.src='~/img/image.png';">
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="/Profile/Profile">My Profile</a></li>
+                        <li><a class="dropdown-item" href="/Recipe/Recipe">Browse Recipes</a></li>
+                        <li><a class="dropdown-item" href="/MealPlanner/MealPlanner">Meal Planner</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/Landing/Logout">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
         }
         else
         {
-            <a href="/Landing/Login" class="btn btn-primary">Please log in</a>
+            <div class="d-flex align-items-center gap-3">
+                <a href="/Landing/Login" class="btn btn-primary">Please log in</a>
+                <img src="~/img/image.png" alt="Profile" class="border rounded-pill" style="width: 48px; height: 48px; object-fit: cover;">
+            </div>
         }
-
-        <img src="~/img/image.png" alt="/" class="border rounded-pill " style="width: 48px; margin-right: 36px;">
     </div>
     <div class="overflow-auto" style="height: calc(100vh - 64px);">
         <!-- Cards -->

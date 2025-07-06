@@ -219,10 +219,11 @@ function createUserCard(user, type) {
     
     card.innerHTML = `
         <div class="d-flex align-items-center">
-            <img src="${user.profileImageUrl || '/img/image.png'}" 
+            <img src="${user.profileImage || '/img/image.png'}" 
                  alt="${user.name}" 
                  class="rounded-circle me-3" 
-                 style="width: 50px; height: 50px; object-fit: cover;">
+                 style="width: 50px; height: 50px; object-fit: cover;"
+                 onerror="this.src='/img/image.png';">
             <div class="flex-grow-1">
                 <h6 class="mb-1 fw-bold">${user.name}</h6>
                 <p class="text-muted mb-1 small">@${user.email}</p>
@@ -238,12 +239,23 @@ function createUserCard(user, type) {
         </div>
     `;
     
+    // Add hover effects
     card.addEventListener('mouseenter', function() {
         this.style.backgroundColor = '#f8f9fa';
+        this.style.cursor = 'pointer';
     });
     
     card.addEventListener('mouseleave', function() {
         this.style.backgroundColor = '';
+        this.style.cursor = '';
+    });
+    
+    // Add click to view profile
+    card.addEventListener('click', function(e) {
+        // Don't trigger if clicking on the button
+        if (!e.target.closest('.btn')) {
+            window.location.href = `/Profile/ProfileOthers?email=${encodeURIComponent(user.email)}`;
+        }
     });
     
     return card;

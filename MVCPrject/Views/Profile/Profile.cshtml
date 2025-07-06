@@ -21,7 +21,14 @@
 <div class="container-fluid py-4 justify-content-center">
     <div class="row align-items-center">
         <div class="col-auto" style="padding-left: 3vh;">
-            <img src="@(Model.User.ProfileImageUrl ?? "~/img/image.png")" class="rounded-circle" alt="Profile image" width="180" height="180">
+            <img src="@(Model.User.ProfileImageUrl ?? "~/img/image.png")" 
+                 class="rounded-circle" 
+                 alt="Profile image"
+                 width="180" 
+                 height="180"
+                 id="mainProfileImage"
+                 style="object-fit: cover;"
+                 onerror="this.src='~/img/image.png';">
         </div>
         <div class="col-md-8">
             <div class="d-flex justify-content-between align-items-center flex-wrap">
@@ -30,7 +37,8 @@
                     <small class="text-muted">@@@(Model?.User?.UserName ?? "user@email.com")</small>
                 </div>
                 <div class="d-flex align-items-right gap-4">
-                    <button class="btn btn-custom-red" data-bs-toggle="modal" data-bs-target="#editProfileModal">Edit Profile</button>
+                    <button class="btn btn-custom-red" data-bs-toggle="modal" data-bs-target="#editProfileModal">Edit
+                        Profile</button>
                 </div>
             </div>
             <p class="mt-2 mb-1" style="padding-top: 2vh">
@@ -65,12 +73,12 @@
                     <i data-feather="users" class="me-2" style="width: 20px; height: 20px;"></i>
                     My Followers
                 </h5>
-<<<<<<< Updated upstream
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                <<<<<<< Updated upstream <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                     aria-label="Close"></button>
-=======
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
->>>>>>> Stashed changes
+                    =======
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                    >>>>>>> Stashed changes
             </div>
             <div class="modal-body p-0">
                 <div id="followersContainer">
@@ -95,12 +103,12 @@
                     <i data-feather="user-plus" class="me-2" style="width: 20px; height: 20px;"></i>
                     Following
                 </h5>
-<<<<<<< Updated upstream
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                <<<<<<< Updated upstream <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                     aria-label="Close"></button>
-=======
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
->>>>>>> Stashed changes
+                    =======
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                    >>>>>>> Stashed changes
             </div>
             <div class="modal-body p-0">
                 <div id="followingContainer">
@@ -122,12 +130,15 @@
         <div class="modal-content rounded-4">
             <div class="modal-header bg-danger text-white rounded-top-4">
                 <h6 class="modal-title fw-semibold" id="editProfileModalLabel">Edit Profile</h6>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
             </div>
             <div class="modal-body text-center px-4">
                 <div class="mb-3 position-relative" style="width: 100px; height: 100px; margin: 0 auto;">
-                    <div class="rounded-circle bg-secondary-subtle w-100 h-100" id="profileImagePreview" style="object-fit: cover;"></div>
-                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center rounded-circle upload-overlay">
+                    <div class="rounded-circle bg-secondary-subtle w-100 h-100" id="profileImagePreview"
+                        style="object-fit: cover;"></div>
+                    <div
+                        class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center rounded-circle upload-overlay">
                         <i data-feather="camera" class="text-white"></i>
                     </div>
                     <input type="file" id="profileImageInput" name="profileImage" accept="image/*" class="d-none" />
@@ -135,11 +146,13 @@
                 <form id="editProfileForm">
                     <div class="mb-3 text-start">
                         <label for="displayName" class="form-label small">Display Name</label>
-                        <input type="text" class="form-control rounded-3" id="displayName" name="displayName" value="@Model.User.Name">
+                        <input type="text" class="form-control rounded-3" id="displayName" name="displayName"
+                            value="@Model.User.Name">
                     </div>
                     <div class="mb-3 text-start">
                         <label for="username" class="form-label small">Username</label>
-                        <input type="text" class="form-control rounded-3" id="username" name="username" value="@Model.User.UserName">
+                        <input type="text" class="form-control rounded-3" id="username" name="username"
+                            value="@Model.User.UserName">
                     </div>
                     <div class="mb-3 text-start">
                         <label class="form-label small">Social Media Links</label>
@@ -166,11 +179,18 @@
 
 <!-- Script to set initial profile image preview -->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
+        // Set initial profile image preview in modal
         const preview = document.getElementById('profileImagePreview');
-        const currentImage = '@(Model.User.ProfileImageUrl ?? "")';
-        if (currentImage) {
-            preview.style.backgroundImage = `url(${currentImage})`;
+        const currentImage = '@Html.Raw(Model.User.ProfileImageUrl ?? "")';
+        
+        if (currentImage && currentImage.trim() !== '') {
+            preview.style.backgroundImage = `url('${currentImage}')`;
+            preview.style.backgroundSize = 'cover';
+            preview.style.backgroundPosition = 'center';
+        } else {
+            // Set default image if no profile image
+            preview.style.backgroundImage = `url('~/img/image.png')`;
             preview.style.backgroundSize = 'cover';
             preview.style.backgroundPosition = 'center';
         }
@@ -180,29 +200,28 @@
 <!-- Recipe tab -->
 <div class="container-fluid border-top mt-1 pt-2">
     <h4 class="fw-bold fs-2" style="padding-left: 1.5vh; color: #EC433E;">Recipes</h4>
-<<<<<<< Updated upstream
 
-    <!---- Picture of the recipe card -->
     <div class="container-fluid">
         <div class="grid-5">
             <!-- Recipe Card -->
             <div id="recipesContainer">
-=======
-    <div class="container-fluid">
-        <div class="grid-5">
-            <div class="d-flex flex-wrap gap-4 justify-content-start" style="padding-left: 1vh;" id="recipesContainer">
->>>>>>> Stashed changes
-                <div class="card-hover">
-                    <img src="~/img/sampleimg.jpg" class="img-fluid" alt="Recipe Image">
-                    <div class="overlay">
-                        <h5>Pocherong Manok</h5>
-                        <div class="details gap-5">
-                            <span>420 cal</span>
-                            <span>45 mins</span>
+
+                <div class="container-fluid">
+                    <div class="grid-5">
+                        <div class="d-flex flex-wrap gap-4 justify-content-start" style="padding-left: 1vh;"
+                            id="recipesContainer">
+
+                            <div class="card-hover">
+                                <img src="~/img/sampleimg.jpg" class="img-fluid" alt="Recipe Image">
+                                <div class="overlay">
+                                    <h5>Pocherong Manok</h5>
+                                    <div class="details gap-5">
+                                        <span>420 cal</span>
+                                        <span>45 mins</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>

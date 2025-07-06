@@ -254,7 +254,13 @@ async function showFollowersModal() {
         if (result.success && result.followers && result.followers.length > 0) {
             container.innerHTML = result.followers.map(follower => `
                 <div class="d-flex align-items-center p-3 border-bottom">
-                    <img src="/img/image.png" class="rounded-circle me-3" width="50" height="50" alt="${follower.name}">
+                    <img src="${follower.profileImage || '/img/image.png'}" 
+                         class="rounded-circle me-3" 
+                         width="50" 
+                         height="50" 
+                         alt="${follower.name}"
+                         style="object-fit: cover;"
+                         onerror="this.src='/img/image.png';">
                     <div class="flex-grow-1">
                         <h6 class="mb-1 fw-bold">${follower.name}</h6>
                         <small class="text-muted">@${follower.email}</small>
@@ -311,7 +317,13 @@ async function showFollowingModal() {
         if (result.success && result.following && result.following.length > 0) {
             container.innerHTML = result.following.map(following => `
                 <div class="d-flex align-items-center p-3 border-bottom">
-                    <img src="/img/image.png" class="rounded-circle me-3" width="50" height="50" alt="${following.name}">
+                    <img src="${following.profileImage || '/img/image.png'}" 
+                         class="rounded-circle me-3" 
+                         width="50" 
+                         height="50" 
+                         alt="${following.name}"
+                         style="object-fit: cover;"
+                         onerror="this.src='/img/image.png';">
                     <div class="flex-grow-1">
                         <h6 class="mb-1 fw-bold">${following.name}</h6>
                         <small class="text-muted">@${following.email}</small>

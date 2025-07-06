@@ -54,36 +54,138 @@ document.addEventListener('DOMContentLoaded', function () {
     if (editProfileForm) {
         editProfileForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            const formData = new FormData(this);
+            
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.textContent;
+            
+            // Validate required fields
+            const displayName = document.getElementById('displayName').value.trim();
+            const username = document.getElementById('username').value.trim();
+            
+            if (!displayName || !username) {
+                showNotification('Please fill in all required fields.', 'error');
+                return;
+            }
+            
+            // Set loading state
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Saving...';
+            
             try {
+                // Get base64 image data if an image was selected
+                let profileImageBase64 = null;
+                const imageFile = imageInput.files[0];
+                if (imageFile) {
+                    profileImageBase64 = await convertFileToBase64(imageFile);
+                }
+                
+                const requestData = {
+                    DisplayName: displayName,
+                    Username: username,
+                    ProfileImageBase64: profileImageBase64
+                };
+                
                 const response = await fetch('/Profile/UpdateProfile', {
                     method: 'POST',
-                    body: formData // Send FormData to handle file uploads
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
                 });
+                
                 const result = await response.json();
                 if (result.success) {
-                    alert('Profile updated successfully');
+                    showNotification('Profile updated successfully!', 'success');
+                    
                     // Update UI
-                    document.getElementById('currentUserName').textContent = formData.get('displayName');
+                    document.getElementById('currentUserName').textContent = result.data.displayName;
                     // Update username in the UI
                     const usernameElement = document.querySelector('.text-muted');
                     if (usernameElement) {
-                        usernameElement.textContent = '@' + formData.get('username');
+                        usernameElement.textContent = '@' + result.data.username;
                     }
-                    // Close modal
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('editProfileModal'));
-                    modal.hide();
-                    // Reload page if profile image was updated
-                    if (formData.get('profileImage').size > 0) {
-                        location.reload();
+                    // Update profile image if changed
+                    if (result.data.profileImageUrl) {
+                        const profileImg = document.getElementById('mainProfileImage');
+                        if (profileImg) {
+                            profileImg.src = result.data.profileImageUrl;
+                        }
+                        
+                        // Also update the preview in the modal
+                        const preview = document.getElementById('profileImagePreview');
+                        if (preview) {
+                            preview.style.backgroundImage = `url(${result.data.profileImageUrl})`;
+                            preview.style.backgroundSize = 'cover';
+                            preview.style.backgroundPosition = 'center';
+                        }
                     }
+                    
+                    // Close modal after a short delay
+                    setTimeout(() => {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('editProfileModal'));
+                        modal.hide();
+                    }, 1500);
                 } else {
-                    alert('Error: ' + result.message);
+                    showNotification('Error: ' + result.message, 'error');
                 }
             } catch (error) {
                 console.error('Error updating profile:', error);
-                alert('An error occurred while updating the profile.');
+                showNotification('An error occurred while updating the profile.', 'error');
+            } finally {
+                // Reset button state
+                submitButton.disabled = false;
+                submitButton.textContent = originalButtonText;
             }
+        });
+    }
+
+    // Enhanced notification function
+    function showNotification(message, type = 'info') {
+        // Remove existing notifications
+        const existingNotifications = document.querySelectorAll('.profile-notification');
+        existingNotifications.forEach(notification => notification.remove());
+        
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'} alert-dismissible fade show profile-notification`;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        `;
+        
+        notification.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="feather-${type === 'success' ? 'check-circle' : type === 'error' ? 'x-circle' : 'info'} me-2"></i>
+                <span>${message}</span>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+
+    // Helper function to convert file to base64
+    function convertFileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                // Remove the data:image/jpeg;base64, prefix
+                const base64 = reader.result.split(',')[1];
+                resolve(base64);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
         });
     }
 });

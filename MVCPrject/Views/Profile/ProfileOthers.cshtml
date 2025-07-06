@@ -23,7 +23,14 @@
 <div class="container-fluid py-4 justify-content-center">
     <div class="row align-items-center">
         <div class="col-auto" style="padding-left: 3vh;">
-            <img src="~/img/image.png" class="rounded-circle" alt="Profile image" width="180" height="180">
+            <img src="@(Model?.ProfileImageUrl ?? "~/img/image.png")" 
+                 class="rounded-circle" 
+                 alt="@(Model?.Name ?? "User")'s profile image"
+                 width="180" 
+                 height="180"
+                 id="otherProfileImage"
+                 style="object-fit: cover;"
+                 onerror="this.src='~/img/image.png';">
         </div>
         <div class="col-md-8">
             <div class="d-flex justify-content-between align-items-center flex-wrap">

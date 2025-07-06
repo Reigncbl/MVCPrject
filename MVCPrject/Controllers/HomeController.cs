@@ -55,6 +55,7 @@ namespace MVCPrject.Controllers
                 ViewBag.UserName = user?.Name ?? userName ?? email ?? "User";
                 ViewBag.Name = user?.Name ?? userName ?? email ?? "User";
                 ViewBag.id = user?.Id ?? userId;
+                ViewBag.UserProfileImage = user?.ProfileImageUrl;
 
                 // Get user's liked recipes
                 if (!string.IsNullOrEmpty(userId))

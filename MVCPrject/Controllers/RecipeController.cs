@@ -210,11 +210,33 @@ namespace MVCPrject.Controllers
 
         private async Task SetUserViewBagAsync()
         {
-            var userInfo = await _userCacheService.GetUserInfoAsync(User);
-            if (userInfo != null)
+            try
             {
-                ViewBag.UserName = userInfo.DisplayName;
-                ViewBag.UserEmail = userInfo.Email;
+                var currentUser = await _userCacheService.GetCurrentUserAsync(User);
+                if (currentUser != null)
+                {
+                    ViewBag.UserName = currentUser.Name ?? currentUser.UserName ?? "User";
+                    ViewBag.UserEmail = currentUser.Email;
+                    ViewBag.UserId = currentUser.Id;
+                    ViewBag.UserProfileImage = currentUser.ProfileImageUrl;
+                    
+                    // Log successful user cache retrieval
+                    Console.WriteLine($"[DEBUG] UserCacheService retrieved user: {ViewBag.UserName} (ID: {currentUser.Id})");
+                }
+                else
+                {
+                    // Fallback to basic user information
+                    ViewBag.UserName = User.Identity?.Name ?? "User";
+                    ViewBag.UserProfileImage = null;
+                    Console.WriteLine($"[DEBUG] UserCacheService returned null, using fallback: {ViewBag.UserName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Fallback in case of any errors
+                ViewBag.UserName = User.Identity?.Name ?? "User";
+                ViewBag.UserProfileImage = null;
+                Console.WriteLine($"[ERROR] UserCacheService failed: {ex.Message}, using fallback: {ViewBag.UserName}");
             }
         }
 
