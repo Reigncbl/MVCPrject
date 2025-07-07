@@ -58,6 +58,13 @@ namespace MVCPrject.Data
             .HasForeignKey(r => r.AuthorId)
             .OnDelete(DeleteBehavior.SetNull)
             .IsRequired(false);
+
+            modelBuilder.Entity<RecipeNutritionFacts>()
+            .HasOne<Recipe>()
+            .WithMany()
+            .HasForeignKey(rnf => rnf.RecipeID)
+            .OnDelete(DeleteBehavior.Cascade);
+
         }
     }
 }

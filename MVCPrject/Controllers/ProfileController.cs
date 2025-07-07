@@ -213,24 +213,12 @@ namespace MVCPrject.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Follow([FromBody] FollowRequest request)
-        {
-            _logger.LogInformation("Follow endpoint called with followerEmail: {FollowerEmail}, followeeEmail: {FolloweeEmail}",
-                request?.followerEmail, request?.followeeEmail);
 
-            if (request == null)
-            {
-                _logger.LogWarning("Follow request is null");
-                return Json(new { success = false, message = "Invalid request" });
-            }
 
-            var (success, message) = await _userService.FollowUserByEmailAsync(request.followerEmail, request.followeeEmail);
-
-            _logger.LogInformation("Follow result: Success={Success}, Message={Message}", success, message);
-            return Json(new { success, message });
-        }
-
+        /// <summary>
+        /// Unfollow another user by email (UserName field is the email address)
+        /// Example: followerEmail=J024@gmail.com, followeeEmail=another@email.com
+        /// </summary>
         [HttpPost]
         public async Task<IActionResult> UnFollow([FromBody] FollowRequest request)
         {
@@ -303,6 +291,9 @@ namespace MVCPrject.Controllers
 
             try
             {
+                var currentUser = await _userManager.GetUserAsync(User);
+                var currentUserId = currentUser?.Id;
+
                 // Get user
                 var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.UserName == userEmail);
                 if (user == null)
@@ -338,6 +329,7 @@ namespace MVCPrject.Controllers
 
                     return new
                     {
+                        isOwner = recipe.AuthorId == currentUserId,
                         id = recipe.RecipeID,
                         name = recipe.RecipeName,
                         description = recipe.RecipeDescription,
@@ -388,6 +380,63 @@ namespace MVCPrject.Controllers
             {
                 _logger.LogError(ex, "Error getting followers for email: {UserEmail}", userEmail);
                 return Json(new { success = false, followers = new List<object>() });
+            }
+        }
+
+        // DELETE: Delete recipe via API
+        [IgnoreAntiforgeryToken]
+        [HttpDelete]
+        [Route("Profile/DeleteRecipe/{id}")]
+        public async Task<IActionResult> DeleteRecipe(int id)
+        {
+            try
+            {
+                _logger.LogInformation("DeleteRecipe called for recipe ID: {RecipeID}", id);
+
+                // Get current user
+                var currentUser = await _userManager.GetUserAsync(User);
+                if (currentUser == null)
+                {
+                    _logger.LogWarning("User not authenticated for DeleteRecipe");
+                    return Json(new { success = false, message = "User not authenticated" });
+                }
+
+                // Fetch the recipe
+                var recipe = await _dbContext.Recipes.FindAsync(id);
+                if (recipe == null)
+                {
+                    _logger.LogWarning("Recipe ID: {RecipeID} not found", id);
+                    return Json(new { success = false, message = "Recipe not found" });
+                }
+
+                _logger.LogInformation("Current user ID: {UserID}", currentUser.Id);
+                _logger.LogInformation("Recipe Author ID: {AuthorID}", recipe.AuthorId);
+
+                // Check if the recipe belongs to the current user
+                if (recipe.AuthorId != currentUser.Id)
+                {
+                    _logger.LogWarning("User {UserID} attempted to delete recipe {RecipeID} belonging to user {OwnerUserID}",
+                        currentUser.Id, id, recipe.AuthorId);
+                    return Json(new { success = false, message = "Unauthorized to delete this recipe" });
+                }
+
+                var result = await _userService.DeleteRecipeAsync(id);
+
+                if (result)
+                {
+                    _logger.LogInformation("Successfully deleted recipe ID: {RecipeID} for user: {UserID}", id, currentUser.Id);
+                    return Json(new { success = true, message = "Recipe deleted successfully" });
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to delete recipe ID: {RecipeID}", id);
+                    return Json(new { success = false, message = "Failed to delete recipe" });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting recipe ID: {RecipeID}", id);
+                return Json(new { success = false, message = ex.Message });
             }
         }
 

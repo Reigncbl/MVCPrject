@@ -3,6 +3,7 @@ using MVCPrject.Data;
 using MVCPrject.Models;
 using MVCPrject.Services;
 using Azure.Storage.Blobs;
+using System.Security.Claims;
 namespace MVCPrject.Controllers
 {
     [Route("Recipe")]
@@ -69,11 +70,37 @@ namespace MVCPrject.Controllers
                 return NotFound();
             }
 
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            ViewBag.CurrentUserId = currentUserId;
+
+            // This line sets the flag for highlighting "Profile"
+            ViewBag.IsOwnRecipe = recipeDetails.Recipe?.AuthorId == currentUserId;
+
             // Get the like count for this recipe
             ViewBag.LikeCount = await _userService.GetLikeCountAsync(id);
+            ViewBag.CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             return View(recipeDetails);
         }
+
+        [HttpPost("DeleteRecipe/{id}")]
+        public async Task<IActionResult> DeleteRecipe(int id)
+        {
+            var currentUser = await _userCacheService.GetCurrentUserAsync(User);
+            if (currentUser == null)
+                return Unauthorized();
+
+            var recipe = await _repository.GetRecipeByIdAsync(id);
+            if (recipe == null || recipe.AuthorId != currentUser.Id)
+                return Forbid();
+
+            var result = await _userService.DeleteRecipeAsync(id);
+            if (result)
+                return RedirectToAction("Profile", "Profile");
+
+            return BadRequest("Failed to delete recipe.");
+        }
+
 
         [HttpPost("Like")]
         public async Task<IActionResult> LikeRecipe([FromBody] LikeRequest request)

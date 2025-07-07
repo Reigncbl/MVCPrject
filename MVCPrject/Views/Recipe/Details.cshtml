@@ -5,6 +5,16 @@
 
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/profile.css" />
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="~/js/profile.js"></script>
+}
+
 <div class="container-fluid p-0">
     <!-- Header Navigation -->
     <div class="p-4 d-flex justify-content-between align-items-center">
@@ -33,10 +43,25 @@
     <!-- Main Content Container -->
     <div class=" overflow-auto" style="height: calc(100vh - 124px);">
         <div class="container-fluid px-5">
-            <div class="row mb-4">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="ms-auto">
+                    @if (Model.Recipe != null && Model.Recipe.AuthorId == (string)ViewBag.CurrentUserId)
+                    {
+                        <form asp-controller="Recipe" asp-action="DeleteRecipe" asp-route-id="@Model.Recipe?.RecipeID" method="post" onsubmit="return confirm('Are you sure you want to delete this recipe?');">
+                            <button type="submit" class="btn btn-outline-danger d-flex align-items-center gap-2">
+                                <i data-feather="trash-2"></i> Delete
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+
+            <div class="row mb-4 align-items-start">
                 <div class="col-md-8">
 
                     <h2 class="fw-bold fs-1">@(Model.Recipe?.RecipeName ?? "Unknown Recipe Name")</h2>
+
                     <div class="d-flex align-items-center mb-3">
                         <span class="rounded-circle bg-secondary me-2"
                             style="display:inline-block; width:32px; height:32px;"></span>

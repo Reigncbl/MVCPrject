@@ -29,6 +29,7 @@
             <div class="d-flex justify-content-between align-items-center flex-wrap">
                 <div>
                     <h5 class="fw-bold mb-0 d-inline meukes-2" id="currentUserName">@(Model?.User?.Name ?? "User")</h5>
+                    <h5 class="fw-bold mb-0 d-inline meukes-2" id="currentUserName">@(Model?.User?.Name ?? "User")</h5>
                     <small class="text-muted">@@@(Model?.User?.UserName ?? "user@email.com")</small>
                 </div>
                 <div class="d-flex align-items-right gap-4">
@@ -36,10 +37,10 @@
                         Profile</button>
                 </div>
             </div>
-            <p class="mt-2 mb-1" style="padding-top: 2vh">
+            @* <p class="mt-2 mb-1" style="padding-top: 2vh">
                 Hi! I'm a Filipino living in Antipolo. I love to cook and share recipes passed down from my lola. I'm
                 here to spread the joy of lutong bahay. Tara, kain tayo!
-            </p>
+            </p> *@
             <div class="d-flex justify-content-between align-items-center" style="padding-top: 5vh">
                 <div class="d-flex gap-3">
                     <span class="stats-clickable"><strong id="myRecipeCount">@(Model?.RecipeCount ?? 0)</strong>
@@ -128,7 +129,10 @@
                         class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center rounded-circle upload-overlay">
                         <i data-feather="camera" class="text-white"></i>
                     </div>
+
+                    <!-- Hidden File Input -->
                     <input type="file" id="profileImageInput" name="profileImage" accept="image/*" class="d-none" />
+
                 </div>
                 <form id="editProfileForm">
                     <div class="mb-3 text-start">
@@ -165,6 +169,20 @@
 </div>
 
 <!-- Script to set initial profile image preview -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const preview = document.getElementById('profileImagePreview');
+        const currentImage = '@(Model.User.ProfileImageUrl ?? "")';
+        if (currentImage) {
+            preview.style.backgroundImage = `url(${currentImage})`;
+            preview.style.backgroundSize = 'cover';
+            preview.style.backgroundPosition = 'center';
+        }
+    });
+</script>
+
+<!-- Script to set initial profile image preview -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Set initial profile image preview in modal
@@ -192,23 +210,17 @@
         <div class="grid-5">
             <!-- Recipe Card -->
             <div id="recipesContainer">
-
-                <div class="container-fluid">
-                    <div class="grid-5">
-                        <div class="d-flex flex-wrap gap-4 justify-content-start" style="padding-left: 1vh;"
-                            id="recipesContainer">
-
-                            <div class="card-hover">
-                                <img src="~/img/sampleimg.jpg" class="img-fluid" alt="Recipe Image">
-                                <div class="overlay">
-                                    <h5>Pocherong Manok</h5>
-                                    <div class="details gap-5">
-                                        <span>420 cal</span>
-                                        <span>45 mins</span>
-                                    </div>
-                                </div>
-                            </div>
+                <div class="card-hover">
+                    <img src="~/img/sampleimg.jpg" class="img-fluid" alt="Recipe Image">
+                    <div class="overlay">
+                        <h5>Pocherong Manok</h5>
+                        <div class="details gap-5">
+                            <span>420 cal</span>
+                            <span>45 mins</span>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
