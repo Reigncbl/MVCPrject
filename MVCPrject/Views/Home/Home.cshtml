@@ -19,7 +19,7 @@
                 <h2 class="fs-5 mb-0">Welcome, @ViewBag.Name!</h2>
                 <div class="dropdown">
                     <button class="btn btn-link p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="@(ViewBag.UserProfileImage ?? "~/img/image.png")" alt="Profile"
+                        <img src="@Url.Content(ViewBag.UserProfileImage ?? "~/img/image.png")" alt="Profile"
                             class="border rounded-pill" style="width: 48px; height: 48px; object-fit: cover;"
                             onerror="this.src='~/img/image.png';">
                     </button>

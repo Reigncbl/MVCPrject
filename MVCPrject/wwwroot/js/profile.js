@@ -282,10 +282,13 @@ async function loadFollowers() {
         const response = await fetch(`/Profile/GetUserFollowers?userEmail=${encodeURIComponent(currentUserEmail)}`);
         const result = await response.json();
         
+        console.log('Followers API response:', result);
+        
         if (result.success && result.followers && result.followers.length > 0) {
             container.innerHTML = '';
             
             result.followers.forEach(follower => {
+                console.log('Processing follower:', follower);
                 const userCard = createUserCard(follower, 'follower');
                 container.appendChild(userCard);
             });
@@ -299,7 +302,7 @@ async function loadFollowers() {
             `;
         }
         
-    feather.replace();
+        feather.replace();
 
     } catch (error) {
         console.error('Error loading followers:', error);
@@ -322,10 +325,13 @@ async function loadFollowing() {
         const response = await fetch(`/Profile/GetUserFollowing?userEmail=${encodeURIComponent(currentUserEmail)}`);
         const result = await response.json();
         
+        console.log('Following API response:', result);
+        
         if (result.success && result.following && result.following.length > 0) {
             container.innerHTML = '';
             
             result.following.forEach(user => {
+                console.log('Processing following user:', user);
                 const userCard = createUserCard(user, 'following');
                 container.appendChild(userCard);
             });
@@ -357,20 +363,24 @@ function createUserCard(user, type) {
     const card = document.createElement('div');
     card.className = 'border-bottom p-3 user-card';
     
+    // Debug logging to check user data
+    console.log('Creating user card for:', user);
+    console.log('Profile image URL:', user.profileImage);
+    
     card.innerHTML = `
         <div class="d-flex align-items-center">
-            <img src="${user.profileImageUrl || '/img/image.png'}" 
-                 alt="${user.name}" 
+            <img src="${user.profileImage || '/img/image.png'}" 
+                 alt="${user.name || 'User'}" 
                  class="rounded-circle me-3" 
                  style="width: 50px; height: 50px; object-fit: cover;"
                  onerror="this.src='/img/image.png';">
             <div class="flex-grow-1">
-                <h6 class="mb-1 fw-bold">${user.name}</h6>
-                <p class="text-muted mb-1 small">@${user.email}</p>
+                <h6 class="mb-1 fw-bold">${user.name || 'Unknown User'}</h6>
+                <p class="text-muted mb-1 small">@${user.email || user.userName || 'unknown'}</p>
                 ${user.bio ? `<p class="text-muted mb-0 small">${user.bio.length > 60 ? user.bio.substring(0, 60) + '...' : user.bio}</p>` : ''}
             </div>
             <div class="ms-3">
-                <a href="/Profile/ProfileOthers?email=${encodeURIComponent(user.email)}" 
+                <a href="/Profile/ProfileOthers?email=${encodeURIComponent(user.email || user.userName || '')}" 
                    class="btn btn-outline-primary btn-sm">
                     <i data-feather="eye" style="width: 14px; height: 14px;" class="me-1"></i>
                     View Profile
