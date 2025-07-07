@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore;
 using MVCPrject.Data;
 using MVCPrject.Models;
 using Azure.Storage.Blobs;
@@ -101,10 +100,10 @@ namespace MVCPrject.Controllers
                     var imageUrl = await UploadProfileImageAsync(currentUser.Id, request.ProfileImageBase64);
                     if (imageUrl == null)
                         return Json(new { success = false, message = "Failed to upload image" });
-                    
+
                     currentUser.ProfileImageUrl = imageUrl;
                     changes.Add($"Profile image updated from '{oldProfileImageUrl ?? "none"}' to '{imageUrl}'");
-                    _logger.LogInformation("Profile image updated for user {UserId}: {OldImage} -> {NewImage}", 
+                    _logger.LogInformation("Profile image updated for user {UserId}: {OldImage} -> {NewImage}",
                         currentUser.Id, oldProfileImageUrl ?? "none", imageUrl);
                 }
 
@@ -113,7 +112,7 @@ namespace MVCPrject.Controllers
                 {
                     currentUser.Name = request.DisplayName.Trim();
                     changes.Add($"Display name changed from '{oldDisplayName}' to '{currentUser.Name}'");
-                    _logger.LogInformation("Display name updated for user {UserId}: '{OldName}' -> '{NewName}'", 
+                    _logger.LogInformation("Display name updated for user {UserId}: '{OldName}' -> '{NewName}'",
                         currentUser.Id, oldDisplayName, currentUser.Name);
                 }
 
@@ -121,7 +120,7 @@ namespace MVCPrject.Controllers
                 {
                     currentUser.UserName = request.Username.Trim();
                     changes.Add($"Username changed from '{oldUsername}' to '{currentUser.UserName}'");
-                    _logger.LogInformation("Username updated for user {UserId}: '{OldUsername}' -> '{NewUsername}'", 
+                    _logger.LogInformation("Username updated for user {UserId}: '{OldUsername}' -> '{NewUsername}'",
                         currentUser.Id, oldUsername, currentUser.UserName);
                 }
 
@@ -129,7 +128,7 @@ namespace MVCPrject.Controllers
                 if (!result.Succeeded)
                 {
                     var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                    _logger.LogError("Failed to update profile for user {UserId}. Errors: {Errors}", 
+                    _logger.LogError("Failed to update profile for user {UserId}. Errors: {Errors}",
                         currentUser.Id, errors);
                     return Json(new { success = false, message = errors });
                 }
@@ -137,19 +136,21 @@ namespace MVCPrject.Controllers
                 // Log successful update with all changes
                 if (changes.Any())
                 {
-                    _logger.LogInformation("Profile successfully updated for user {UserId} ({Username}). Changes: {Changes}", 
+                    _logger.LogInformation("Profile successfully updated for user {UserId} ({Username}). Changes: {Changes}",
                         currentUser.Id, currentUser.UserName, string.Join("; ", changes));
                 }
                 else
                 {
-                    _logger.LogInformation("Profile update request processed for user {UserId} ({Username}) but no changes were made", 
+                    _logger.LogInformation("Profile update request processed for user {UserId} ({Username}) but no changes were made",
                         currentUser.Id, currentUser.UserName);
                 }
 
-                return Json(new { 
-                    success = true, 
+                return Json(new
+                {
+                    success = true,
                     message = "Profile updated successfully!",
-                    data = new {
+                    data = new
+                    {
                         displayName = currentUser.Name,
                         username = currentUser.UserName,
                         profileImageUrl = currentUser.ProfileImageUrl
