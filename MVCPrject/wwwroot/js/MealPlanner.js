@@ -1653,6 +1653,73 @@ function showMealPhotoModal(log) {
         this.remove();
     });
 }
+
+function escapeLogData(log) {
+    return JSON.stringify(log).replace(/"/g, '&quot;');
+}
+
+// Print grocery list function - called from modal button
+function printGroceryList() {
+    const groceryItemsContainer = document.getElementById('groceryItems');
+    const childNodes = groceryItemsContainer.childNodes;
+
+    if (childNodes.length === 0 || (childNodes.length === 1 && childNodes[0].innerText.includes('No ingredients found'))) {
+        alert("There are no items in the grocery list to print.");
+        return;
+    }
+
+    let printHtml = '<h1>Grocery List</h1>';
+    let inList = false;
+
+    childNodes.forEach(node => {
+        if (node.tagName === 'H6') {
+            if (inList) {
+                printHtml += '</ul>';
+            }
+            printHtml += `<h2>${node.innerText}</h2><ul>`;
+            inList = true;
+        } else if (node.classList && node.classList.contains('list-group-item')) {
+            if (!inList) {
+                printHtml += '<ul>';
+                inList = true;
+            }
+
+            const textSpan = node.querySelector('span:first-child');
+            const quantitySpan = node.querySelector('span.amt-badge');
+
+            if (textSpan && quantitySpan) {
+                const text = textSpan.innerText;
+                const quantity = quantitySpan.innerText;
+                printHtml += `<li>${text} - <strong>${quantity}</strong></li>`;
+            } else {
+                printHtml += `<li>${node.innerText}</li>`;
+            }
+        }
+    });
+
+    if (inList) {
+        printHtml += '</ul>';
+    }
+
+    const printWindow = window.open('', '', 'height=600,width=800');
+    if (printWindow) {
+        printWindow.document.write('<html><head><title>Print Grocery List</title>');
+        printWindow.document.write('<style>body{font-family:sans-serif}h1{font-size:24px}h2{font-size:18px;margin-top:1em}ul{list-style-type:disc;padding-left:20px}li{margin-bottom:5px}</style>');
+        printWindow.document.write('</head><body>');
+        printWindow.document.write(printHtml);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+    } else {
+        alert('Please allow pop-ups for this website to print the grocery list.');
+    }
+}
+
+// Make printGroceryList available globally
+window.printGroceryList = printGroceryList;
+
 const nutritionGoals = {
     calories: 0,
     protein: 0,
@@ -1816,4 +1883,9 @@ function toggleAutoRefresh(enable = true, intervalMinutes = 5) {
         autoRefreshInterval = null;
         console.log('🔄 MealPlanner.js: Auto-refresh disabled');
     }
+}
+
+
+function escapeLogData(log) {
+    return JSON.stringify(log).replace(/"/g, '&quot;');
 }

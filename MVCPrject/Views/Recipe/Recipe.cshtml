@@ -236,28 +236,7 @@
                     }, 3000);
                 }
 
-                // Save recipe function
-                async function saveRecipe(recipeId) {
-                    try {
-                        const response = await fetch('/Recipe/SaveRecipe', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ recipeId: recipeId })
-                        });
-
-                        const result = await response.json();
-                        if (result.success) {
-                            showToast('Recipe saved successfully!', 'success');
-                        } else {
-                            showToast('Failed to save recipe: ' + result.message, 'error');
-                        }
-                    } catch (error) {
-                        console.error('Error saving recipe:', error);
-                        showToast('An error occurred while saving the recipe.', 'error');
-                    }
-                }
+             
             </script>
 
 
@@ -338,10 +317,7 @@
                                                 class="btn btn-danger rounded-pill px-3 py-1 fw-medium btn-sm">View</a>
                                             @if (User.Identity?.IsAuthenticated == true)
                                             {
-                                                <button class="btn btn-outline-secondary rounded-pill px-3 py-1 btn-sm" 
-                                                        onclick="saveRecipe(@recipe.RecipeID)" title="Save Recipe">
-                                                    <i data-feather="bookmark" style="width: 14px; height: 14px;"></i>
-                                                </button>
+                                             
                                             }
                                         </div>
                                         </div>

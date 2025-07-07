@@ -19,17 +19,17 @@
                 <h2 class="fs-5 mb-0">Welcome, @ViewBag.Name!</h2>
                 <div class="dropdown">
                     <button class="btn btn-link p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="@(ViewBag.UserProfileImage ?? "~/img/image.png")" 
-                             alt="Profile" 
-                             class="border rounded-pill" 
-                             style="width: 48px; height: 48px; object-fit: cover;"
-                             onerror="this.src='~/img/image.png';">
+                        <img src="@(ViewBag.UserProfileImage ?? "~/img/image.png")" alt="Profile"
+                            class="border rounded-pill" style="width: 48px; height: 48px; object-fit: cover;"
+                            onerror="this.src='~/img/image.png';">
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="/Profile/Profile">My Profile</a></li>
                         <li><a class="dropdown-item" href="/Recipe/Recipe">Browse Recipes</a></li>
                         <li><a class="dropdown-item" href="/MealPlanner/MealPlanner">Meal Planner</a></li>
-                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
                         <li><a class="dropdown-item" href="/Landing/Logout">Logout</a></li>
                     </ul>
                 </div>
@@ -39,7 +39,8 @@
         {
             <div class="d-flex align-items-center gap-3">
                 <a href="/Landing/Login" class="btn btn-primary">Please log in</a>
-                <img src="~/img/image.png" alt="Profile" class="border rounded-pill" style="width: 48px; height: 48px; object-fit: cover;">
+                <img src="~/img/image.png" alt="Profile" class="border rounded-pill"
+                    style="width: 48px; height: 48px; object-fit: cover;">
             </div>
         }
     </div>
@@ -59,10 +60,10 @@
             </div>
             <div class="w-100 gradient-border p-1 rounded-4">
                 <div class="meal-card bg-light pt-4 d-flex flex-column align-items-center">
-                    <div class="text-muted fs-5">Wed</div>
-                    <div class="date">15</div>
-                    <div class="mb-1 fs-5">3 meals</div>
-                    <div class="log-button text-center">Log Meal</div>
+                    <div class="text-muted fs-5">@DateTime.Now.ToString("ddd")</div>
+                    <div class="date">@DateTime.Now.ToString("dd")</div>
+
+                           <div class="log-button text-center">Log Meal</div>
                 </div>
             </div>
         </div>
