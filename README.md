@@ -52,7 +52,7 @@ Create `appsettings.json` in `/MVCPrject` directory:
 ```json
 {
   "ConnectionStrings": {
-    "RecipeDbConnection": "Server=your-server;Database=RecipeDB;..."
+    "RecipeDbConnection": "Server=your-server;Database=RecipeDB;User Id=your-user;Password=your-password;TrustServerCertificate=True;"
   },
   "Mistral": {
     "ApiKey": "your-mistral-api-key"
