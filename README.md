@@ -78,3 +78,54 @@ MVCPrject/
     ├── Views/             # Frontend - Razor templates
     └── wwwroot/           # Frontend - Static assets (CSS, JS, images)
 ```
+
+## Backend Architecture
+
+```mermaid
+graph TD
+  subgraph Client
+    U[Web Client (Browser)]
+  end
+
+  subgraph Backend[ASP.NET Core Backend]
+    C[Controllers (MVC)]
+    Auth[Identity + Cookie Auth]
+    S[Service Layer]
+    MemCache[UserCacheService (MemoryCache)]
+  end
+
+  subgraph Data
+    DB[(Azure SQL Database)]
+    Redis[(Redis Distributed Cache)]
+    Blob[(Azure Blob Storage)]
+  end
+
+  subgraph AI
+    SK[Semantic Kernel]
+    M[Mistral AI API]
+  end
+
+  subgraph DevOps
+    CI[Azure Pipelines (CI/CD)]
+  end
+
+  U -->|HTTPS| C
+  C --> Auth
+  Auth --> DB
+
+  C --> S
+  S -->|EF Core| DB
+  S -->|Cache| Redis
+  S -->|Media| Blob
+  S --> MemCache
+
+  S --> Recipes[RecipeManipulationService]
+  S --> Users[UserService]
+  S --> MealLogs[MealLogService]
+  S --> Suggestions[SuggestionService]
+
+  S --> SK
+  SK -->|Chat Completion| M
+
+  CI -.-> C
+```
